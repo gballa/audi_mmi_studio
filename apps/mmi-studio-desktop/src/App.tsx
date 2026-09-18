@@ -6,11 +6,12 @@ import { RecipeStudio } from './components/RecipeStudio';
 import { LocalizationStudio } from './components/LocalizationStudio';
 import { MapStudio } from './components/MapStudio';
 import { ComponentCustomizer } from './components/ComponentCustomizer';
+import { BuildStudio } from './components/BuildStudio';
 import { initialLocalizationStrings } from './data/localizationData';
 import { mapDatabases, mapUpdates2026 } from './data/mapData';
 import { InspectResult, MMIThemeConfig, SystemString, MapUpdateItem } from './types';
 
-type Tab = 'components' | 'localization' | 'maps' | 'recipes' | 'assets' | 'relab' | 'typography';
+type Tab = 'components' | 'localization' | 'maps' | 'build' | 'recipes' | 'assets' | 'relab' | 'typography';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('components');
@@ -190,6 +191,16 @@ export const App: React.FC = () => {
             <span>🗺️</span> 2026 Map Studio
           </button>
           <button
+            onClick={() => setActiveTab('build')}
+            className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all flex items-center gap-1.5 ${
+              activeTab === 'build'
+                ? 'bg-amber-500 text-slate-950 font-bold shadow'
+                : 'text-amber-400 hover:text-amber-300 font-semibold'
+            }`}
+          >
+            <span>🚀</span> Build & SD Deploy
+          </button>
+          <button
             onClick={() => setActiveTab('recipes')}
             className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all ${
               activeTab === 'recipes'
@@ -270,6 +281,13 @@ export const App: React.FC = () => {
             databases={mapDatabases}
             updates={mapUpdates}
             onToggleUpdate={handleToggleMapUpdate}
+          />
+        )}
+        {activeTab === 'build' && (
+          <BuildStudio
+            themeConfig={themeConfig}
+            strings={strings}
+            mapUpdates={mapUpdates}
           />
         )}
         {activeTab === 'recipes' && <RecipeStudio />}
