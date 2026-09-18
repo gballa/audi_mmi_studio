@@ -1,0 +1,24 @@
+[package]
+name = "mmi-validation"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "6-tier validation engine, hardware target profiles, and build readiness verification for Audi MMI Studio"
+
+[dependencies]
+mmi-core.workspace = true
+mmi-formats.workspace = true
+mmi-assets.workspace = true
+mmi-rebuild.workspace = true
+blake3.workspace = true
+sha2.workspace = true
+hex.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+walkdir.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

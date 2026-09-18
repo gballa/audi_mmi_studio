@@ -1,0 +1,142 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "AudiMMI-Studio-Workstation",
+  "documentNamespace": "https://audimmi.local/spdx/audi-mmi-studio-0.1.0",
+  "creationInfo": {
+    "creators": [
+      "Tool: Audi MMI Studio SBOM Generator",
+      "Organization: Audi MMI Reverse-Engineering Workstation"
+    ],
+    "created": "2026-09-18T21:30:00Z"
+  },
+  "packages": [
+    {
+      "name": "mmi-core",
+      "SPDXID": "SPDXRef-Package-mmi-core",
+      "versionInfo": "0.1.0",
+      "packageFileName": "crates/mmi-core",
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "description": "Core storage, CAS, immutable path protection, and shared domain primitives"
+    },
+    {
+      "name": "mmi-re-lab",
+      "SPDXID": "SPDXRef-Package-mmi-re-lab",
+      "versionInfo": "0.1.0",
+      "packageFileName": "crates/mmi-re-lab",
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "description": "Binary analysis, entropy profiling, string extraction, signature carver"
+    },
+    {
+      "name": "mmi-formats",
+      "SPDXID": "SPDXRef-Package-mmi-formats",
+      "versionInfo": "0.1.0",
+      "packageFileName": "crates/mmi-formats",
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "description": "Format adapters, metainfo2, precomp codec, FLDB, Orion Atlas, Identity-Rebuild Gate"
+    },
+    {
+      "name": "mmi-assets",
+      "SPDXID": "SPDXRef-Package-mmi-assets",
+      "versionInfo": "0.1.0",
+      "packageFileName": "crates/mmi-assets",
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "description": "Asset decoding, conformance pipeline, replacement engine, typography verifier"
+    },
+    {
+      "name": "mmi-canvas",
+      "SPDXID": "SPDXRef-Package-mmi-canvas",
+      "versionInfo": "0.1.0",
+      "packageFileName": "crates/mmi-canvas",
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "description": "Virtual 800x480 screen renderer and Day/Night palette composition"
+    },
+    {
+      "name": "mmi-imagegen",
+      "SPDXID": "SPDXRef-Package-mmi-imagegen",
+      "versionInfo": "0.1.0",
+      "packageFileName": "crates/mmi-imagegen",
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "description": "Airgap-isolated image authoring provider bridge with prompt sanitization"
+    },
+    {
+      "name": "mmi-recipe",
+      "SPDXID": "SPDXRef-Package-mmi-recipe",
+      "versionInfo": "0.1.0",
+      "packageFileName": "crates/mmi-recipe",
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "description": "Declarative Theme Recipes, semantic selectors, cryptographic JournalChain"
+    },
+    {
+      "name": "mmi-rebuild",
+      "SPDXID": "SPDXRef-Package-mmi-rebuild",
+      "versionInfo": "0.1.0",
+      "packageFileName": "crates/mmi-rebuild",
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "description": "Deterministic stage normalizer and package repackager"
+    },
+    {
+      "name": "mmi-validation",
+      "SPDXID": "SPDXRef-Package-mmi-validation",
+      "versionInfo": "0.1.0",
+      "packageFileName": "crates/mmi-validation",
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "description": "6-Tier (L0-L5) Conformance and Target Profile validation engine"
+    },
+    {
+      "name": "mmi-media",
+      "SPDXID": "SPDXRef-Package-mmi-media",
+      "versionInfo": "0.1.0",
+      "packageFileName": "crates/mmi-media",
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "description": "Deployable FAT32 media builder, volume splitter, pre-flight update simulator"
+    },
+    {
+      "name": "mmi-attestation",
+      "SPDXID": "SPDXRef-Package-mmi-attestation",
+      "versionInfo": "0.1.0",
+      "packageFileName": "crates/mmi-attestation",
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "description": "Cryptographic build attestation, safety vocabulary linter, emergency stock recovery"
+    },
+    {
+      "name": "mmi-plugin",
+      "SPDXID": "SPDXRef-Package-mmi-plugin",
+      "versionInfo": "0.1.0",
+      "packageFileName": "crates/mmi-plugin",
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "description": "Third-party format adapter plugin registry and ABI sandbox"
+    },
+    {
+      "name": "mmi-studio-cli",
+      "SPDXID": "SPDXRef-Package-mmi-studio-cli",
+      "versionInfo": "0.1.0",
+      "packageFileName": "apps/mmi-studio-cli",
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "description": "Headless CLI automation interface for all workstation functions"
+    },
+    {
+      "name": "mmi-studio-desktop",
+      "SPDXID": "SPDXRef-Package-mmi-studio-desktop",
+      "versionInfo": "0.1.0",
+      "packageFileName": "apps/mmi-studio-desktop",
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "description": "Desktop GUI Layer (Tauri 2 IPC + React 19 / TypeScript)"
+    }
+  ]
+}

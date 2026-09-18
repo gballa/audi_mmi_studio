@@ -1,0 +1,48 @@
+{
+  "api_version": "1.0",
+  "metadata": {
+    "name": "RS Performance Red Theme",
+    "version": "1.0.0",
+    "author": "Audi MMI Studio Workstation",
+    "description": "RS performance high-visibility crimson accent scheme with sport cluster graphics.",
+    "base_train": "HN+R_EU_AU_K0942_4",
+    "target_trains": [
+      "HN+R_EU_AU_K0942_4",
+      "HN+R_EU_AU_P0922"
+    ],
+    "created_at": "2026-09-18T22:04:00Z"
+  },
+  "operations": [
+    {
+      "op": "recolour_palette",
+      "selector": {
+        "type": "AssetPath",
+        "target": "MapStyles/ECE06/0/default/MMI3G_MapArchive_H_06_01.xar"
+      },
+      "day_accent_hex": "#E0001B",
+      "night_accent_hex": "#B30000",
+      "evidence_tag": "EV:tree@originals/HN+R_EU_AU_K0942_4_[8R0906961FB]/MapStyles/ECE06/0/default/MMI3G_MapArchive_H_06_01.xar"
+    },
+    {
+      "op": "replace_asset",
+      "selector": {
+        "type": "AssetPath",
+        "target": "CombiStyles/IND/0/default/arr_e.precomp"
+      },
+      "replacement_path": "assets/rs_red/arr_e.precomp",
+      "evidence_tag": "EV:tree@originals/HN+R_EU_AU_K0942_4_[8R0906961FB]/CombiStyles/IND/0/default/arr_e.precomp"
+    },
+    {
+      "op": "set_string",
+      "selector": {
+        "type": "StringKey",
+        "target": {
+          "catalog": "GEMMI/nav/0/default/navi_de_DE.hbgr",
+          "key": "NAV_THEME_BANNER"
+        }
+      },
+      "new_value": "Audi RS Performance Edition",
+      "evidence_tag": "EV:tree@originals/HN+R_EU_AU_K0942_4_[8R0906961FB]/sss/tts_de_DE/0/default/navi_de_DE.hbgr"
+    }
+  ]
+}

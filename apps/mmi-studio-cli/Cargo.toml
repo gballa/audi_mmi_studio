@@ -1,0 +1,38 @@
+[package]
+name = "mmi-studio-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Headless CLI automation interface for Audi MMI Studio"
+
+[[bin]]
+name = "mmi-studio-cli"
+path = "src/main.rs"
+
+[dependencies]
+mmi-core = { path = "../../crates/mmi-core" }
+mmi-re-lab = { path = "../../crates/mmi-re-lab" }
+mmi-formats = { path = "../../crates/mmi-formats" }
+mmi-assets = { path = "../../crates/mmi-assets" }
+mmi-canvas = { path = "../../crates/mmi-canvas" }
+mmi-imagegen = { path = "../../crates/mmi-imagegen" }
+mmi-recipe = { path = "../../crates/mmi-recipe" }
+mmi-rebuild = { path = "../../crates/mmi-rebuild" }
+mmi-validation = { path = "../../crates/mmi-validation" }
+mmi-media = { path = "../../crates/mmi-media" }
+mmi-attestation = { path = "../../crates/mmi-attestation" }
+mmi-plugin = { path = "../../crates/mmi-plugin" }
+blake3.workspace = true
+sha2.workspace = true
+hex.workspace = true
+clap.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+image.workspace = true

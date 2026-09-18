@@ -1,0 +1,21 @@
+[package]
+name = "mmi-imagegen"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "AI asset authoring client, Gemini image model adapter, and Egress Airlock for Audi MMI Studio"
+
+[dependencies]
+mmi-core.workspace = true
+mmi-assets.workspace = true
+blake3.workspace = true
+sha2.workspace = true
+hex.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+image.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

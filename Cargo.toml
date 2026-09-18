@@ -1,0 +1,58 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/mmi-core",
+    "crates/mmi-re-lab",
+    "crates/mmi-formats",
+    "crates/mmi-assets",
+    "crates/mmi-canvas",
+    "crates/mmi-imagegen",
+    "crates/mmi-recipe",
+    "crates/mmi-rebuild",
+    "crates/mmi-validation",
+    "crates/mmi-media",
+    "crates/mmi-attestation",
+    "crates/mmi-plugin",
+    "apps/mmi-studio-cli",
+    "apps/mmi-studio-desktop/src-tauri",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Audi MMI Studio Engineers"]
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+blake3 = "1.5"
+sha2 = "0.10"
+hex = "0.4"
+flate2 = "1.0"
+clap = { version = "4.5", features = ["derive"] }
+tracing-subscriber = "0.3"
+rusqlite = { version = "0.31", features = ["bundled"] }
+thiserror = "1.0"
+tracing = "0.1"
+tempfile = "3.10"
+libc = "0.2"
+walkdir = "2.5"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+image = { version = "0.25", default-features = false, features = ["png", "bmp"] }
+mmi-core = { path = "crates/mmi-core" }
+mmi-formats = { path = "crates/mmi-formats" }
+mmi-assets = { path = "crates/mmi-assets" }
+mmi-re-lab = { path = "crates/mmi-re-lab" }
+mmi-canvas = { path = "crates/mmi-canvas" }
+mmi-imagegen = { path = "crates/mmi-imagegen" }
+mmi-recipe = { path = "crates/mmi-recipe" }
+mmi-rebuild = { path = "crates/mmi-rebuild" }
+mmi-validation = { path = "crates/mmi-validation" }
+mmi-media = { path = "crates/mmi-media" }
+mmi-attestation = { path = "crates/mmi-attestation" }
+mmi-plugin = { path = "crates/mmi-plugin" }
+
+
+
+
+

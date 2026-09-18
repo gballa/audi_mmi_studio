@@ -1,0 +1,19 @@
+[package]
+name = "mmi-canvas"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Screen reconstruction canvas, day/night palette simulator, and UI layer compositor for Audi MMI Studio"
+
+[dependencies]
+mmi-core.workspace = true
+mmi-formats.workspace = true
+mmi-assets.workspace = true
+image.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

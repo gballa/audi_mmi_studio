@@ -1,0 +1,17 @@
+[package]
+name = "mmi-re-lab"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Reverse-engineering laboratory core: hex inspection, entropy analysis, string extraction, and container carving"
+
+[dependencies]
+mmi-core = { path = "../mmi-core" }
+thiserror.workspace = true
+tracing.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

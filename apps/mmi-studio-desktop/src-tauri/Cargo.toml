@@ -1,0 +1,30 @@
+[package]
+name = "mmi-studio-desktop"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Desktop engineering workstation for Audi MMI Studio"
+
+[dependencies]
+mmi-core = { path = "../../../crates/mmi-core" }
+mmi-formats = { path = "../../../crates/mmi-formats" }
+mmi-assets = { path = "../../../crates/mmi-assets" }
+mmi-re-lab = { path = "../../../crates/mmi-re-lab" }
+mmi-canvas = { path = "../../../crates/mmi-canvas" }
+mmi-recipe = { path = "../../../crates/mmi-recipe" }
+mmi-rebuild = { path = "../../../crates/mmi-rebuild" }
+mmi-validation = { path = "../../../crates/mmi-validation" }
+mmi-media = { path = "../../../crates/mmi-media" }
+mmi-attestation = { path = "../../../crates/mmi-attestation" }
+mmi-plugin = { path = "../../../crates/mmi-plugin" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+blake3.workspace = true
+hex.workspace = true
+image.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

@@ -1,0 +1,11 @@
+{
+  "name": "mmi-studio-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Audi MMI Studio Engineering Workstation Desktop Interface",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  }
+}

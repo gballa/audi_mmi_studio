@@ -1,0 +1,23 @@
+[package]
+name = "mmi-assets"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Asset decoding, precomp conversion, font analysis, and thumbnail generation for Audi MMI Studio"
+
+[dependencies]
+mmi-core.workspace = true
+mmi-formats.workspace = true
+blake3.workspace = true
+sha2.workspace = true
+hex.workspace = true
+flate2.workspace = true
+image.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
