@@ -123,8 +123,8 @@ def main():
     checked = 0
 
     for md_file in sorted(md_files):
-        # Skip target directory
-        if "target" in md_file.parts:
+        # Skip target and node_modules directories
+        if "target" in md_file.parts or "node_modules" in md_file.parts or any(p.startswith(".") for p in md_file.parts):
             continue
         checked += 1
         violations = check_markdown_file(md_file, root_dir)

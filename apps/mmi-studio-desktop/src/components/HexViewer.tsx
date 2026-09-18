@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HexDumpResult, EntropyResult, HexRow } from '../types';
+import { HexDumpResult, EntropyResult } from '../types';
 
 interface HexViewerProps {
   hexData?: HexDumpResult;
@@ -23,7 +23,6 @@ export const HexViewer: React.FC<HexViewerProps> = ({
     classification: 'CompressedOrEncrypted',
     segments: [[0, 4.82]],
   },
-  onOffsetChange,
 }) => {
   const [selectedByte, setSelectedByte] = useState<{ row: number; col: number; val: string } | null>(null);
 

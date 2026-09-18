@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ScreenRenderResult } from '../types';
 
 interface ScreenCanvasProps {
@@ -10,8 +10,6 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
   currentScreen = { width: 800, height: 480, activeMode: 'Day', pixelCount: 384000 },
   onToggleMode,
 }) => {
-  const [selectedLayer, setSelectedLayer] = useState<string | null>(null);
-
   return (
     <div className="flex flex-col h-full bg-slate-950 text-slate-100 p-4">
       <div className="flex items-center justify-between pb-4 border-b border-slate-800">
