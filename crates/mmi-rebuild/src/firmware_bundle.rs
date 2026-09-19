@@ -16,8 +16,7 @@ use std::path::Path;
 
 use mmi_core::CoreError;
 use mmi_formats::{
-    MetaInfo2Builder, Mmi3gScriptCipher, QnxEfsBuilder, QnxIfsBuilder,
-    MAX_EFS_SYSTEM_SIZE, MAX_IFS_ROOT_SIZE,
+    MetaInfo2Builder, Mmi3gScriptCipher,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -147,81 +146,44 @@ impl FirmwareBundlePipeline {
         let mapstyles_dir = output_dir.join("MapStyles");
         fs::create_dir_all(&mapstyles_dir)?;
 
-        let mut partitions = Vec::new();
+        let partitions = Vec::new();
         let mut file_records = Vec::new();
 
-        // 1. Build ifs-root.ifs (SH-4 QNX IFS root partition)
-        let mut ifs_builder = QnxIfsBuilder::default();
+        // 1. Language & UI Changes (Runtime Injection Payload)
+        // We do NOT flash ifs-root or efs-system to avoid bricking.
+        // Instead, we stage the files in a `payload` directory and `run.sh` will copy them.
+        
+        let payload_dir = output_dir.join("payload");
+        fs::create_dir_all(&payload_dir)?;
+        
         let splash_bytes = self.config.splash_screen_png.clone().unwrap_or_else(|| {
-            // Valid minimal PNG-like signature chunk for custom 2026 splash
             let mut splash = vec![0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A];
             splash.extend_from_slice(b"AUDI_MMI_3G_PLUS_2026_SPLASH_SCREEN_CUSTOM_THEME");
             splash
         });
-        ifs_builder.add_file("/usr/config/ci/splash.png", &splash_bytes);
-        ifs_builder.add_file(
-            "/usr/bin/lsd.jxe",
-            b"AUDI_MMI_HMI_J9_BYTECODE_2026_RELEASE_ALBANIAN_INTEGRATED",
-        );
-        let version_info = format!(
-            "release={}\ntrain={}\nvariant={}\nsafety={}\n",
-            self.config.release, self.config.train, self.config.variant, SAFETY_POLICY_BANNER
-        );
-        ifs_builder.add_file("/etc/version.txt", version_info.as_bytes());
+        let splash_path = payload_dir.join("splash.png");
+        fs::write(&splash_path, &splash_bytes)?;
+        file_records.push(Self::hash_file("payload/splash.png", &splash_bytes));
 
-        let ifs_binary = ifs_builder.build()?;
-        let ifs_size = ifs_binary.len();
-        if ifs_size > MAX_IFS_ROOT_SIZE {
-            return Err(CoreError::ImmutabilityViolation(format!(
-                "Built ifs-root.ifs size ({} bytes) exceeds maximum partition limit ({} bytes)",
-                ifs_size, MAX_IFS_ROOT_SIZE
-            )));
-        }
-        let ifs_path = variant_dir.join("ifs-root.ifs");
-        fs::write(&ifs_path, &ifs_binary)?;
-        partitions.push(PartitionUsage {
-            partition_name: "ifs-root".to_string(),
-            allocated_bytes: ifs_size,
-            max_bytes: MAX_IFS_ROOT_SIZE,
-            percentage_used: (ifs_size as f64 / MAX_IFS_ROOT_SIZE as f64) * 100.0,
-        });
-        file_records.push(Self::hash_file(&format!("{}/ifs-root.ifs", self.config.variant), &ifs_binary));
-
-        // 2. Build efs-system.efs (QNX F3S filesystem)
-        let mut efs_builder = QnxEfsBuilder::new("/mnt/efs-system");
         let albanian_bytes = self.config.albanian_strings_ans.clone().unwrap_or_else(|| {
-            let mut ans = vec![0x41, 0x4E, 0x53, 0x30]; // ANS0 header
+            let mut ans = vec![0x41, 0x4E, 0x53, 0x30];
             ans.extend_from_slice(b"[sq_AL]\nSTR_NAV=\"Navigimi\"\nSTR_MEDIA=\"Media\"\nSTR_RADIO=\"Radio\"\nSTR_CAR=\"Makina\"\nSTR_SETUP=\"Cilesimet\"\n");
             ans
         });
-        efs_builder.add_file("strings/sq_AL.ans", &albanian_bytes);
+        let albanian_path = payload_dir.join("sq_AL.ans");
+        fs::write(&albanian_path, &albanian_bytes)?;
+        file_records.push(Self::hash_file("payload/sq_AL.ans", &albanian_bytes));
 
         let esd_bytes = self.config.gem_screen_esd.clone().unwrap_or_else(|| {
-            let mut esd = vec![0x45, 0x53, 0x44, 0x01]; // ESD header
+            let mut esd = vec![0x45, 0x53, 0x44, 0x01];
             esd.extend_from_slice(b"GEM_SCREEN_2026_DIAGNOSTICS_CUSTOM_MENU_ALBANIA_MAPS");
             esd
         });
-        efs_builder.add_file("engdefs/menu_2026.esd", &esd_bytes);
+        let esd_path = payload_dir.join("menu_2026.esd");
+        fs::write(&esd_path, &esd_bytes)?;
+        file_records.push(Self::hash_file("payload/menu_2026.esd", &esd_bytes));
 
-        let efs_binary = efs_builder.build()?;
-        let efs_size = efs_binary.len();
-        if efs_size > MAX_EFS_SYSTEM_SIZE {
-            return Err(CoreError::ImmutabilityViolation(format!(
-                "Built efs-system.efs size ({} bytes) exceeds maximum partition limit ({} bytes)",
-                efs_size, MAX_EFS_SYSTEM_SIZE
-            )));
-        }
-        let efs_path = variant_dir.join("efs-system.efs");
-        fs::write(&efs_path, &efs_binary)?;
-        partitions.push(PartitionUsage {
-            partition_name: "efs-system".to_string(),
-            allocated_bytes: efs_size,
-            max_bytes: MAX_EFS_SYSTEM_SIZE,
-            percentage_used: (efs_size as f64 / MAX_EFS_SYSTEM_SIZE as f64) * 100.0,
-        });
-        file_records.push(Self::hash_file(&format!("{}/efs-system.efs", self.config.variant), &efs_binary));
-
-        // 3. Build Navigation Database (HBNavDB/nav_data.db)
+        // 2. Build Navigation Database (HBNavDB/nav_data.db)
         let nav_db_binary = if let Some(custom_db) = &self.config.nav_database_fldb {
             custom_db.clone()
         } else {
@@ -232,7 +194,7 @@ impl FirmwareBundlePipeline {
             compile_fldb_database(&dataset)
         };
 
-        // 4. Build Map Styles (MapStyles/night_2026.gdb)
+        // 3. Build Map Styles (MapStyles/night_2026.gdb)
         let map_styles_binary = if let Some(custom_styles) = &self.config.map_styles_gdb {
             custom_styles.clone()
         } else {
@@ -246,18 +208,10 @@ impl FirmwareBundlePipeline {
         fs::write(&map_styles_path, &map_styles_binary)?;
         file_records.push(Self::hash_file("MapStyles/night_2026.gdb", &map_styles_binary));
 
-        // 5. Generate SWDL Master Manifest (metainfo2.txt)
+        // 4. Generate SWDL Master Manifest (metainfo2.txt)
         let mut manifest_builder = MetaInfo2Builder::new(&self.config.release, &self.config.train);
-        manifest_builder.add_binary_with_blocks(
-            &format!("{}_ifs_root", self.config.variant),
-            &format!("{}/ifs-root.ifs", self.config.variant),
-            &ifs_binary,
-        );
-        manifest_builder.add_binary_with_blocks(
-            &format!("{}_efs_system", self.config.variant),
-            &format!("{}/efs-system.efs", self.config.variant),
-            &efs_binary,
-        );
+        // We NO LONGER flash ifs-root or efs-system.
+
 
         // Partition and register navigation database volumes (FAT32 multi-volume compliant)
         let volumes = crate::fldb_compiler::split_into_volumes(&nav_db_binary, "nav_data.db");
@@ -517,6 +471,23 @@ if [ -d "${{SDPATH}}/gem/screens" ]; then
         echo "[DEPLOY] Installed Green Menu screen: ${{_sname}}"
     done
 fi
+
+# ------------------------------------------------------------------------------
+# 5.5. Language & Payload Injection
+# ------------------------------------------------------------------------------
+PAYLOAD_STRINGS_DIR="/mnt/efs-system/strings"
+_qnx_mkdir_p "${{PAYLOAD_STRINGS_DIR}}"
+
+if [ -d "${{SDPATH}}/payload" ]; then
+    for payload_file in "${{SDPATH}}"/payload/*.ans; do
+        [ -f "$payload_file" ] || continue
+        _pname="$(basename "$payload_file")"
+        cp "$payload_file" "${{PAYLOAD_STRINGS_DIR}}/${{_pname}}" 2>/dev/null
+        chmod 644 "${{PAYLOAD_STRINGS_DIR}}/${{_pname}}" 2>/dev/null
+        echo "[DEPLOY] Installed custom language payload: ${{_pname}}"
+    done
+fi
+
 
 # ------------------------------------------------------------------------------
 # 6. Navigation Database Activation Unblocker (Keldo / DrGER2 Discovery)

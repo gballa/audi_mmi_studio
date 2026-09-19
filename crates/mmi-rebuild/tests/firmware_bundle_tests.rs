@@ -1,9 +1,6 @@
 //! Integration tests for FirmwareBundlePipeline (§5, RQ-005, RQ-006, §14.9 Safety Policy).
 
-use mmi_formats::{
-    MetaInfo2, Mmi3gScriptCipher, QnxEfs, QnxIfs, MAX_EFS_SYSTEM_SIZE, MAX_IFS_ROOT_SIZE,
-    QNX_F3S_MAGIC, QNX_IFS_MAGIC,
-};
+use mmi_formats::{MetaInfo2, Mmi3gScriptCipher};
 use mmi_rebuild::{
     FirmwareBundleConfig, FirmwareBundlePipeline, DONE_PNG, RUNNING_PNG, SAFETY_POLICY_BANNER,
     SHOW_SCREEN_BIN,
@@ -37,22 +34,13 @@ fn test_firmware_bundle_pipeline_end_to_end() {
     assert_eq!(report.target_release, "2026_ECE");
     assert_eq!(report.target_variant, "MU9411");
     assert_eq!(report.safety_status, SAFETY_POLICY_BANNER);
-    assert_eq!(report.partitions.len(), 2);
-
-    for p in &report.partitions {
-        if p.partition_name == "ifs-root" {
-            assert!(p.allocated_bytes <= MAX_IFS_ROOT_SIZE);
-            assert!(p.percentage_used > 0.0 && p.percentage_used <= 100.0);
-        } else if p.partition_name == "efs-system" {
-            assert!(p.allocated_bytes <= MAX_EFS_SYSTEM_SIZE);
-            assert!(p.percentage_used > 0.0 && p.percentage_used <= 100.0);
-        }
-    }
+    assert_eq!(report.partitions.len(), 0); // No longer flashing partitions!
 
     // 2. Verify Generated Files Exist on Disk
     let expected_files = [
-        "MU9411/ifs-root.ifs",
-        "MU9411/efs-system.efs",
+        "payload/splash.png",
+        "payload/sq_AL.ans",
+        "payload/menu_2026.esd",
         "HBNavDB/nav_data.db",
         "MapStyles/night_2026.gdb",
         "metainfo2.txt",
@@ -64,7 +52,6 @@ fn test_firmware_bundle_pipeline_end_to_end() {
         "copie_scr.sh",
         "finalScript",
         "stock_recovery.sh",
-        "build_manifest.json",
         "gem/screens/custom_telemetry.esd",
         "gem/screens/map_inspector.esd",
         "gem/screens/ToolkitDTC.esd",
@@ -96,23 +83,12 @@ fn test_firmware_bundle_pipeline_end_to_end() {
     assert!(gauges_content.contains("Battery (x100 mV)"));
     assert!(gauges_content.contains("GPS Sats Used"));
 
-    // 3. Verify QNX IFS Parsing
-    let ifs_bytes = std::fs::read(bundle_dir.join("MU9411/ifs-root.ifs")).unwrap();
-    let ifs_parsed = QnxIfs::parse(&ifs_bytes).expect("Failed to parse generated ifs-root.ifs");
-    assert_eq!(ifs_parsed.header.magic, QNX_IFS_MAGIC);
-
-    // 4. Verify QNX EFS Parsing
-    let efs_bytes = std::fs::read(bundle_dir.join("MU9411/efs-system.efs")).unwrap();
-    let efs_parsed = QnxEfs::parse(&efs_bytes).expect("Failed to parse generated efs-system.efs");
-    assert_eq!(&efs_parsed.header.magic, QNX_F3S_MAGIC);
-    assert_eq!(efs_parsed.header.mount_point, "/mnt/efs-system");
-
     // 5. Verify MetaInfo2 Manifest Parsing and Block CRCs
     let meta_txt = std::fs::read_to_string(bundle_dir.join("metainfo2.txt")).unwrap();
     let meta_parsed = MetaInfo2::parse(&meta_txt).expect("Failed to parse metainfo2.txt");
     assert_eq!(meta_parsed.release.as_deref(), Some("2026_ECE"));
-    assert!(meta_parsed.sections.contains_key("MU9411_ifs_root"));
-    assert!(meta_parsed.sections.contains_key("MU9411_efs_system"));
+    assert!(!meta_parsed.sections.contains_key("MU9411_ifs_root")); // No longer present
+    assert!(!meta_parsed.sections.contains_key("MU9411_efs_system")); // No longer present
     assert!(meta_parsed.sections.contains_key("HBNavDB"));
     assert!(meta_parsed.sections.contains_key("MapStyles"));
 
@@ -125,6 +101,7 @@ fn test_firmware_bundle_pipeline_end_to_end() {
     assert!(run_content.contains("disableReclaim"));
     assert!(run_content.contains("acios_db.ini"));
     assert!(run_content.contains("showScreen"));
+    assert!(run_content.contains("PAYLOAD_STRINGS_DIR"));
 
     let plain_content = std::fs::read_to_string(bundle_dir.join("copie_scr_plain.sh")).unwrap();
     assert!(plain_content.contains("exec ksh ./run.sh"));
