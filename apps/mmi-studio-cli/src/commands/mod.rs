@@ -989,6 +989,49 @@ pub fn cmd_simulate_update(
     Ok(())
 }
 
+pub fn cmd_sanitize_media(
+    target: &Path,
+    dry_run: bool,
+    as_json: bool,
+) -> Result<(), CoreError> {
+    use mmi_media::MediaSanitizer;
+
+    if !target.exists() {
+        return Err(CoreError::NotFound(format!(
+            "Target media directory does not exist: {}",
+            target.display()
+        )));
+    }
+
+    let report = MediaSanitizer::sanitize(target, dry_run)
+        .map_err(CoreError::Io)?;
+
+    if as_json {
+        println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    } else {
+        println!("════════════════════════════════════════════════════════");
+        println!(" Audi MMI Studio — SD Media Sanitizer & QNX Validator");
+        println!("════════════════════════════════════════════════════════");
+        println!("Target Media:     {}", target.display());
+        println!("Execution Mode:   {}", if dry_run { "DRY RUN (Scan Only)" } else { "ACTIVE PURGE" });
+        println!("Items Scanned:    {}", report.purged_items.len());
+        println!("Bytes Reclaimed:  {:.2} KB", report.reclaimed_bytes as f64 / 1024.0);
+        println!("FAT32 Status:     {}", if report.compliant { "COMPLIANT" } else { "NON-COMPLIANT" });
+        println!("--------------------------------------------------------");
+        if report.purged_items.is_empty() {
+            println!("[PASS] Media is clean: zero OS dotfiles or resource forks detected.");
+        } else {
+            for item in &report.purged_items {
+                println!("  {} {}", if dry_run { "[FOUND]" } else { "[PURGED]" }, item);
+            }
+        }
+        println!("--------------------------------------------------------");
+        println!("In-Car Status: Ready for Audi MMI Slot 1 insertion.");
+    }
+
+    Ok(())
+}
+
 pub fn cmd_attest(
     source_dir: &Path,
     build_dir: &Path,

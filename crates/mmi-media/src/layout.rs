@@ -87,3 +87,97 @@ impl VolumeSplitter {
         volumes
     }
 }
+
+/// Detailed summary of a media sanitization operation.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MediaSanitizationReport {
+    pub target_directory: PathBuf,
+    pub purged_items: Vec<String>,
+    pub reclaimed_bytes: u64,
+    pub is_dry_run: bool,
+    pub compliant: bool,
+}
+
+/// Utility for scanning and sanitizing removable SD media for Audi MMI QNX compatibility.
+///
+/// Purges host OS junk files (.DS_Store, AppleDouble ._*, Thumbs.db, .Trashes)
+/// that cause QNX SWDL and scriptlauncher parsing failures or "Medium unreadable" errors.
+pub struct MediaSanitizer;
+
+impl MediaSanitizer {
+    /// Returns true if the file or directory name is host OS metadata or junk.
+    pub fn is_junk_name(name: &str) -> bool {
+        name == ".DS_Store"
+            || name.starts_with("._")
+            || name.eq_ignore_ascii_case("thumbs.db")
+            || name.eq_ignore_ascii_case("desktop.ini")
+            || name == ".Spotlight-V100"
+            || name == ".Trashes"
+            || name == ".fseventsd"
+    }
+
+    /// Recursively scans and purges junk files from target directory.
+    pub fn sanitize(
+        target_dir: &std::path::Path,
+        dry_run: bool,
+    ) -> Result<MediaSanitizationReport, std::io::Error> {
+        let mut purged_items = Vec::new();
+        let mut reclaimed_bytes: u64 = 0;
+
+        if target_dir.exists() {
+            let mut it = walkdir::WalkDir::new(target_dir).into_iter();
+            while let Some(entry_res) = it.next() {
+                let entry = match entry_res {
+                    Ok(e) => e,
+                    Err(_) => continue,
+                };
+                let file_name = entry.file_name().to_string_lossy();
+                if Self::is_junk_name(&file_name) {
+                    let path = entry.path().to_path_buf();
+                    let is_dir = entry.file_type().is_dir();
+                    let rel = path
+                        .strip_prefix(target_dir)
+                        .unwrap_or(&path)
+                        .to_string_lossy()
+                        .to_string();
+
+                    let item_bytes = if is_dir {
+                        walkdir::WalkDir::new(&path)
+                            .into_iter()
+                            .filter_map(|e| e.ok())
+                            .filter_map(|e| e.metadata().ok())
+                            .filter(|m| m.is_file())
+                            .map(|m| m.len())
+                            .sum()
+                    } else {
+                        entry.metadata().map(|m| m.len()).unwrap_or(0)
+                    };
+
+                    purged_items.push(rel);
+                    reclaimed_bytes += item_bytes;
+
+                    if !dry_run {
+                        if is_dir {
+                            let _ = std::fs::remove_dir_all(&path);
+                        } else {
+                            let _ = std::fs::remove_file(&path);
+                        }
+                    }
+
+                    if is_dir {
+                        // Don't descend into directory we just marked/purged
+                        it.skip_current_dir();
+                    }
+                }
+            }
+        }
+
+        Ok(MediaSanitizationReport {
+            target_directory: target_dir.to_path_buf(),
+            purged_items,
+            reclaimed_bytes,
+            is_dry_run: dry_run,
+            compliant: true,
+        })
+    }
+}

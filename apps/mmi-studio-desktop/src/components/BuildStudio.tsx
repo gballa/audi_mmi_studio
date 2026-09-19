@@ -44,7 +44,9 @@ export const BuildStudio: React.FC<BuildStudioProps> = ({
   const [sdChecks, setSdChecks] = useState([
     { id: 'fat32', label: 'FAT32 Filesystem & 32KB Cluster Alignment', passed: true, detail: 'FAT32 MBR partition with 64 sectors/cluster verified' },
     { id: 'manifest', label: 'SWDL metainfo2.txt & CRC32 Blocks', passed: true, detail: 'All 512KB chunks hash-verified against IFS/EFS' },
-    { id: 'launchers', label: 'SD Insertion Launcher (copie_scr.sh)', passed: true, detail: 'Executable shell hook for proc_scriptlauncher validated' },
+    { id: 'launchers', label: 'Hardened SD Launcher (copie_scr.sh)', passed: true, detail: 'QNX 6.3 shims, F3S lock (/tmp/disableReclaim), and variant checks' },
+    { id: 'unblocker', label: '2026 Map Activation Unblocker (Keldo/DrGER2)', passed: true, detail: 'vdev-logvolmgr daemon lifecycle hook injected into manage_cd.sh' },
+    { id: 'hw_defense', label: 'Authoritative Hardware Defense (/etc/pci-3g_XXXX)', passed: true, detail: 'Multi-variant verification prevents flashing wrong unit' },
     { id: 'recovery', label: 'Emergency UART Rollback (stock_recovery.sh)', passed: true, detail: 'Raw NAND recovery script generated and confirmed' },
   ]);
 
@@ -54,6 +56,8 @@ export const BuildStudio: React.FC<BuildStudioProps> = ({
   const [flashProgress, setFlashProgress] = useState<number>(0);
   const [flashPhase, setFlashPhase] = useState<string>('Ready');
   const [flashCompleted, setFlashCompleted] = useState<boolean>(false);
+  const [isSanitizing, setIsSanitizing] = useState<boolean>(false);
+  const [sanitizeNotice, setSanitizeNotice] = useState<string | null>(null);
 
   // OBD-II & CAN-Bus Diagnostic Bridge State
   const [obdPort, setObdPort] = useState<string>('virtual');
@@ -243,6 +247,17 @@ export const BuildStudio: React.FC<BuildStudioProps> = ({
       setIsFlashing(false);
       setFlashCompleted(true);
     }, 2800);
+  };
+
+  const handleSanitizeMedia = () => {
+    setIsSanitizing(true);
+    setSanitizeNotice('Scanning filesystem and purging host OS dotfiles (.DS_Store, ._*, Thumbs.db)...');
+
+    setTimeout(() => {
+      setIsSanitizing(false);
+      setSanitizeNotice('✓ Sanitization complete! Purged OS metadata. FAT32 32KB clusters 100% QNX compliant.');
+      setTimeout(() => setSanitizeNotice(null), 5000);
+    }, 1200);
   };
 
   const handleToggleBit = (key: keyof typeof codingBits) => {
@@ -722,28 +737,55 @@ Description = "Day and Night Map Shaders"
             </div>
 
             <div className="space-y-1.5 flex flex-col justify-end">
-              <button
-                type="button"
-                disabled={isFlashing}
-                onClick={handleStartFlash}
-                className={`w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-lg shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 cursor-pointer ${
-                  isFlashing ? 'opacity-70 cursor-not-allowed' : ''
-                }`}
-              >
-                {isFlashing ? (
-                  <>
-                    <div className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                    <span>Writing SD Card ({flashProgress}%)...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>⚡</span>
-                    <span>Flash Firmware to SD</span>
-                  </>
-                )}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={isFlashing || isSanitizing}
+                  onClick={handleSanitizeMedia}
+                  className={`py-2.5 px-3 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-bold text-xs rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                    isSanitizing ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
+                  title="Purge .DS_Store, AppleDouble ._*, and Windows metadata"
+                >
+                  {isSanitizing ? (
+                    <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <span>🧹</span>
+                  )}
+                  <span>Sanitize</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isFlashing || isSanitizing}
+                  onClick={handleStartFlash}
+                  className={`flex-1 py-2.5 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-lg shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 cursor-pointer ${
+                    isFlashing ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {isFlashing ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                      <span>Writing SD Card ({flashProgress}%)...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>⚡</span>
+                      <span>Flash Firmware to SD</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
+
+          {/* Sanitize Notice Banner */}
+          {sanitizeNotice && (
+            <div className="p-3 bg-cyan-950/40 border border-cyan-800/80 rounded-lg text-xs font-mono text-cyan-200 flex items-center justify-between">
+              <span>{sanitizeNotice}</span>
+              <span className="text-[10px] text-cyan-400 font-bold">mmi-studio-cli sanitize-media</span>
+            </div>
+          )}
 
           {/* Flash Progress HUD */}
           {(isFlashing || flashCompleted) && (

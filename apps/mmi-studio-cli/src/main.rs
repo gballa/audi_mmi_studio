@@ -10,7 +10,7 @@ use commands::{
     cmd_hexdump, cmd_inspect, cmd_plugins_inspect, cmd_plugins_list, cmd_plugins_verify,
     cmd_rebuild, cmd_recipe_apply, cmd_recipe_rebase, cmd_simulate_update, cmd_stock_recovery,
     cmd_strings_inspect, cmd_strings_overflow, cmd_validate, cmd_verify_rebuild,
-    cmd_maps_compile, cmd_firmware_bundle, cmd_flash, cmd_obd,
+    cmd_maps_compile, cmd_firmware_bundle, cmd_flash, cmd_obd, cmd_sanitize_media,
 };
 
 #[derive(Parser)]
@@ -185,6 +185,17 @@ enum Commands {
     SimulateUpdate {
         /// Path to target deployment media directory
         media: PathBuf,
+        /// Output formatted as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Sanitize removable SD media volume by purging OS dotfiles (.DS_Store, AppleDouble ._*, Thumbs.db)
+    SanitizeMedia {
+        /// Target SD media directory or volume mount point
+        target: PathBuf,
+        /// Dry run mode (inspect without deleting)
+        #[arg(long)]
+        dry_run: bool,
         /// Output formatted as JSON
         #[arg(long)]
         json: bool,
@@ -569,6 +580,9 @@ fn main() {
             json,
         } => cmd_build_media(stage, output, volume_label, *volume_size_gb, *json),
         Commands::SimulateUpdate { media, json } => cmd_simulate_update(media, *json),
+        Commands::SanitizeMedia { target, dry_run, json } => {
+            cmd_sanitize_media(target, *dry_run, *json)
+        }
         Commands::Attest {
             source,
             build_dir,

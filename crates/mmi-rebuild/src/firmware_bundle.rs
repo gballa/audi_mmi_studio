@@ -255,20 +255,247 @@ impl FirmwareBundlePipeline {
         fs::write(&manifest_path, &manifest_content)?;
         file_records.push(Self::hash_file("metainfo2.txt", manifest_content.as_bytes()));
 
-        // 6. Scripts: copie_scr.sh (SD script launcher), finalScript, and stock_recovery.sh
+        // 6. Scripts: Hardened copie_scr.sh (SD script launcher), finalScript, and stock_recovery.sh
         let copie_scr = format!(
-            r#"#!/bin/sh
-# Audi MMI 3G/3G+ Script Launcher Payload
+            r###"#!/bin/sh
+# ==============================================================================
+# Audi MMI 3G/3G+ Turnkey SD Deployment & Hardware Defense Runner
 # Executed automatically upon SD insertion by proc_scriptlauncher
-echo "=== Audi MMI 3G+ Custom Firmware Loader ==="
-echo "Target Train: {}"
-echo "Release: {}"
-echo "Variant: {}"
-echo "Safety Notice: {}"
-mount -u /mnt/efs-system
+# Target Train: {train} | Target Release: {release} | Expected Variant: {variant}
+# Safety Policy: {safety}
+# ==============================================================================
+
+SDPATH="${{1:-$(dirname $0)}}"
+export SDPATH
+mount -uw "$SDPATH" 2>/dev/null
+
+# ------------------------------------------------------------------------------
+# 1. QNX 6.3.2 Compatibility Shims (Drop-in replacements for missing userland tools)
+# ------------------------------------------------------------------------------
+if ! command -v head >/dev/null 2>&1; then
+    head() {{
+        case "$1" in
+            -n) shift; sed -n "1,${{1}}p"; shift ;;
+            -[0-9]*) sed -n "1,${{1#-}}p" ;;
+            *)  sed -n '1,10p' ;;
+        esac
+    }}
+fi
+
+if ! command -v basename >/dev/null 2>&1; then
+    basename() {{
+        local _p="${{1%/}}"
+        _p="${{_p##*/}}"
+        [ -n "$2" ] && _p="${{_p%$2}}"
+        echo "$_p"
+    }}
+fi
+
+if ! command -v wc >/dev/null 2>&1; then
+    wc() {{
+        local _c=0
+        while IFS= read -r _; do _c=$((_c + 1)); done < "${{1:-/dev/stdin}}"
+        echo "$_c"
+    }}
+fi
+
+if ! command -v printf >/dev/null 2>&1; then
+    printf() {{
+        local _fmt="$1"; shift
+        case "$_fmt" in
+            *%s*|*%d*) echo "$@" ;;
+            *)         echo "$_fmt" "$@" ;;
+        esac
+    }}
+fi
+
+if ! command -v awk >/dev/null 2>&1; then
+    awk() {{
+        local _field="1"
+        case "$1" in
+            '{{print $'*) _field=$(echo "$1" | sed 's/.*\$//;s/[^0-9]//g') ;;
+        esac
+        while read -r _l; do
+            set -- $_l
+            eval "echo \"\${{${{_field:-1}}}}\""
+        done
+    }}
+fi
+
+# QNX mkdir -p segment builder (avoids "Function not implemented" on nested dirs)
+_qnx_mkdir_p() {{
+    local _target="$1"
+    local _curr=""
+    case "$_target" in /*) _curr="/" ;; esac
+    local _oldIFS="$IFS"
+    IFS="/"
+    set -- $_target
+    IFS="$_oldIFS"
+    for _seg in "$@"; do
+        [ -z "$_seg" ] && continue
+        _curr="${{_curr}}${{_seg}}"
+        [ -d "$_curr" ] || mkdir "$_curr" 2>/dev/null
+        _curr="${{_curr}}/"
+    done
+}}
+
+mmi_getTime() {{
+    if command -v getTime >/dev/null 2>&1; then
+        getTime 2>/dev/null
+    else
+        date +%s 2>/dev/null
+    fi
+}}
+
+mmi_logstamp() {{
+    if command -v getTime >/dev/null 2>&1; then
+        T="$(getTime 2>/dev/null)"
+        if [ -n "$T" ]; then
+            if date -r "$T" +%Y%m%d-%H%M%S 2>/dev/null; then return 0; fi
+            echo "epoch-$T"
+            return 0
+        fi
+    fi
+    date +%Y%m%d-%H%M%S 2>/dev/null || echo "log"
+}}
+
+# ------------------------------------------------------------------------------
+# 2. Logging & Safe Environment Initialization
+# ------------------------------------------------------------------------------
+_qnx_mkdir_p "${{SDPATH}}/var"
+LOGSTAMP="$(mmi_logstamp)"
+LOGFILE="${{SDPATH}}/var/deployment-${{LOGSTAMP}}.log"
+exec > "${{LOGFILE}}" 2>&1
+
+echo "============================================================"
+echo " Audi MMI 3G/3G+ Hardware Deployment Engine"
+echo " Timestamp: $(date 2>/dev/null || echo 'cold-boot')"
+echo " Target Train:    {train}"
+echo " Target Release:  {release}"
+echo " Expected Unit:   {variant}"
+echo " Safety Status:   {safety}"
+echo "============================================================"
+
+# ------------------------------------------------------------------------------
+# 3. Authoritative Hardware Variant Identification & Mismatch Abort Guard
+# ------------------------------------------------------------------------------
+DETECTED_VARIANT="UNKNOWN"
+DETECTED_ID="0000"
+
+if [ -f /etc/pci-3g_9304.cfg ]; then
+    DETECTED_VARIANT="MMI3G_BASIC"
+    DETECTED_ID="9304"
+elif [ -f /etc/pci-3g_9308.cfg ]; then
+    DETECTED_VARIANT="MMI3G_HIGH"
+    DETECTED_ID="9308"
+elif [ -f /etc/pci-3g_9411.cfg ]; then
+    DETECTED_VARIANT="MMI3GP"
+    DETECTED_ID="9411"
+elif [ -f /etc/pci-3g_9436.cfg ]; then
+    DETECTED_VARIANT="MMI3GP_A1"
+    DETECTED_ID="9436"
+elif [ -f /etc/pci-3g_9478.cfg ]; then
+    DETECTED_VARIANT="RNS850"
+    DETECTED_ID="9478"
+fi
+
+echo "[HARDWARE] Authoritative Variant: ${{DETECTED_VARIANT}} (ID: ${{DETECTED_ID}})"
+
+# Validate compatibility
+EXPECTED_ID="$(echo "{variant}" | sed 's/[^0-9]//g')"
+if [ -n "$EXPECTED_ID" ] && [ "$DETECTED_ID" != "0000" ] && [ "$DETECTED_ID" != "$EXPECTED_ID" ]; then
+    # Allow 9411 vs 9436 (compatible 3G+ families)
+    if [ "$DETECTED_ID" != "9411" ] && [ "$DETECTED_ID" != "9436" ]; then
+        echo "[FATAL ERROR] Incompatible head unit hardware detected!"
+        echo "Target was built for ID ${{EXPECTED_ID}} but physical unit is ${{DETECTED_ID}} (${{DETECTED_VARIANT}})."
+        echo "Aborting deployment to protect unit NOR flash integrity."
+        exit 1
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# 4. F3S Flash Garbage Collection Interlock & Pre-Update Safety Backup
+# ------------------------------------------------------------------------------
+touch /tmp/disableReclaim 2>/dev/null
+trap 'rm -f /tmp/disableReclaim 2>/dev/null' EXIT INT TERM
+echo "[SAFETY] F3S garbage collection interlock active (/tmp/disableReclaim)"
+
+BACKUP_DIR="${{SDPATH}}/backup_${{LOGSTAMP}}"
+_qnx_mkdir_p "${{BACKUP_DIR}}"
+echo "[BACKUP] Creating pre-update safety baseline at ${{BACKUP_DIR}}..."
+
+# Capture screen before modification
+if [ -x /usr/bin/screendump ]; then
+    /usr/bin/screendump "${{BACKUP_DIR}}/screen_before.png" 2>/dev/null
+    echo "[BACKUP] Visual framebuffer saved to screen_before.png"
+fi
+
+[ -d /etc/version ] && cp -r /etc/version "${{BACKUP_DIR}}/" 2>/dev/null
+[ -f /dev/shmem/sw_trainname.txt ] && cp /dev/shmem/sw_trainname.txt "${{BACKUP_DIR}}/" 2>/dev/null
+[ -f /mnt/efs-system/usr/bin/manage_cd.sh ] && cp /mnt/efs-system/usr/bin/manage_cd.sh "${{BACKUP_DIR}}/" 2>/dev/null
+echo "[BACKUP] Critical unit baseline safely captured"
+
+# ------------------------------------------------------------------------------
+# 5. Flash Remount & In-Car Green Engineering Menu Screens Deployment
+# ------------------------------------------------------------------------------
+mount -uw /mnt/efs-system 2>/dev/null
+if [ $? -ne 0 ]; then
+    echo "[ERROR] Failed to remount /mnt/efs-system as read-write"
+    exit 2
+fi
+echo "[STORAGE] /mnt/efs-system mounted read-write"
+
+GEM_TARGET_DIR="/mnt/efs-system/etc/screens"
+_qnx_mkdir_p "${{GEM_TARGET_DIR}}"
+
+if [ -d "${{SDPATH}}/gem/screens" ]; then
+    for screen_file in "${{SDPATH}}"/gem/screens/*.esd; do
+        [ -f "$screen_file" ] || continue
+        _sname="$(basename "$screen_file")"
+        cp "$screen_file" "${{GEM_TARGET_DIR}}/${{_sname}}" 2>/dev/null
+        chmod 644 "${{GEM_TARGET_DIR}}/${{_sname}}" 2>/dev/null
+        echo "[DEPLOY] Installed Green Menu screen: ${{_sname}}"
+    done
+fi
+
+# ------------------------------------------------------------------------------
+# 6. Navigation Database Activation Unblocker (Keldo / DrGER2 Discovery)
+# ------------------------------------------------------------------------------
+MANAGE_CD="/mnt/efs-system/usr/bin/manage_cd.sh"
+if [ -f "${{MANAGE_CD}}" ]; then
+    if grep -q "acios_db.ini" "${{MANAGE_CD}}" 2>/dev/null; then
+        echo "[NAV-UNBLOCK] Nav database activation bypass already active in manage_cd.sh"
+    else
+        echo "" >> "${{MANAGE_CD}}"
+        echo "# Audi MMI 2026 Navigation Activation Bypass (Keldo/DrGER2)" >> "${{MANAGE_CD}}"
+        echo '(waitfor /mnt/lvm/acios_db.ini 180 && sleep 10 && slay vdev-logvolmgr) &' >> "${{MANAGE_CD}}"
+        chmod +x "${{MANAGE_CD}}" 2>/dev/null
+        echo "[NAV-UNBLOCK] Successfully injected vdev-logvolmgr daemon lifecycle handler into manage_cd.sh"
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# 7. Finalize & Capture Completion State
+# ------------------------------------------------------------------------------
+sync
+sleep 1
+
+if [ -x /usr/bin/screendump ]; then
+    /usr/bin/screendump "${{SDPATH}}/var/screen_after.png" 2>/dev/null
+    echo "[DEPLOY] Post-execution framebuffer saved to var/screen_after.png"
+fi
+
+echo "============================================================"
+echo " [SUCCESS] Turnkey In-Car Deployment Steps Completed"
+echo " Review logs at: ${{LOGFILE}}"
+echo " Status: {safety}"
+echo "============================================================"
 exit 0
-"#,
-            self.config.train, self.config.release, self.config.variant, SAFETY_POLICY_BANNER
+"###,
+            train = self.config.train,
+            release = self.config.release,
+            variant = self.config.variant,
+            safety = SAFETY_POLICY_BANNER
         );
         let copie_path = output_dir.join("copie_scr.sh");
         fs::write(&copie_path, &copie_scr)?;

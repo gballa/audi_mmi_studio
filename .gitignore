@@ -19,6 +19,7 @@ originals_tree.txt
 # Local workstation storage & transient stages
 .mmistudio/
 output/
+other/
 workspace/
 .agents/
 

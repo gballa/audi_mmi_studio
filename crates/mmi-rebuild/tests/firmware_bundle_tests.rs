@@ -86,10 +86,14 @@ fn test_firmware_bundle_pipeline_end_to_end() {
     assert!(meta_parsed.sections.contains_key("HBNavDB"));
     assert!(meta_parsed.sections.contains_key("MapStyles"));
 
-    // 6. Verify copie_scr.sh and finalScript contain safety banners
+    // 6. Verify copie_scr.sh and finalScript contain safety banners and hardened runtime hooks
     let copie_content = std::fs::read_to_string(bundle_dir.join("copie_scr.sh")).unwrap();
     assert!(copie_content.contains("HN+R_EU_AU_K0942_4"));
     assert!(copie_content.contains(SAFETY_POLICY_BANNER));
+    assert!(copie_content.contains("_qnx_mkdir_p"));
+    assert!(copie_content.contains("pci-3g_"));
+    assert!(copie_content.contains("disableReclaim"));
+    assert!(copie_content.contains("acios_db.ini"));
 
     // 7. Verify Immutability Protection Against originals/ Directory
     let forbidden_dir = Path::new("/some/path/originals/my_bundle");
