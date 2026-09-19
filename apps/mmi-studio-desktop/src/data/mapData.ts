@@ -122,6 +122,17 @@ export const mapUpdates2026: MapUpdateItem[] = [
     enabled: true,
   },
   {
+    id: 'upd_speed_radars_2026',
+    title: '2026 Western Balkans Speed Radar & Fixed Enforcement POIs',
+    region: 'Albania & Western Balkans',
+    type: 'POI Database',
+    nodesAdded: 180,
+    description:
+      'Calibrated acoustic and visual radar warning triggers on high-speed corridors (Tirana-Durrës, Thumanë-Kashar, Fier Bypass, Vlorë Bypass).',
+    status: 'Available',
+    enabled: true,
+  },
+  {
     id: 'upd_ev_charging_network',
     title: '2026 Western Balkans Ultra-Fast EV Charging POI Matrix',
     region: 'Albania, Kosovo, North Macedonia, Montenegro',

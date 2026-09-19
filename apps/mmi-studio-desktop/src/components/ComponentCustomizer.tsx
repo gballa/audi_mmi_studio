@@ -6,6 +6,7 @@ interface ComponentCustomizerProps {
   onUpdateTheme: (newConfig: Partial<MMIThemeConfig>) => void;
   strings: SystemString[];
   onExportRecipe: () => void;
+  onNavigateToAiStudio?: () => void;
 }
 
 export const ComponentCustomizer: React.FC<ComponentCustomizerProps> = ({
@@ -13,6 +14,7 @@ export const ComponentCustomizer: React.FC<ComponentCustomizerProps> = ({
   onUpdateTheme,
   strings,
   onExportRecipe,
+  onNavigateToAiStudio,
 }) => {
   const [activeScreenTab, setActiveScreenTab] = useState<'navigation' | 'car_setup' | 'media' | 'climate' | 'carousel'>('navigation');
   const [activeDriveMode, setActiveDriveMode] = useState<'comfort' | 'auto' | 'dynamic' | 'individual'>('dynamic');
@@ -270,10 +272,18 @@ export const ComponentCustomizer: React.FC<ComponentCustomizerProps> = ({
         </div>
 
         {/* Export Theme Recipe Button */}
-        <div className="pt-2">
+        <div className="pt-2 space-y-2">
+          {onNavigateToAiStudio && (
+            <button
+              onClick={onNavigateToAiStudio}
+              className="w-full py-2 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 text-xs font-bold rounded shadow transition flex items-center justify-center gap-1.5"
+            >
+              <span>🍌</span> Restyle Elements with Gemini AI
+            </button>
+          )}
           <button
             onClick={onExportRecipe}
-            className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded shadow transition"
+            className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded border border-slate-700 transition"
           >
             Export Custom Theme & UI Recipe
           </button>

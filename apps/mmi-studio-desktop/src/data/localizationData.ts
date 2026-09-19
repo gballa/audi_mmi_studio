@@ -65,6 +65,24 @@ export const initialLocalizationStrings: SystemString[] = [
     maxPixels: 220,
     context: 'POI category browser in nav menu',
   },
+  {
+    id: 'NAV_VOICE_TURN_LEFT',
+    category: 'Navigation',
+    en: 'Turn left now onto Rruga Kryesore',
+    de: 'Jetzt links abbiegen auf Hauptstraße',
+    sq: 'Kthehuni majtas tani në Rrugën Kryesore',
+    maxPixels: 360,
+    context: 'Real-time turn prompt on cluster display',
+  },
+  {
+    id: 'NAV_DESTINATION_REACHED',
+    category: 'Navigation',
+    en: 'You have reached your destination',
+    de: 'Sie haben Ihr Ziel erreicht',
+    sq: 'Keni mbërritur në destinacionin tuaj',
+    maxPixels: 320,
+    context: 'Route completion banner',
+  },
 
   // Media & Audio Domain
   {
@@ -111,6 +129,33 @@ export const initialLocalizationStrings: SystemString[] = [
     sq: 'Cilësimet e Zërit dhe Barazuesit',
     maxPixels: 280,
     context: 'DSP equalizer tone adjust menu (B&O / Bose)',
+  },
+  {
+    id: 'MEDIA_BO_SURROUND',
+    category: 'Media',
+    en: 'Bang & Olufsen 3D Sound Focus',
+    de: 'Bang & Olufsen 3D-Klangfokus',
+    sq: 'Fokusi i Zërit 3D Bang & Olufsen',
+    maxPixels: 270,
+    context: 'Premium acoustic staging selector (Front / Rear / All)',
+  },
+  {
+    id: 'MEDIA_SUBWOOFER_LEVEL',
+    category: 'Media',
+    en: 'Subwoofer Bass Intensity',
+    de: 'Subwoofer-Basspegel',
+    sq: 'Intensiteti i Basit të Nën-Boksit',
+    maxPixels: 260,
+    context: 'Low frequency dedicated channel level',
+  },
+  {
+    id: 'MEDIA_GALA_VOLUME',
+    category: 'Media',
+    en: 'GALA Speed-Sensitive Volume',
+    de: 'GALA Geschwindigkeitsanpassung',
+    sq: 'Përshtatja e Volumit me Shpejtësinë (GALA)',
+    maxPixels: 310,
+    context: 'Automatic volume rise matching road speed',
   },
 
   // Radio Domain
@@ -179,6 +224,24 @@ export const initialLocalizationStrings: SystemString[] = [
     maxPixels: 320,
     context: 'Call log listing in telephone menu',
   },
+  {
+    id: 'TEL_BT_PAIRING',
+    category: 'Telephone',
+    en: 'Pair New Mobile Device (PIN: 1234)',
+    de: 'Neues Mobiltelefon koppeln (PIN: 1234)',
+    sq: 'Çiftëzo Pajisje të Re Celulare (PIN: 1234)',
+    maxPixels: 340,
+    context: 'Bluetooth discovery & pairing handshake prompt',
+  },
+  {
+    id: 'TEL_VOICEMAIL',
+    category: 'Telephone',
+    en: 'Mailbox & Voicemail',
+    de: 'Sprachbox / Voicemail',
+    sq: 'Kutia e Mesazheve me Zë',
+    maxPixels: 220,
+    context: 'Direct carrier voicemail dialer',
+  },
 
   // Car Setup & Drive Select Domain
   {
@@ -218,6 +281,15 @@ export const initialLocalizationStrings: SystemString[] = [
     context: 'Custom vehicle dynamics parameters',
   },
   {
+    id: 'CAR_TPMS_STORE',
+    category: 'Car Setup',
+    en: 'Store Current Tire Pressures (TPMS)',
+    de: 'Aktuelle Reifendrücke speichern (RDK)',
+    sq: 'Ruaj Presionet Aktuale të Gomave (TPMS)',
+    maxPixels: 330,
+    context: 'Calibrates ABS wheel rotational speed sensors',
+  },
+  {
     id: 'CAR_OIL_LEVEL',
     category: 'Car Setup',
     en: 'Electronic Oil Level: OK',
@@ -234,6 +306,15 @@ export const initialLocalizationStrings: SystemString[] = [
     sq: 'Afatet e Servisit dhe Inspektimit',
     maxPixels: 260,
     context: 'Distance and days until next maintenance',
+  },
+  {
+    id: 'CAR_PARKING_SENSORS',
+    category: 'Car Setup',
+    en: 'Audi Parking System Plus (Acoustic & Optical)',
+    de: 'Einparkhilfe Plus (Akustisch & Optisch)',
+    sq: 'Sistemi i Parkimit Audi Plus (Akustik dhe Optik)',
+    maxPixels: 380,
+    context: 'PDC radar distance radar graphic overlay',
   },
 
   // Climate Control Domain
@@ -263,6 +344,15 @@ export const initialLocalizationStrings: SystemString[] = [
     sq: 'Shkrirja e Xhamit të Përparmë MAKS',
     maxPixels: 260,
     context: 'Max blower speed to windshield',
+  },
+  {
+    id: 'CLIMATE_AIR_CIRCULATION',
+    category: 'Climate',
+    en: 'Automatic Air Recirculation & Air Quality',
+    de: 'Automatische Umluft & Luftqualität',
+    sq: 'Riciklimi Automatik i Ajrit & Cilësia e Ajrit',
+    maxPixels: 350,
+    context: 'Pollution sensor cabin filtration mode',
   },
 
   // System Alerts & Emergency Warnings
@@ -301,5 +391,14 @@ export const initialLocalizationStrings: SystemString[] = [
     sq: 'Ju Lutem Furnizohuni me Karburant: Autonomia Nën 50 km',
     maxPixels: 420,
     context: 'Low fuel warning prompt with auto-routing to nearest gas station',
+  },
+  {
+    id: 'ALERT_TRANSMISSION_HOT',
+    category: 'System Alerts',
+    en: 'Gearbox Temperature High! Adapt Driving Style',
+    de: 'Getriebetemperatur zu hoch! Fahrweise anpassen',
+    sq: 'Temperatura e Kutisë së Shpejtësisë e Lartë! Përshtatni Mënyrën e Ngasjes',
+    maxPixels: 460,
+    context: 'S-Tronic / Tiptronic transmission clutch protection warning',
   },
 ];

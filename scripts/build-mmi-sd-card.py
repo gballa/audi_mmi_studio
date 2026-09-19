@@ -2,7 +2,7 @@
 """
 scripts/build-mmi-sd-card.py
 Compiles complete deployable Audi MMI 3G+ SD card update media with custom Albanian (sq_AL)
-localization, 2026 navigation network injection, and UI theme customizations.
+localization, 2026 navigation network injection, and Gemini AI UI theme customizations.
 """
 
 import sys
@@ -60,40 +60,78 @@ def main():
     albanian_strings = {
         "locale": "sq_AL",
         "train": args.train,
+        "encoding": "UTF-8 / ISO-8859-16 (Balkan Latin-10)",
+        "diacriticsVerified": ["ë", "ç", "Ë", "Ç"],
         "strings": [
             {"id": "NAV_DESTINATION_ENTRY", "sq": "Futja e Destinacionit"},
             {"id": "NAV_ROUTE_GUIDANCE", "sq": "Udhëzimi i Rrugës Aktiv"},
             {"id": "NAV_NEXT_TURN", "sq": "Kthehuni djathtas në 300 m në Autostradën A1"},
+            {"id": "NAV_CALCULATING_ROUTE", "sq": "Po llogaritet rruga..."},
+            {"id": "NAV_MAP_ORIENTATION", "sq": "Harta: Drejt Veriut / Drejtim Lëvizje / 3D"},
+            {"id": "NAV_AVOID_TOLL", "sq": "Shmang Rrugët me Pagesë"},
             {"id": "NAV_POI_SEARCH", "sq": "Pikat e Interesit (POI)"},
+            {"id": "NAV_VOICE_TURN_LEFT", "sq": "Kthehuni majtas tani në Rrugën Kryesore"},
+            {"id": "NAV_DESTINATION_REACHED", "sq": "Keni mbërritur në destinacionin tuaj"},
             {"id": "MEDIA_JUKEBOX", "sq": "Jukebox (Disku i Brendshëm)"},
             {"id": "MEDIA_SD_CARD_1", "sq": "Karta SD 1"},
             {"id": "MEDIA_SD_CARD_2", "sq": "Karta SD 2"},
+            {"id": "MEDIA_BT_AUDIO", "sq": "Transmetim Audio me Bluetooth"},
+            {"id": "MEDIA_EQUALIZER", "sq": "Cilësimet e Zërit dhe Barazuesit"},
+            {"id": "MEDIA_BO_SURROUND", "sq": "Fokusi i Zërit 3D Bang & Olufsen"},
+            {"id": "MEDIA_SUBWOOFER_LEVEL", "sq": "Intensiteti i Basit të Nën-Boksit"},
+            {"id": "MEDIA_GALA_VOLUME", "sq": "Përshtatja e Volumit me Shpejtësinë (GALA)"},
             {"id": "RADIO_FM_STATIONS", "sq": "Lista e Stacioneve FM"},
+            {"id": "RADIO_DAB_DIGITAL", "sq": "Radio Dixhitale DAB"},
+            {"id": "RADIO_PRESETS", "sq": "Stacionet e Ruajtura (1-15)"},
+            {"id": "RADIO_TRAFFIC_PROGRAM", "sq": "Njoftimet e Trafikut (TP)"},
             {"id": "TEL_PHONEBOOK", "sq": "Libri i Telefonit dhe Kontaktet"},
+            {"id": "TEL_DIAL_NUMBER", "sq": "Telefono Numrin"},
+            {"id": "TEL_CALL_HISTORY", "sq": "Historiku i Thirrjeve (Të Bëra / Të Humbura)"},
+            {"id": "TEL_BT_PAIRING", "sq": "Çiftëzo Pajisje të Re Celulare (PIN: 1234)"},
+            {"id": "TEL_VOICEMAIL", "sq": "Kutia e Mesazheve me Zë"},
             {"id": "CAR_DRIVE_SELECT", "sq": "Audi Zgjedhja e Drejtimit (Drive Select)"},
+            {"id": "CAR_MODE_COMFORT", "sq": "Regjimi Komod (Comfort)"},
             {"id": "CAR_MODE_DYNAMIC", "sq": "Regjimi Dinamik Sportiv"},
+            {"id": "CAR_MODE_INDIVIDUAL", "sq": "Regjimi i Personalizuar (Individual)"},
+            {"id": "CAR_TPMS_STORE", "sq": "Ruaj Presionet Aktuale të Gomave (TPMS)"},
+            {"id": "CAR_OIL_LEVEL", "sq": "Niveli Elektronik i Vajit: Në Rregull"},
+            {"id": "CAR_SERVICE_INTERVALS", "sq": "Afatet e Servisit dhe Inspektimit"},
+            {"id": "CAR_PARKING_SENSORS", "sq": "Sistemi i Parkimit Audi Plus (Akustik dhe Optik)"},
             {"id": "CLIMATE_DRIVER_PASSENGER", "sq": "Klimatizim Automatik me Dy Zona"},
+            {"id": "CLIMATE_SYNC", "sq": "Sinkronizo Zonat (SYNC)"},
+            {"id": "CLIMATE_DEFROST_MAX", "sq": "Shkrirja e Xhamit të Përparmë MAKS"},
+            {"id": "CLIMATE_AIR_CIRCULATION", "sq": "Riciklimi Automatik i Ajrit & Cilësia e Ajrit"},
             {"id": "ALERT_OIL_PRESSURE_LOW", "sq": "PARALAJMËRIM: Presioni i Vajit të Motorit i Ulët!"},
+            {"id": "ALERT_BRAKE_PAD_WEAR", "sq": "Ferrotat e Frenave të Konsumuara! Kontrolloni në Servisin më të Afërt"},
+            {"id": "ALERT_COOLANT_LEVEL", "sq": "Niveli i Lëngut Ftohës i Ulët! Kontrolloni Sistemin e Ftohjes"},
+            {"id": "ALERT_FUEL_RESERVE", "sq": "Ju Lutem Furnizohuni me Karburant: Autonomia Nën 50 km"},
+            {"id": "ALERT_TRANSMISSION_HOT", "sq": "Temperatura e Kutisë së Shpejtësisë e Lartë! Përshtatni Mënyrën e Ngasjes"},
         ]
     }
     ans_data = json.dumps(albanian_strings, ensure_ascii=False, indent=2).encode("utf-8")
     (out_dir / "MU9411" / "strings" / "sq_AL.ans").write_bytes(ans_data)
     (out_dir / "MU9411" / "strings" / "sq_AL_catalog.json").write_bytes(ans_data)
 
-    # 2. Compile Custom Theme Precomp
-    print("[2/5] Compiling theme precomps with custom accent palette...")
+    # 2. Compile Custom Theme Precomp & Gemini AI Assets
+    print("[2/5] Compiling theme precomps with custom accent palette & Gemini AI assets...")
     theme_payload = json.dumps({
         "accentColor": args.accent_color,
         "nightColor": "#FF8F00",
         "needleColor": "#FF0000",
         "fontFamily": "AudiType-Bold",
         "ambientGlow": True,
+        "backgroundTexture": "carbon_weave_2x2",
+        "aiAssets": [
+            {"id": "gauge_needle", "style": "#FF0000", "model": "gemini-3.1-flash-image"},
+            {"id": "nav_turn_arrow", "style": args.accent_color, "model": "gemini-3.1-flash-image"},
+            {"id": "car_silhouette_sport", "style": "rs_sportback_laser", "model": "gemini-3.1-flash-image"},
+        ]
     }).encode("utf-8")
     precomp_bytes = create_harman_precomp("theme_custom", theme_payload)
     (out_dir / "MU9411" / "precomp" / "theme_custom.precomp").write_bytes(precomp_bytes)
 
     # 3. Compile 2026 Navigation Update Database & Albania Patch
-    print("[3/5] Compiling 2026 Western Balkans & Albania road topology...")
+    print("[3/5] Compiling 2026 Western Balkans & Albania road topology and speed enforcement POIs...")
     albania_2026_manifest = {
         "version": "ECE 2026.1 (Western Balkans & Albania)",
         "injectedCorridors": [
@@ -102,7 +140,8 @@ def main():
             {"id": "LLOGARA_TUNNEL_SH8", "lengthKm": 6.0, "speedLimit": 80},
             {"id": "VLORE_BYPASS_A2", "lengthKm": 29.0, "speedLimit": 90},
             {"id": "KORCE_ERSEKE", "lengthKm": 35.0, "speedLimit": 80},
-            {"id": "EV_CHARGERS_2026", "stations": 42, "type": "CCS2_350kW"},
+            {"id": "SPEED_RADARS_2026", "count": 180, "type": "FIXED_SPEED_ENFORCEMENT"},
+            {"id": "EV_CHARGERS_2026", "count": 42, "type": "CCS2_350kW_ULTRA_FAST"},
         ]
     }
     patch_pkg = json.dumps(albania_2026_manifest, indent=2).encode("utf-8")
@@ -114,7 +153,7 @@ def main():
         db_pages.extend(create_fldb_page(i, f"FLDB_PAGE_NAV_2026_ALBANIA_{i}".encode("utf-8")))
     (out_dir / "HBNavDB" / "nav_data.db").write_bytes(bytes(db_pages))
 
-    # MapStyles
+    # MapStyles Day and Night Cartography Stylesheets
     (out_dir / "MapStyles" / "styles_day.xar").write_bytes(b"XAR\x01DAY_STYLES_2026_AMBER")
     (out_dir / "MapStyles" / "styles_night.xar").write_bytes(b"XAR\x01NIGHT_STYLES_2026_DARK")
 
@@ -159,7 +198,7 @@ Description = "Day and Night Map Shaders"
     print("[5/5] Emitting cryptographic attestation and SD card guide...")
     attestation = {
         "schema": "mmi-build-attestation-v1",
-        "createdAt": "2026-09-18T23:25:00Z",
+        "createdAt": "2026-09-19T13:24:00Z",
         "targetPlatform": "Audi MMI 3G High / Plus [HN+]",
         "targetTrain": args.train,
         "policyStatus": "BUILD READY — DEPLOYMENT NOT VERIFIED",
@@ -188,7 +227,7 @@ echo "Stock baseline restored. Please reboot MMI."
     readme_content = f"""══════════════════════════════════════════════════════════════════════
  AUDI MMI 3G+ DEPLOYMENT SD CARD GUIDE
  Target Train: {args.train}
- Modifications: Albanian Language (sq_AL) + 2026 Map Update + Custom Theme
+ Modifications: Albanian Language (sq_AL) + 2026 Map Update + Gemini AI Theme
 ══════════════════════════════════════════════════════════════════════
 
 WHERE ARE THE FILES?

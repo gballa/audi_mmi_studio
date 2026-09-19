@@ -7,16 +7,28 @@ import { LocalizationStudio } from './components/LocalizationStudio';
 import { MapStudio } from './components/MapStudio';
 import { ComponentCustomizer } from './components/ComponentCustomizer';
 import { BuildStudio } from './components/BuildStudio';
+import { AiElementStudio } from './components/AiElementStudio';
 import { initialLocalizationStrings } from './data/localizationData';
 import { mapDatabases, mapUpdates2026 } from './data/mapData';
-import { InspectResult, MMIThemeConfig, SystemString, MapUpdateItem } from './types';
+import { initialAiAssets } from './data/aiAssetsData';
+import { InspectResult, MMIThemeConfig, SystemString, MapUpdateItem, AiAssetItem } from './types';
 
-type Tab = 'components' | 'localization' | 'maps' | 'build' | 'recipes' | 'assets' | 'relab' | 'typography';
+type Tab =
+  | 'components'
+  | 'ai_elements'
+  | 'localization'
+  | 'maps'
+  | 'build'
+  | 'recipes'
+  | 'assets'
+  | 'relab'
+  | 'typography';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('components');
   const [strings, setStrings] = useState<SystemString[]>(initialLocalizationStrings);
   const [mapUpdates, setMapUpdates] = useState<MapUpdateItem[]>(mapUpdates2026);
+  const [aiAssets, setAiAssets] = useState<AiAssetItem[]>(initialAiAssets);
   const [exportNotification, setExportNotification] = useState<string | null>(null);
 
   // MMI UI Theme & Customization Configuration
@@ -37,6 +49,9 @@ export const App: React.FC = () => {
     ambientGlow: true,
     highContrast: false,
     language: 'sq', // Default to Albanian as requested by user
+    activeCarSilhouetteStyle: 'stroke-amber-500/80 fill-slate-900/60',
+    activeBackgroundTexture: 'default',
+    activeNavArrowStyle: '#FF9900',
   });
 
   // Sample seed assets for workstation explorer
@@ -87,12 +102,15 @@ export const App: React.FC = () => {
     );
   };
 
+  const handleUpdateAiAsset = (updated: AiAssetItem) => {
+    setAiAssets((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+  };
+
   const handleUpdateTheme = (newConfig: Partial<MMIThemeConfig>) => {
     setThemeConfig((prev) => ({ ...prev, ...newConfig }));
   };
 
   const handlePreviewStringInScreen = (stringItem: SystemString) => {
-    // Switch to the relevant screen based on string category
     setActiveTab('components');
     setThemeConfig((prev) => ({ ...prev, language: 'sq' }));
     setExportNotification(`Previewing '${stringItem.sq}' in MMI screen canvas`);
@@ -103,7 +121,7 @@ export const App: React.FC = () => {
     const recipe = {
       formatVersion: '1.0.0',
       schema: 'audi-mmi-recipe-v1',
-      title: 'Custom Audi MMI Theme & Albanian Localization Pack',
+      title: 'Custom Audi MMI Theme, Gemini Nano Banana Assets & Albanian Localization Pack',
       createdAt: new Date().toISOString(),
       targetPlatform: 'MMI 3G High / Plus [HN+]',
       targetFirmwareTrains: ['HN+R_EU_AU_K0942_4', 'HN+R_EU_AU_P0922', 'HN+_EU_AU3G_K0900'],
@@ -114,7 +132,14 @@ export const App: React.FC = () => {
           needleColor: themeConfig.needleColor,
           fontFamily: themeConfig.fontFamily,
           ambientGlow: themeConfig.ambientGlow,
+          activeBackgroundTexture: themeConfig.activeBackgroundTexture,
         },
+        aiAssets: aiAssets.filter((a) => a.status === 'AI Modified').map((a) => ({
+          id: a.id,
+          style: a.currentStyle,
+          prompt: a.aiPromptApplied,
+          model: a.modelUsed,
+        })),
         localization: {
           languageCode: 'sq_AL',
           languageName: 'Gjuha Shqipe',
@@ -171,6 +196,16 @@ export const App: React.FC = () => {
             <span>🖥️</span> Screen & Components
           </button>
           <button
+            onClick={() => setActiveTab('ai_elements')}
+            className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all flex items-center gap-1.5 ${
+              activeTab === 'ai_elements'
+                ? 'bg-amber-500 text-slate-950 font-bold shadow'
+                : 'text-amber-400 hover:text-amber-300 font-semibold'
+            }`}
+          >
+            <span>🍌</span> Gemini AI Elements
+          </button>
+          <button
             onClick={() => setActiveTab('localization')}
             className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all flex items-center gap-1.5 ${
               activeTab === 'localization'
@@ -195,7 +230,7 @@ export const App: React.FC = () => {
             className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all flex items-center gap-1.5 ${
               activeTab === 'build'
                 ? 'bg-amber-500 text-slate-950 font-bold shadow'
-                : 'text-amber-400 hover:text-amber-300 font-semibold'
+                : 'text-emerald-400 hover:text-emerald-300 font-semibold'
             }`}
           >
             <span>🚀</span> Build & SD Deploy
@@ -267,6 +302,16 @@ export const App: React.FC = () => {
             onUpdateTheme={handleUpdateTheme}
             strings={strings}
             onExportRecipe={handleExportRecipe}
+            onNavigateToAiStudio={() => setActiveTab('ai_elements')}
+          />
+        )}
+        {activeTab === 'ai_elements' && (
+          <AiElementStudio
+            assets={aiAssets}
+            onUpdateAsset={handleUpdateAiAsset}
+            themeConfig={themeConfig}
+            onUpdateTheme={handleUpdateTheme}
+            onNavigateToScreen={() => setActiveTab('components')}
           />
         )}
         {activeTab === 'localization' && (

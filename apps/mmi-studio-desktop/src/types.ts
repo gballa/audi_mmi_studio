@@ -83,6 +83,25 @@ export interface MapUpdateItem {
 }
 
 /**
+ * MMI UI System Element for Gemini Nano Banana AI restyling
+ */
+export interface AiAssetItem {
+  id: string;
+  name: string;
+  category: 'Gauges' | 'Navigation' | 'Vehicle' | 'Climate' | 'Menu Icons' | 'Textures';
+  width: number;
+  height: number;
+  description: string;
+  promptSuggestion: string;
+  originalStyle: string;
+  currentStyle: string;
+  aiPromptApplied?: string;
+  modelUsed?: string;
+  synthIdWatermark: boolean;
+  status: 'Stock' | 'AI Modified';
+}
+
+/**
  * MMI Screen & UI Component Customization Configuration
  */
 export interface MMIThemeConfig {
@@ -102,4 +121,7 @@ export interface MMIThemeConfig {
   ambientGlow: boolean;
   highContrast: boolean;
   language: 'sq' | 'en' | 'de';
+  activeCarSilhouetteStyle: string;
+  activeBackgroundTexture: 'default' | 'carbon_weave' | 'brushed_aluminum' | 'obsidian_night';
+  activeNavArrowStyle: string;
 }
