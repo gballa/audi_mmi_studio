@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MMIThemeConfig, SystemString } from '../types';
 
 export interface ScreenCanvasProps {
@@ -27,6 +27,217 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
   const [openDropdownRow, setOpenDropdownRow] = useState<'engine' | 'steering' | 'suspension' | null>(null);
   const [navViewMode, setNavViewMode] = useState<'perspective' | 'interactive_vector'>('interactive_vector');
   const [inspectModalElement, setInspectModalElement] = useState<string | null>(null);
+
+  // Media Jukebox & Bang & Olufsen DSP Engine State
+  const tracks = [
+    {
+      title: themeConfig.language === 'sq' ? 'Këngë Tradicionale / Shqip Acoustic Suite' : 'Audi Sound Selection Master Suite',
+      artist: themeConfig.language === 'sq' ? 'Orkestra Shqiptare' : 'Ingolstadt Philharmonic Orchestra',
+      album: 'MMI Jukebox Audiophile Edition',
+      format: 'FLAC 24-bit 96 kHz',
+      durationSec: 215,
+      baseFreq: 432,
+    },
+    {
+      title: 'Quattro Induction & Turbo Spool Acoustics',
+      artist: 'Audi Sport Acoustic Engineering',
+      album: 'V8 4.2 FSI Sound Experience',
+      format: 'DTS-HD 5.1 Surround',
+      durationSec: 178,
+      baseFreq: 220,
+    },
+    {
+      title: 'Bang & Olufsen 3D Sound Calibration Wave',
+      artist: 'Acoustic Lens Lab Struer',
+      album: '14-Speaker Cabin Alignment',
+      format: 'Direct Stream Digital DSD64',
+      durationSec: 240,
+      baseFreq: 528,
+    },
+  ];
+
+  const [activeTrackIdx, setActiveTrackIdx] = useState<number>(0);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [playbackProgress, setPlaybackProgress] = useState<number>(34);
+  const [soundFocus, setSoundFocus] = useState<'all' | 'front' | 'rear' | 'driver'>('driver');
+  const [surroundLevel, setSurroundLevel] = useState<number>(4);
+  const [volume, setVolume] = useState<number>(68);
+
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const osc1Ref = useRef<OscillatorNode | null>(null);
+  const osc2Ref = useRef<OscillatorNode | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+
+  const stopAudioSynth = () => {
+    if (osc1Ref.current) {
+      try { osc1Ref.current.stop(); osc1Ref.current.disconnect(); } catch (_) {}
+      osc1Ref.current = null;
+    }
+    if (osc2Ref.current) {
+      try { osc2Ref.current.stop(); osc2Ref.current.disconnect(); } catch (_) {}
+      osc2Ref.current = null;
+    }
+  };
+
+  const startAudioSynth = (trackIdx: number) => {
+    stopAudioSynth();
+    try {
+      const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new AudioCtxClass();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 64;
+      analyserRef.current = analyser;
+
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime((volume / 100) * 0.08, ctx.currentTime);
+      gainNodeRef.current = masterGain;
+
+      const baseF = tracks[trackIdx].baseFreq;
+      const osc1 = ctx.createOscillator();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(baseF, ctx.currentTime);
+
+      const osc2 = ctx.createOscillator();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(baseF * 1.5, ctx.currentTime);
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1200, ctx.currentTime);
+
+      osc1.connect(filter);
+      osc2.connect(filter);
+      filter.connect(masterGain);
+      masterGain.connect(analyser);
+      analyser.connect(ctx.destination);
+
+      osc1.start();
+      osc2.start();
+      osc1Ref.current = osc1;
+      osc2Ref.current = osc2;
+    } catch (e) {
+      console.warn('Web Audio synthesis error:', e);
+    }
+  };
+
+  const togglePlayback = () => {
+    if (isPlaying) {
+      stopAudioSynth();
+      setIsPlaying(false);
+    } else {
+      startAudioSynth(activeTrackIdx);
+      setIsPlaying(true);
+    }
+  };
+
+  const changeTrack = (delta: number) => {
+    let next = activeTrackIdx + delta;
+    if (next < 0) next = tracks.length - 1;
+    if (next >= tracks.length) next = 0;
+    setActiveTrackIdx(next);
+    setPlaybackProgress(0);
+    if (isPlaying) {
+      startAudioSynth(next);
+    }
+  };
+
+  useEffect(() => {
+    if (gainNodeRef.current && audioCtxRef.current) {
+      const vol = isPlaying ? (volume / 100) * 0.08 : 0;
+      gainNodeRef.current.gain.setTargetAtTime(vol, audioCtxRef.current.currentTime, 0.05);
+    }
+  }, [volume, isPlaying]);
+
+  useEffect(() => {
+    return () => {
+      stopAudioSynth();
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close().catch(() => {});
+      }
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+    };
+  }, []);
+
+  // Visualizer Canvas render loop
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let step = 0;
+    const render = () => {
+      step++;
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const numBars = 22;
+      const barWidth = (w - (numBars - 1) * 3) / numBars;
+
+      let freqData: Uint8Array | null = null;
+      if (isPlaying && analyserRef.current) {
+        const buf = new ArrayBuffer(analyserRef.current.frequencyBinCount);
+        const typedArr = new Uint8Array(buf);
+        analyserRef.current.getByteFrequencyData(typedArr);
+        freqData = typedArr;
+      }
+
+      for (let i = 0; i < numBars; i++) {
+        let barHeight = 4;
+        if (isPlaying && freqData) {
+          const val = freqData[i % freqData.length] || 0;
+          barHeight = Math.max(4, (val / 255) * (h - 6));
+        } else if (isPlaying) {
+          barHeight = Math.max(4, Math.sin(step * 0.15 + i * 0.4) * 14 + 18);
+        } else {
+          barHeight = 4;
+        }
+
+        const x = i * (barWidth + 3);
+        const y = h - barHeight;
+
+        const grad = ctx.createLinearGradient(0, y, 0, h);
+        grad.addColorStop(0, '#ef4444');
+        grad.addColorStop(0.6, '#f97316');
+        grad.addColorStop(1, '#e11d48');
+
+        ctx.fillStyle = isPlaying ? grad : '#334155';
+        ctx.fillRect(x, y, barWidth, barHeight);
+      }
+
+      animFrameRef.current = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+    };
+  }, [isPlaying]);
+
+  // Progress simulation ticker
+  useEffect(() => {
+    if (!isPlaying) return;
+    const timer = setInterval(() => {
+      setPlaybackProgress((prev) => (prev >= 100 ? 0 : prev + 0.5));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isPlaying]);
 
   // Localized string helper
   const getStr = (id: string, fallback: string): string => {
@@ -925,23 +1136,308 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
           {/* VIEW D: MEDIA JUKEBOX */}
           {/* ------------------------------------------------------------ */}
           {activeScreenTab === 'media' && (
-            <div className="relative w-full h-full flex flex-col justify-between py-6 px-12">
-              <div className="flex items-center gap-6 my-auto">
-                <div
-                  onClick={(e) => handleElementClick(e, 'menu_icon_media')}
-                  className="w-28 h-28 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-3xl text-slate-400 shadow-xl cursor-pointer"
-                >
-                  🎵
+            <div className="relative w-full h-full flex flex-col justify-between p-4 bg-gradient-to-b from-[#090d14] via-[#05070a] to-[#030407]">
+              {/* Media Sub-navigation Source Bar */}
+              <div className="flex items-center justify-between px-3 py-1.5 bg-black/60 rounded-lg border border-slate-800/80 mb-2">
+                <div className="flex items-center gap-2">
+                  <button className="px-2.5 py-0.5 rounded bg-red-600/30 border border-red-500/60 text-[11px] font-bold text-red-300 flex items-center gap-1.5 shadow-sm">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+                    JUKEBOX HDD
+                  </button>
+                  <button className="px-2 py-0.5 rounded bg-slate-900/60 border border-slate-800 text-[11px] font-semibold text-slate-400 hover:text-slate-200 transition">
+                    SD CARD 1
+                  </button>
+                  <button className="px-2 py-0.5 rounded bg-slate-900/60 border border-slate-800 text-[11px] font-semibold text-slate-400 hover:text-slate-200 transition">
+                    SD CARD 2
+                  </button>
+                  <button className="px-2 py-0.5 rounded bg-slate-900/60 border border-slate-800 text-[11px] font-semibold text-slate-400 hover:text-slate-200 transition">
+                    AMI / BT-AUDIO
+                  </button>
                 </div>
-                <div className="space-y-2">
-                  <div className="text-xl font-bold text-white tracking-tight">
-                    {themeConfig.language === 'sq' ? 'Këngë Tradicionale / Shqip Acoustic' : 'Audi Sound Selection Master'}
+                <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400">
+                  <span className="text-amber-400 font-bold">BANG & OLUFSEN</span>
+                  <span className="text-slate-600">|</span>
+                  <span className="text-emerald-400">DSP ONLINE</span>
+                </div>
+              </div>
+
+              {/* Main Two-Column Media & DSP Layout */}
+              <div className="flex-1 grid grid-cols-12 gap-4 items-stretch min-h-0">
+                {/* Left Column (6/12): Jukebox Player & Track Metadata */}
+                <div className="col-span-7 flex flex-col justify-between bg-slate-950/70 border border-slate-800/80 rounded-xl p-3.5 shadow-lg">
+                  <div className="flex items-start gap-4">
+                    {/* Vinyl / CD Artwork Box with B&O Badge */}
+                    <div
+                      onClick={(e) => handleElementClick(e, 'media_cover_art')}
+                      className={`relative w-24 h-24 rounded-lg bg-gradient-to-br from-slate-800 via-slate-900 to-black border-2 ${
+                        isPlaying ? 'border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)]' : 'border-slate-700'
+                      } flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all duration-300 flex-shrink-0`}
+                      title="Click to inspect cover art"
+                    >
+                      <div className={`text-3xl transition-transform duration-700 ${isPlaying ? 'rotate-12 scale-110' : ''}`}>
+                        🎵
+                      </div>
+                      <div className="absolute bottom-1 px-1.5 py-0.5 rounded bg-black/80 text-[8px] font-mono font-bold text-amber-300 border border-amber-500/30">
+                        B&O 3D
+                      </div>
+                      {/* Spinning groove ring simulation */}
+                      {isPlaying && (
+                        <div className="absolute inset-1 rounded-full border border-dashed border-red-400/40 animate-[spin_8s_linear_infinite] pointer-events-none" />
+                      )}
+                    </div>
+
+                    {/* Track Title, Artist, Album, Bitrate */}
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-1.5 py-0.2 rounded bg-red-950/80 border border-red-800/60 text-[9px] font-mono font-bold text-red-300">
+                          TRACK {activeTrackIdx + 1}/{tracks.length}
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-400 truncate">
+                          {tracks[activeTrackIdx].format}
+                        </span>
+                      </div>
+                      <div className="text-sm font-bold text-white truncate tracking-tight">
+                        {tracks[activeTrackIdx].title}
+                      </div>
+                      <div className="text-xs text-slate-300 truncate">
+                        {tracks[activeTrackIdx].artist}
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-mono truncate">
+                        {tracks[activeTrackIdx].album}
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-sm text-slate-300">
-                    {themeConfig.language === 'sq' ? 'Artisti: Orkestra Shqiptare' : 'Artist: Master Symphony'}
+
+                  {/* Scrubber & Progress Bar */}
+                  <div className="space-y-1.5 my-auto">
+                    <div className="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800 relative cursor-pointer"
+                      onClick={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const pct = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+                        setPlaybackProgress(pct);
+                      }}
+                    >
+                      <div
+                        className="h-full bg-gradient-to-r from-red-600 via-red-500 to-amber-500 transition-all duration-300"
+                        style={{ width: `${playbackProgress}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                      <span>
+                        {String(Math.floor((tracks[activeTrackIdx].durationSec * (playbackProgress / 100)) / 60)).padStart(2, '0')}:
+                        {String(Math.floor((tracks[activeTrackIdx].durationSec * (playbackProgress / 100)) % 60)).padStart(2, '0')}
+                      </span>
+                      <span>
+                        {String(Math.floor(tracks[activeTrackIdx].durationSec / 60)).padStart(2, '0')}:
+                        {String(tracks[activeTrackIdx].durationSec % 60).padStart(2, '0')}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-xs text-slate-500 font-mono">
-                    Jukebox HDD · FLAC 24-bit 96 kHz · Bang & Olufsen 3D Sound
+
+                  {/* Transport Controls & Volume */}
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-800/80">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => changeTrack(-1)}
+                        className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95 text-xs"
+                        title="Previous Track"
+                      >
+                        ⏮
+                      </button>
+                      <button
+                        onClick={togglePlayback}
+                        className={`px-4 h-8 rounded-lg font-bold text-xs flex items-center gap-1.5 transition active:scale-95 shadow-md ${
+                          isPlaying
+                            ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-600/40'
+                            : 'bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 text-white'
+                        }`}
+                        title="Toggle Playback (Web Audio API Synth)"
+                      >
+                        <span>{isPlaying ? '⏸ PAUSE' : '▶ PLAY'}</span>
+                      </button>
+                      <button
+                        onClick={() => changeTrack(1)}
+                        className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95 text-xs"
+                        title="Next Track"
+                      >
+                        ⏭
+                      </button>
+                    </div>
+
+                    {/* Volume Slider */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-400">🔊</span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={volume}
+                        onChange={(e) => setVolume(Number(e.target.value))}
+                        className="w-20 accent-red-500 h-1 bg-slate-800 rounded cursor-pointer"
+                        title={`Volume: ${volume}%`}
+                      />
+                      <span className="text-[10px] font-mono text-slate-300 w-6 text-right">
+                        {volume}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column (5/12): Bang & Olufsen 3D Sound Stage & Spectrum Visualizer */}
+                <div className="col-span-5 flex flex-col justify-between bg-slate-950/70 border border-slate-800/80 rounded-xl p-3 shadow-lg">
+                  {/* B&O Sound Stage Cockpit Topology */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-slate-200 tracking-wide">
+                        3D SOUND FOCUS
+                      </span>
+                      <span className="text-[9px] font-mono text-amber-400 font-semibold px-1.5 py-0.5 rounded bg-amber-950/40 border border-amber-800/40">
+                        14 SPEAKERS · 505W
+                      </span>
+                    </div>
+
+                    {/* Visual Car Cabin Diagram */}
+                    <div className="relative h-28 bg-[#070b12] rounded-lg border border-slate-800/90 overflow-hidden flex items-center justify-center">
+                      {/* Car Body Outline */}
+                      <div className="relative w-36 h-24 border border-slate-700/60 rounded-[28px] bg-slate-900/40 flex flex-col justify-between p-2">
+                        {/* Windshield acoustic lens tweeters */}
+                        <div className="flex justify-between items-center px-2">
+                          <div
+                            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                              soundFocus === 'front' || soundFocus === 'all' || soundFocus === 'driver'
+                                ? 'bg-red-500 shadow-[0_0_8px_#ef4444]'
+                                : 'bg-slate-700'
+                            }`}
+                            title="Front Left Acoustic Lens"
+                          />
+                          <div
+                            className={`w-2.5 h-1.5 rounded-sm transition-all duration-300 ${
+                              soundFocus === 'front' || soundFocus === 'all'
+                                ? 'bg-amber-400 shadow-[0_0_6px_#fbbf24]'
+                                : 'bg-slate-700'
+                            }`}
+                            title="Center Speaker"
+                          />
+                          <div
+                            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                              soundFocus === 'front' || soundFocus === 'all'
+                                ? 'bg-red-500 shadow-[0_0_8px_#ef4444]'
+                                : 'bg-slate-700'
+                            }`}
+                            title="Front Right Acoustic Lens"
+                          />
+                        </div>
+
+                        {/* Front Cabin Seats */}
+                        <div className="flex justify-between px-3">
+                          {/* Driver Seat */}
+                          <div
+                            className={`w-7 h-8 rounded border text-[8px] font-mono flex items-center justify-center font-bold transition-all ${
+                              soundFocus === 'driver'
+                                ? 'bg-red-900/80 border-red-500 text-white shadow-[0_0_12px_rgba(239,68,68,0.6)]'
+                                : 'bg-slate-800/80 border-slate-700 text-slate-400'
+                            }`}
+                          >
+                            DRV
+                          </div>
+                          {/* Passenger Seat */}
+                          <div
+                            className={`w-7 h-8 rounded border text-[8px] font-mono flex items-center justify-center transition-all ${
+                              soundFocus === 'front' || soundFocus === 'all'
+                                ? 'bg-slate-800/80 border-slate-600 text-slate-300'
+                                : 'bg-slate-900/80 border-slate-800 text-slate-600'
+                            }`}
+                          >
+                            PSG
+                          </div>
+                        </div>
+
+                        {/* Rear Cabin & Subwoofer */}
+                        <div className="flex justify-between items-center px-2">
+                          <div
+                            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                              soundFocus === 'rear' || soundFocus === 'all'
+                                ? 'bg-red-500 shadow-[0_0_8px_#ef4444]'
+                                : 'bg-slate-700'
+                            }`}
+                            title="Rear Left Door"
+                          />
+                          <div
+                            className={`w-3.5 h-2 rounded transition-all duration-300 ${
+                              soundFocus === 'all' || soundFocus === 'rear'
+                                ? 'bg-red-600 shadow-[0_0_10px_#dc2626]'
+                                : 'bg-slate-700'
+                            }`}
+                            title="Parcel Shelf Subwoofer"
+                          />
+                          <div
+                            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                              soundFocus === 'rear' || soundFocus === 'all'
+                                ? 'bg-red-500 shadow-[0_0_8px_#ef4444]'
+                                : 'bg-slate-700'
+                            }`}
+                            title="Rear Right Door"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Sound Wave Ripple Effect when Playing */}
+                      {isPlaying && (
+                        <div
+                          className="absolute inset-0 pointer-events-none rounded-lg border border-red-500/20 animate-ping opacity-30"
+                          style={{ animationDuration: '2.5s' }}
+                        />
+                      )}
+                    </div>
+
+                    {/* Sound Focus Preset Buttons */}
+                    <div className="grid grid-cols-4 gap-1">
+                      {[
+                        { id: 'all', label: 'ALL' },
+                        { id: 'front', label: 'FRONT' },
+                        { id: 'rear', label: 'REAR' },
+                        { id: 'driver', label: 'DRIVER' },
+                      ].map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => setSoundFocus(item.id as 'all' | 'front' | 'rear' | 'driver')}
+                          className={`py-1 rounded text-[10px] font-bold font-mono transition active:scale-95 ${
+                            soundFocus === item.id
+                              ? 'bg-red-600 text-white shadow-sm shadow-red-600/50 border border-red-400'
+                              : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-800'
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Real-Time Acoustic Spectrum Visualizer */}
+                  <div className="mt-2 pt-2 border-t border-slate-800/80">
+                    <div className="flex items-center justify-between mb-1 text-[9px] font-mono text-slate-400">
+                      <span>FFT REAL-TIME SPECTRUM</span>
+                      <div className="flex items-center gap-1">
+                        <span>3D LEVEL:</span>
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3, 4, 5].map((lvl) => (
+                            <button
+                              key={lvl}
+                              onClick={() => setSurroundLevel(lvl)}
+                              className={`w-2 h-2 rounded-xs transition ${
+                                lvl <= surroundLevel ? 'bg-red-500' : 'bg-slate-800'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <canvas
+                      ref={canvasRef}
+                      width={280}
+                      height={32}
+                      className="w-full h-8 bg-black/80 rounded border border-slate-800/80"
+                    />
                   </div>
                 </div>
               </div>

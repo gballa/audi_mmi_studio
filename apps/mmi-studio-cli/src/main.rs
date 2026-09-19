@@ -10,7 +10,7 @@ use commands::{
     cmd_hexdump, cmd_inspect, cmd_plugins_inspect, cmd_plugins_list, cmd_plugins_verify,
     cmd_rebuild, cmd_recipe_apply, cmd_recipe_rebase, cmd_simulate_update, cmd_stock_recovery,
     cmd_strings_inspect, cmd_strings_overflow, cmd_validate, cmd_verify_rebuild,
-    cmd_maps_compile, cmd_firmware_bundle,
+    cmd_maps_compile, cmd_firmware_bundle, cmd_flash,
 };
 
 #[derive(Parser)]
@@ -236,6 +236,24 @@ enum Commands {
     Firmware {
         #[command(subcommand)]
         action: FirmwareCommands,
+    },
+    /// Flash full firmware bundle onto physical SD Card with FAT32 cluster validation and attestation
+    Flash {
+        /// Target disk or mount path (e.g. /Volumes/MMI3G_NAV or /dev/disk4s1)
+        #[arg(short, long)]
+        disk: PathBuf,
+        /// Source firmware directory containing metainfo2.txt (defaults to output/mmi3g_sd_card_update)
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+        /// Verify per-512KB CRC32 blocks and SHA-256 after writing
+        #[arg(long, default_value_t = true)]
+        verify: bool,
+        /// Simulate flashing without writing to physical disk
+        #[arg(long)]
+        dry_run: bool,
+        /// Output formatted as JSON
+        #[arg(long)]
+        json: bool,
     },
 }
 
@@ -601,6 +619,13 @@ fn main() {
                 *json,
             ),
         },
+        Commands::Flash {
+            disk,
+            source,
+            verify,
+            dry_run,
+            json,
+        } => cmd_flash(disk, source.as_deref(), *verify, *dry_run, *json),
     };
 
     if let Err(e) = result {
