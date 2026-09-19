@@ -16,7 +16,7 @@ use std::path::Path;
 
 use mmi_core::CoreError;
 use mmi_formats::{
-    MetaInfo2Builder, QnxEfsBuilder, QnxIfsBuilder,
+    MetaInfo2Builder, Mmi3gScriptCipher, QnxEfsBuilder, QnxIfsBuilder,
     MAX_EFS_SYSTEM_SIZE, MAX_IFS_ROOT_SIZE,
 };
 use serde::{Deserialize, Serialize};
@@ -30,6 +30,14 @@ pub const DEFAULT_RELEASE: &str = "2026_ECE";
 pub const DEFAULT_VARIANT: &str = "MU9411";
 pub const SAFETY_POLICY_BANNER: &str = "BUILD READY — DEPLOYMENT NOT VERIFIED (§14.9)";
 
+pub const SHOW_SCREEN_BIN: &[u8] = include_bytes!("../assets/showScreen");
+pub const RUNNING_PNG: &[u8] = include_bytes!("../assets/running.png");
+pub const DONE_PNG: &[u8] = include_bytes!("../assets/done.png");
+
+fn default_true() -> bool {
+    true
+}
+
 /// Configuration for the full firmware SD bundle generation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FirmwareBundleConfig {
@@ -42,6 +50,18 @@ pub struct FirmwareBundleConfig {
     pub nav_database_fldb: Option<Vec<u8>>,
     pub map_styles_gdb: Option<Vec<u8>>,
     pub regional_profile: Option<String>,
+    #[serde(default = "default_true")]
+    pub enable_in_car_hud: bool,
+    #[serde(default = "default_true")]
+    pub enable_harman_cipher: bool,
+    #[serde(default = "default_true")]
+    pub enable_dtc_manager: bool,
+    #[serde(default = "default_true")]
+    pub enable_gauges_dashboard: bool,
+    #[serde(default = "default_true")]
+    pub enable_sysinfo_dump: bool,
+    #[serde(default = "default_true")]
+    pub enable_password_finder: bool,
 }
 
 impl Default for FirmwareBundleConfig {
@@ -56,6 +76,12 @@ impl Default for FirmwareBundleConfig {
             nav_database_fldb: None,
             map_styles_gdb: None,
             regional_profile: Some("AL".to_string()),
+            enable_in_car_hud: true,
+            enable_harman_cipher: true,
+            enable_dtc_manager: true,
+            enable_gauges_dashboard: true,
+            enable_sysinfo_dump: true,
+            enable_password_finder: true,
         }
     }
 }
@@ -255,12 +281,41 @@ impl FirmwareBundlePipeline {
         fs::write(&manifest_path, &manifest_content)?;
         file_records.push(Self::hash_file("metainfo2.txt", manifest_content.as_bytes()));
 
-        // 6. Scripts: Hardened copie_scr.sh (SD script launcher), finalScript, and stock_recovery.sh
-        let copie_scr = format!(
+        // 6. In-Car Framebuffer HUD & Visual Feedback Assets
+        if self.config.enable_in_car_hud {
+            let bin_dir = output_dir.join("bin");
+            let lib_dir = output_dir.join("lib");
+            fs::create_dir_all(&bin_dir)?;
+            fs::create_dir_all(&lib_dir)?;
+
+            let show_screen_path = bin_dir.join("showScreen");
+            fs::write(&show_screen_path, SHOW_SCREEN_BIN)?;
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                if let Ok(metadata) = fs::metadata(&show_screen_path) {
+                    let mut perms = metadata.permissions();
+                    perms.set_mode(0o755);
+                    let _ = fs::set_permissions(&show_screen_path, perms);
+                }
+            }
+            file_records.push(Self::hash_file("bin/showScreen", SHOW_SCREEN_BIN));
+
+            let running_path = lib_dir.join("running.png");
+            fs::write(&running_path, RUNNING_PNG)?;
+            file_records.push(Self::hash_file("lib/running.png", RUNNING_PNG));
+
+            let done_path = lib_dir.join("done.png");
+            fs::write(&done_path, DONE_PNG)?;
+            file_records.push(Self::hash_file("lib/done.png", DONE_PNG));
+        }
+
+        // 7. Core Scripts: Hardened run.sh, autorun launchers, finalScript, and stock_recovery.sh
+        let run_sh = format!(
             r###"#!/bin/sh
 # ==============================================================================
 # Audi MMI 3G/3G+ Turnkey SD Deployment & Hardware Defense Runner
-# Executed automatically upon SD insertion by proc_scriptlauncher
+# Executed automatically upon SD insertion by proc_scriptlauncher / copie_scr.sh
 # Target Train: {train} | Target Release: {release} | Expected Variant: {variant}
 # Safety Policy: {safety}
 # ==============================================================================
@@ -268,6 +323,11 @@ impl FirmwareBundlePipeline {
 SDPATH="${{1:-$(dirname $0)}}"
 export SDPATH
 mount -uw "$SDPATH" 2>/dev/null
+
+# Display on-screen HUD progress overlay
+if [ -x "${{SDPATH}}/bin/showScreen" ] && [ -f "${{SDPATH}}/lib/running.png" ]; then
+    "${{SDPATH}}/bin/showScreen" "${{SDPATH}}/lib/running.png" 2>/dev/null &
+fi
 
 # ------------------------------------------------------------------------------
 # 1. QNX 6.3.2 Compatibility Shims (Drop-in replacements for missing userland tools)
@@ -485,6 +545,10 @@ if [ -x /usr/bin/screendump ]; then
     echo "[DEPLOY] Post-execution framebuffer saved to var/screen_after.png"
 fi
 
+if [ -x "${{SDPATH}}/bin/showScreen" ] && [ -f "${{SDPATH}}/lib/done.png" ]; then
+    "${{SDPATH}}/bin/showScreen" "${{SDPATH}}/lib/done.png" 2>/dev/null
+fi
+
 echo "============================================================"
 echo " [SUCCESS] Turnkey In-Car Deployment Steps Completed"
 echo " Review logs at: ${{LOGFILE}}"
@@ -497,9 +561,51 @@ exit 0
             variant = self.config.variant,
             safety = SAFETY_POLICY_BANNER
         );
+        let run_path = output_dir.join("run.sh");
+        fs::write(&run_path, &run_sh)?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            if let Ok(metadata) = fs::metadata(&run_path) {
+                let mut perms = metadata.permissions();
+                perms.set_mode(0o755);
+                let _ = fs::set_permissions(&run_path, perms);
+            }
+        }
+        file_records.push(Self::hash_file("run.sh", run_sh.as_bytes()));
+
+        // Plaintext launcher
+        let copie_scr_plain = format!(
+            r###"#!/bin/ksh
+# ==============================================================================
+# Audi MMI 3G/3G+ SD Shell Script Launcher (Plaintext)
+# Target Train: {train} | Target Release: {release} | Variant: {variant}
+# ==============================================================================
+export SDPATH="${{1:-$(dirname $0)}}"
+export PATH="${{PATH}}:${{SDPATH}}/bin"
+export SDLIB="${{SDPATH}}/lib"
+export SDVAR="${{SDPATH}}/var"
+mount -uw "$SDPATH" 2>/dev/null
+cd "$SDPATH"
+exec ksh ./run.sh "$SDPATH"
+"###,
+            train = self.config.train,
+            release = self.config.release,
+            variant = self.config.variant
+        );
+        let plain_path = output_dir.join("copie_scr_plain.sh");
+        fs::write(&plain_path, copie_scr_plain.as_bytes())?;
+        file_records.push(Self::hash_file("copie_scr_plain.sh", copie_scr_plain.as_bytes()));
+
+        // Encoded copie_scr.sh for Harman proc_scriptlauncher
+        let copie_scr_bytes = if self.config.enable_harman_cipher {
+            Mmi3gScriptCipher::transform(copie_scr_plain.as_bytes())
+        } else {
+            copie_scr_plain.as_bytes().to_vec()
+        };
         let copie_path = output_dir.join("copie_scr.sh");
-        fs::write(&copie_path, &copie_scr)?;
-        file_records.push(Self::hash_file("copie_scr.sh", copie_scr.as_bytes()));
+        fs::write(&copie_path, &copie_scr_bytes)?;
+        file_records.push(Self::hash_file("copie_scr.sh", &copie_scr_bytes));
 
         let final_script = r#"#!/bin/sh
 # SWDL Post-installation finalize script
@@ -531,7 +637,7 @@ exit 0
         fs::write(&recovery_path, &stock_recovery)?;
         file_records.push(Self::hash_file("stock_recovery.sh", stock_recovery.as_bytes()));
 
-        // 7. In-Car Green Engineering Menu (GEM) Custom Diagnostic Screens & Hot-Patches
+        // 8. In-Car Green Engineering Menu (GEM) Custom Diagnostic Screens & Hot-Patches
         let gem_dir = output_dir.join("gem");
         let gem_screens_dir = gem_dir.join("screens");
         let gem_scripts_dir = gem_dir.join("scripts");
@@ -562,6 +668,127 @@ exit 0
         fs::write(&map_esd_path, &map_inspector_esd)?;
         file_records.push(Self::hash_file("gem/screens/map_inspector.esd", &map_inspector_esd));
 
+        // Authentic In-Car DTC Reader & Clearer
+        if self.config.enable_dtc_manager {
+            let dtc_esd = r#"#############################################
+#
+#   Audi MMI 3G/3G+ In-Car DTC Reader & Clearer
+#   Direct V850 IOC Communication via GEM
+#
+#############################################
+
+screen	DTC_Overview	Toolkit
+
+   table
+   content        per 2 0x00010003
+   label          "Active DTCs"
+   poll           5000
+   maxrows        20
+   orientation    horizontal 
+   columns ( "Code" String 120 ) ( "Status" String 80 ) ( "Name" String 400 )
+
+   button
+   value          per 2 0x00010008 ClearErrmem
+   label          "Clear All DTCs"
+   poll           0
+
+
+screen	DTC_Detail	Toolkit
+
+   slider
+      value       per 2 0x00010001 0 100
+      label       "Select DTC #"
+      poll        1000
+
+   table
+   content        per 2 0x00010002
+   label          "DTC Detail"
+   poll           2000
+   maxrows        1
+   orientation    horizontal 
+   columns ( "ID" int 50 ) ( "Code" String 120 ) ( "Status" String 80 ) ( "!T" String 25 ) ( "S" String 25 ) ( "A" String 25 ) ( "L" String 25 ) ( "Description" String 300 )
+
+
+screen	DTC_Control	Toolkit
+
+   slider
+      value       per 2 0x00010001 0 100
+      label       "Select DTC #"
+      poll        1000
+
+   button
+      value       per 2 0x00010006 ClearErrmem
+      label       "Send Test PASSED"
+      poll        0
+
+   button
+      value       per 2 0x00010007 ClearErrmem
+      label       "Send Test FAILED"
+      poll        0
+
+   button
+      value       per 2 0x00010008 ClearErrmem
+      label       "Clear Error Memory"
+      poll        0
+"#;
+            let dtc_esd_path = gem_screens_dir.join("ToolkitDTC.esd");
+            fs::write(&dtc_esd_path, dtc_esd.as_bytes())?;
+            file_records.push(Self::hash_file("gem/screens/ToolkitDTC.esd", dtc_esd.as_bytes()));
+        }
+
+        // Authentic In-Car Live Gauges Dashboard
+        if self.config.enable_gauges_dashboard {
+            let gauges_esd = r#"#############################################
+#
+#   Audi MMI 3G/3G+ Live Gauges Dashboard
+#   Direct DSI Sensor Polling
+#
+#############################################
+
+screen	GaugesDashboard	Toolkit
+
+   keyValue
+      value       int per 3 0x00000023
+      label       "Battery (x100 mV)"
+      poll        500
+
+   keyValue
+      value       int per 7 0x000200bb
+      label       "GPS Sats Used"
+      poll        1000
+
+   keyValue
+      value       int per 7 0x000200bc
+      label       "GPS Sats Visible"
+      poll        1000
+
+   keyValue
+      value       int per 1 0x00030019
+      label       "GPS Altitude (m)"
+      poll        1000
+
+   keyValue
+      value       String per 3 0x00120004
+      label       "SW Train"
+
+   keyValue
+      value       String per 1 0x0000100d
+      label       "MU Version"
+
+   keyValue
+      value       int per 1 0x00180000
+      label       "USB Devices"
+      poll        2000
+
+   script
+      value       sys 1 0x0100 "/scripts/bench_diag.sh"
+      label       ">> System Health Report <<"
+"#;
+            let gauges_esd_path = gem_screens_dir.join("GaugesDashboard.esd");
+            fs::write(&gauges_esd_path, gauges_esd.as_bytes())?;
+            file_records.push(Self::hash_file("gem/screens/GaugesDashboard.esd", gauges_esd.as_bytes()));
+        }
+
         let bench_diag_sh = r#"#!/bin/sh
 # Audi MMI 3G/3G+ Safe User-Space Benchmark & Diagnostic Script
 # Executable from QNX shell: sh /fs/sda0/gem/scripts/bench_diag.sh
@@ -578,6 +805,124 @@ exit 0
         let diag_script_path = gem_scripts_dir.join("bench_diag.sh");
         fs::write(&diag_script_path, bench_diag_sh)?;
         file_records.push(Self::hash_file("gem/scripts/bench_diag.sh", bench_diag_sh.as_bytes()));
+
+        // In-Car System State and Hardware Baseline Dumper
+        if self.config.enable_sysinfo_dump {
+            let sysinfo_sh = r#"#!/bin/sh
+# ==============================================================================
+# Audi MMI 3G/3G+ System Information & Hardware Baseline Dump
+# ==============================================================================
+SDPATH="${1:-$(dirname $0)}"
+OUTDIR="${SDPATH}/var/sysinfo"
+mkdir -p "${OUTDIR}" 2>/dev/null
+REPORT="${OUTDIR}/sysinfo_report.txt"
+
+{
+    echo "============================================================"
+    echo " Audi MMI 3G/3G+ Comprehensive System Information Report"
+    echo " Timestamp: $(date 2>/dev/null || echo 'cold-boot')"
+    echo "============================================================"
+    echo ""
+    echo "--- 1. Hardware Variant & PCI Profiles ---"
+    for f in /etc/pci-3g_*.cfg; do
+        [ -f "$f" ] && echo "Found: $f"
+    done
+    echo "Software Train: $(cat /dev/shmem/sw_trainname.txt 2>/dev/null || echo 'unknown')"
+    echo ""
+    echo "--- 2. QNX OS Kernel & Memory ---"
+    uname -a 2>/dev/null
+    pidin info 2>/dev/null
+    echo ""
+    echo "--- 3. Storage & Filesystem Utilization ---"
+    df -h 2>/dev/null
+    echo ""
+    echo "--- 4. Active Processes ---"
+    pidin -f a 2>/dev/null
+    echo ""
+    echo "--- 5. Navigation Database & LVM Status ---"
+    ls -la /mnt/lvm/ 2>/dev/null
+    ls -la /mnt/nav/ 2>/dev/null
+    echo ""
+    echo "--- 6. IPC and Device Topology ---"
+    ls -la /dev/ipc/ 2>/dev/null
+    ls -la /dev/most* /dev/can* /dev/ser* 2>/dev/null
+    echo ""
+    echo "============================================================"
+    echo " End of Report. Output saved to: ${REPORT}"
+    echo "============================================================"
+} > "${REPORT}" 2>&1
+
+echo "System info dump complete: ${REPORT}"
+sync
+exit 0
+"#;
+            let sysinfo_path = gem_scripts_dir.join("sysinfo_dump.sh");
+            fs::write(&sysinfo_path, sysinfo_sh.as_bytes())?;
+            file_records.push(Self::hash_file("gem/scripts/sysinfo_dump.sh", sysinfo_sh.as_bytes()));
+        }
+
+        // In-Car Persistent Configuration & Wireless Credentials Scanner
+        if self.config.enable_password_finder {
+            let password_sh = r#"#!/bin/sh
+# ==============================================================================
+# Audi MMI 3G/3G+ Persistent Config & Wireless Credentials Scanner
+# Read-Only Diagnostic Inspection
+# ==============================================================================
+SDPATH="${1:-$(dirname $0)}"
+OUTDIR="${SDPATH}/var/passwords"
+mkdir -p "${OUTDIR}" 2>/dev/null
+REPORT="${OUTDIR}/passwords_report.txt"
+
+{
+    echo "============================================================"
+    echo " Audi MMI 3G/3G+ Wireless & Persistence Configuration Report"
+    echo " Timestamp: $(date 2>/dev/null || echo 'cold-boot')"
+    echo " NOTE: Read-only scan of local head unit configurations."
+    echo "============================================================"
+    echo ""
+    echo "--- 1. Wi-Fi Hotspot & wpa_supplicant Configurations ---"
+    for searchdir in /mnt/efs-persist /mnt/persist /mnt/efs-system/etc /etc; do
+        if [ -d "$searchdir" ]; then
+            for f in $(find "$searchdir" -type f \( -name "wpa_supplicant*.conf" -o -name "hostapd*.conf" -o -name "*.wpa" -o -name "wifi*.conf" -o -name "wlan*.conf" -o -name "hotspot*.cfg" \) 2>/dev/null); do
+                echo "File: $f"
+                cat "$f" 2>/dev/null
+                echo ""
+            done
+        fi
+    done
+    echo ""
+    echo "--- 2. Bluetooth Pairing Link Keys ---"
+    for searchdir in /mnt/efs-persist /mnt/persist; do
+        if [ -d "$searchdir" ]; then
+            for f in $(find "$searchdir" -type f \( -name "linkkeys*" -o -name "bt_*.cfg" -o -name "bluetooth*.conf" -o -name "paired_devices*" \) 2>/dev/null); do
+                echo "File: $f"
+                cat "$f" 2>/dev/null
+                echo ""
+            done
+        fi
+    done
+    echo ""
+    echo "--- 3. Persistent Configuration Tree Overview ---"
+    for searchdir in /mnt/efs-persist /mnt/persist; do
+        if [ -d "$searchdir" ]; then
+            echo "Tree for $searchdir:"
+            find "$searchdir" -type f 2>/dev/null | head -50
+            echo ""
+        fi
+    done
+    echo "============================================================"
+    echo " End of Report. Output saved to: ${REPORT}"
+    echo "============================================================"
+} > "${REPORT}" 2>&1
+
+echo "Password finder scan complete: ${REPORT}"
+sync
+exit 0
+"#;
+            let password_path = gem_scripts_dir.join("password_dump.sh");
+            fs::write(&password_path, password_sh.as_bytes())?;
+            file_records.push(Self::hash_file("gem/scripts/password_dump.sh", password_sh.as_bytes()));
+        }
 
         // 8. Write build_manifest.json
         let report = FirmwareBundleReport {

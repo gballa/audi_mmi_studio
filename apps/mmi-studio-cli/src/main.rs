@@ -11,6 +11,7 @@ use commands::{
     cmd_rebuild, cmd_recipe_apply, cmd_recipe_rebase, cmd_simulate_update, cmd_stock_recovery,
     cmd_strings_inspect, cmd_strings_overflow, cmd_validate, cmd_verify_rebuild,
     cmd_maps_compile, cmd_firmware_bundle, cmd_flash, cmd_obd, cmd_sanitize_media,
+    cmd_script_encode, cmd_script_decode,
 };
 
 #[derive(Parser)]
@@ -283,6 +284,39 @@ enum Commands {
         /// Simulate diagnostics session without physical vehicle connection
         #[arg(long, default_value_t = true)]
         dry_run: bool,
+        /// Output formatted as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Encode or decode MMI 3G/3G+ autorun scripts using the Harman PRNG XOR cipher (seed 0x001be3ac)
+    Script {
+        #[command(subcommand)]
+        action: ScriptCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum ScriptCommands {
+    /// Encode a plaintext shell script into Harman PRNG XOR ciphertext (for stock proc_scriptlauncher)
+    Encode {
+        /// Path to input script file (e.g. copie_scr.sh)
+        #[arg(short, long)]
+        input: PathBuf,
+        /// Optional path to output encoded file (defaults to input path with .enc)
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+        /// Output formatted as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Decode a Harman PRNG XOR encrypted script back into plaintext
+    Decode {
+        /// Path to input encoded file (e.g. copie_scr.sh)
+        #[arg(short, long)]
+        input: PathBuf,
+        /// Optional path to output plaintext file (defaults to input path with .plain.sh)
+        #[arg(short, long)]
+        output: Option<PathBuf>,
         /// Output formatted as JSON
         #[arg(long)]
         json: bool,
@@ -669,6 +703,14 @@ fn main() {
             dry_run,
             json,
         } => cmd_obd(port, *baud, *solve_svm, *enable_gem, *dry_run, *json),
+        Commands::Script { action } => match action {
+            ScriptCommands::Encode { input, output, json } => {
+                cmd_script_encode(input, output.as_deref(), *json)
+            }
+            ScriptCommands::Decode { input, output, json } => {
+                cmd_script_decode(input, output.as_deref(), *json)
+            }
+        },
     };
 
     if let Err(e) = result {

@@ -6,8 +6,9 @@ use mmi_core::CoreError;
 use mmi_formats::{
     AdiLdr, AdiLdrAdapter, FormatAdapter, HbAns, HbAnsAdapter, HbAtlas, HbAtlasAdapter, HbFpga,
     HbFpgaAdapter, HbGdb, HbGdbAdapter, HbGrammar, HbGrammarAdapter, HbNavDb, HbNavDbAdapter,
-    MapStyleXar, MapStyleXarAdapter, MetaInfo2, MetaInfo2Adapter, PrecompAdapter, PrecompImage,
-    QnxEfs, QnxEfsAdapter, QnxIfs, QnxIfsAdapter, SmscIpf, SmscIpfAdapter,
+    MapStyleXar, MapStyleXarAdapter, MetaInfo2, MetaInfo2Adapter, Mmi3gScriptCipher,
+    PrecompAdapter, PrecompImage, QnxEfs, QnxEfsAdapter, QnxIfs, QnxIfsAdapter, SmscIpf,
+    SmscIpfAdapter, SEED_INIT,
 };
 use mmi_re_lab::{EntropyCalculator, HexViewer, SignatureCarver, StringExtractor};
 use serde::Serialize;
@@ -1404,6 +1405,7 @@ pub fn cmd_firmware_bundle(
         nav_database_fldb,
         map_styles_gdb: None,
         regional_profile: Some("AL".to_string()),
+        ..Default::default()
     };
 
     let pipeline = mmi_rebuild::FirmwareBundlePipeline::new(config);
@@ -1736,6 +1738,109 @@ pub fn cmd_obd(
                 "LIVE SERIAL / CAN BUS"
             }
         );
+        println!("══════════════════════════════════════════════════════════════════════════");
+    }
+
+    Ok(())
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct ScriptCipherReport {
+    pub operation: String,
+    pub input_file: String,
+    pub output_file: String,
+    pub input_size: usize,
+    pub output_size: usize,
+    pub seed: String,
+    pub sha256: String,
+}
+
+pub fn cmd_script_encode(
+    input: &Path,
+    output: Option<&Path>,
+    as_json: bool,
+) -> Result<(), CoreError> {
+    if !input.exists() {
+        return Err(CoreError::NotFound(format!("Input file '{}' does not exist", input.display())));
+    }
+    let input_bytes = std::fs::read(input)?;
+    let output_bytes = Mmi3gScriptCipher::transform(&input_bytes);
+
+    let out_path = output
+        .map(|p| p.to_path_buf())
+        .unwrap_or_else(|| input.with_extension("enc"));
+
+    std::fs::write(&out_path, &output_bytes)?;
+
+    let sha256_hash = hex::encode(sha2::Sha256::digest(&output_bytes));
+
+    let report = ScriptCipherReport {
+        operation: "encode".to_string(),
+        input_file: input.display().to_string(),
+        output_file: out_path.display().to_string(),
+        input_size: input_bytes.len(),
+        output_size: output_bytes.len(),
+        seed: format!("0x{:08x}", SEED_INIT),
+        sha256: sha256_hash,
+    };
+
+    if as_json {
+        println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    } else {
+        println!("══════════════════════════════════════════════════════════════════════════");
+        println!(" Audi MMI 3G/3G+ Script Cipher (Harman PRNG Encode)");
+        println!("══════════════════════════════════════════════════════════════════════════");
+        println!("Input Script:        {}", report.input_file);
+        println!("Output Encoded:      {}", report.output_file);
+        println!("PRNG Seed:           {}", report.seed);
+        println!("Processed Bytes:     {} -> {}", report.input_size, report.output_size);
+        println!("SHA-256:             {}", report.sha256);
+        println!("══════════════════════════════════════════════════════════════════════════");
+    }
+
+    Ok(())
+}
+
+pub fn cmd_script_decode(
+    input: &Path,
+    output: Option<&Path>,
+    as_json: bool,
+) -> Result<(), CoreError> {
+    if !input.exists() {
+        return Err(CoreError::NotFound(format!("Input file '{}' does not exist", input.display())));
+    }
+    let input_bytes = std::fs::read(input)?;
+    let output_bytes = Mmi3gScriptCipher::transform(&input_bytes);
+
+    let out_path = output
+        .map(|p| p.to_path_buf())
+        .unwrap_or_else(|| input.with_extension("plain.sh"));
+
+    std::fs::write(&out_path, &output_bytes)?;
+
+    let sha256_hash = hex::encode(sha2::Sha256::digest(&output_bytes));
+
+    let report = ScriptCipherReport {
+        operation: "decode".to_string(),
+        input_file: input.display().to_string(),
+        output_file: out_path.display().to_string(),
+        input_size: input_bytes.len(),
+        output_size: output_bytes.len(),
+        seed: format!("0x{:08x}", SEED_INIT),
+        sha256: sha256_hash,
+    };
+
+    if as_json {
+        println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    } else {
+        println!("══════════════════════════════════════════════════════════════════════════");
+        println!(" Audi MMI 3G/3G+ Script Cipher (Harman PRNG Decode)");
+        println!("══════════════════════════════════════════════════════════════════════════");
+        println!("Input Encoded:       {}", report.input_file);
+        println!("Output Plaintext:    {}", report.output_file);
+        println!("PRNG Seed:           {}", report.seed);
+        println!("Processed Bytes:     {} -> {}", report.input_size, report.output_size);
+        println!("SHA-256:             {}", report.sha256);
         println!("══════════════════════════════════════════════════════════════════════════");
     }
 

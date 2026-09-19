@@ -36,7 +36,7 @@ pub use fldb_compiler::{
 pub use firmware_bundle::{
     build_gem_screen_esd, BundleFileRecord, FirmwareBundleConfig, FirmwareBundlePipeline,
     FirmwareBundleReport, GemWidget, PartitionUsage, DEFAULT_RELEASE, DEFAULT_TRAIN,
-    DEFAULT_VARIANT, SAFETY_POLICY_BANNER,
+    DEFAULT_VARIANT, DONE_PNG, RUNNING_PNG, SAFETY_POLICY_BANNER, SHOW_SCREEN_BIN,
 };
 
 

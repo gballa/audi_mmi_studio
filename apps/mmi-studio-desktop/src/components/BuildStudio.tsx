@@ -91,6 +91,16 @@ export const BuildStudio: React.FC<BuildStudioProps> = ({
   const [gemExported, setGemExported] = useState<boolean>(false);
   const [gemExporting, setGemExporting] = useState<boolean>(false);
 
+  // In-Car Toolkit Modules State (Adapted Native Architecture)
+  const [toolkitModules, setToolkitModules] = useState({
+    harmanCipher: true,       // Harman PRNG XOR Cipher (seed 0x001be3ac)
+    inCarHud: true,           // On-screen framebuffer progress HUD (showScreen)
+    dtcManager: true,         // In-car DTC reader & clearer (ToolkitDTC.esd)
+    gaugesDashboard: true,    // Live in-car telemetry gauges (GaugesDashboard.esd)
+    sysinfoDump: true,        // Comprehensive hardware & baseline dumper (sysinfo_dump.sh)
+    passwordFinder: true,     // Persistent config & wireless credentials scanner (password_dump.sh)
+  });
+
   // Regional OSM Cartography Profile State (Phase 4)
   const [regionalProfile, setRegionalProfile] = useState<'AL_CORRIDOR' | 'BALKANS_TRANSIT' | 'DACH_REGIONAL' | 'ECE_FULL'>('AL_CORRIDOR');
 
@@ -1296,6 +1306,120 @@ Description = "Day and Night Map Shaders"
           </div>
         </div>
 
+        {/* In-Car Toolkit Modules (Adapted Native Architecture) */}
+        <div className="bg-[#0c121e] border border-blue-800/60 rounded-lg p-5 space-y-4 font-mono shadow-xl shadow-blue-950/30">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-900/50 pb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse"></span>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-blue-300">
+                  In-Car Diagnostics &amp; Toolkit Suite
+                </h3>
+              </div>
+              <p className="text-xs text-blue-400/90 mt-0.5">
+                Reverse-engineered automotive modules adapted natively into the MMI workstation pipeline
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="px-2.5 py-1 bg-blue-950/80 border border-blue-700/60 rounded text-blue-300 font-semibold">
+                MMI3G-Toolkit Native Port
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+            <label className="flex items-start gap-3 p-3 rounded bg-black/40 border border-blue-900/50 cursor-pointer hover:bg-blue-950/40">
+              <input
+                type="checkbox"
+                checked={toolkitModules.harmanCipher}
+                onChange={(e) => setToolkitModules({ ...toolkitModules, harmanCipher: e.target.checked })}
+                className="mt-0.5 accent-blue-500 rounded"
+              />
+              <div>
+                <div className="font-bold text-blue-300">Harman PRNG Cipher</div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  Bit-rotation XOR cipher (seed 0x001be3ac) for factory proc_scriptlauncher
+                </div>
+              </div>
+            </label>
+
+            <label className="flex items-start gap-3 p-3 rounded bg-black/40 border border-blue-900/50 cursor-pointer hover:bg-blue-950/40">
+              <input
+                type="checkbox"
+                checked={toolkitModules.inCarHud}
+                onChange={(e) => setToolkitModules({ ...toolkitModules, inCarHud: e.target.checked })}
+                className="mt-0.5 accent-blue-500 rounded"
+              />
+              <div>
+                <div className="font-bold text-blue-300">On-Screen Progress HUD</div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  SH-4 showScreen engine rendering running.png and done.png to framebuffer
+                </div>
+              </div>
+            </label>
+
+            <label className="flex items-start gap-3 p-3 rounded bg-black/40 border border-blue-900/50 cursor-pointer hover:bg-blue-950/40">
+              <input
+                type="checkbox"
+                checked={toolkitModules.dtcManager}
+                onChange={(e) => setToolkitModules({ ...toolkitModules, dtcManager: e.target.checked })}
+                className="mt-0.5 accent-blue-500 rounded"
+              />
+              <div>
+                <div className="font-bold text-blue-300">In-Car DTC Clearer</div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  ToolkitDTC.esd interacting with V850 IOC over CAN TP2.0 in GEM
+                </div>
+              </div>
+            </label>
+
+            <label className="flex items-start gap-3 p-3 rounded bg-black/40 border border-blue-900/50 cursor-pointer hover:bg-blue-950/40">
+              <input
+                type="checkbox"
+                checked={toolkitModules.gaugesDashboard}
+                onChange={(e) => setToolkitModules({ ...toolkitModules, gaugesDashboard: e.target.checked })}
+                className="mt-0.5 accent-blue-500 rounded"
+              />
+              <div>
+                <div className="font-bold text-blue-300">Live Gauges Dashboard</div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  GaugesDashboard.esd polling battery mV, GPS sats, and altitude
+                </div>
+              </div>
+            </label>
+
+            <label className="flex items-start gap-3 p-3 rounded bg-black/40 border border-blue-900/50 cursor-pointer hover:bg-blue-950/40">
+              <input
+                type="checkbox"
+                checked={toolkitModules.sysinfoDump}
+                onChange={(e) => setToolkitModules({ ...toolkitModules, sysinfoDump: e.target.checked })}
+                className="mt-0.5 accent-blue-500 rounded"
+              />
+              <div>
+                <div className="font-bold text-blue-300">Hardware Baseline Dumper</div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  sysinfo_dump.sh taking a full memory, storage, and PCI configuration snapshot
+                </div>
+              </div>
+            </label>
+
+            <label className="flex items-start gap-3 p-3 rounded bg-black/40 border border-blue-900/50 cursor-pointer hover:bg-blue-950/40">
+              <input
+                type="checkbox"
+                checked={toolkitModules.passwordFinder}
+                onChange={(e) => setToolkitModules({ ...toolkitModules, passwordFinder: e.target.checked })}
+                className="mt-0.5 accent-blue-500 rounded"
+              />
+              <div>
+                <div className="font-bold text-blue-300">Wireless Config Scanner</div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  password_dump.sh performing read-only dump of Wi-Fi WPA and BT link keys
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
         {/* File Structure on SD Card */}
         <div className="bg-slate-900 border border-slate-800 rounded-lg p-5 space-y-4">
           <div className="flex items-center justify-between">
@@ -1309,9 +1433,16 @@ Description = "Day and Night Map Shaders"
             <div className="text-amber-400 font-bold">📁 SD_CARD_ROOT/ [FAT32 Volume: MMI3G_NAV]</div>
             <div className="pl-4 text-emerald-400">├── 📄 metainfo2.txt <span className="text-slate-500 text-[11px]">(SWDL manifest with per-512KB CRC32 blocks)</span></div>
             <div className="pl-4 text-emerald-400">├── 📄 build_manifest.json <span className="text-slate-500 text-[11px]">(Cryptographic attestation &amp; BLAKE3 hashes)</span></div>
-            <div className="pl-4 text-emerald-400">├── 📄 copie_scr.sh <span className="text-slate-500 text-[11px]">(SD insertion launcher for proc_scriptlauncher)</span></div>
+            <div className="pl-4 text-emerald-400">├── 📄 copie_scr.sh <span className="text-slate-500 text-[11px]">(Harman PRNG XOR encoded autorun launcher)</span></div>
+            <div className="pl-4 text-emerald-400">├── 📄 copie_scr_plain.sh <span className="text-slate-500 text-[11px]">(Plaintext autorun launcher fallback)</span></div>
+            <div className="pl-4 text-emerald-400">├── 📄 run.sh <span className="text-slate-500 text-[11px]">(Hardened deployment runner with variant check &amp; HUD)</span></div>
             <div className="pl-4 text-emerald-400">├── 📄 finalScript <span className="text-slate-500 text-[11px]">(SWDL post-flash finalize &amp; reboot script)</span></div>
             <div className="pl-4 text-emerald-400">├── 📄 stock_recovery.sh <span className="text-slate-500 text-[11px]">(Emergency NAND rollback for QNX UART console)</span></div>
+            <div className="pl-4 text-amber-300">├── 📁 bin/</div>
+            <div className="pl-8 text-emerald-300">└── ⚙️ showScreen <span className="text-slate-500 text-[11px]">(SH-4 ELF framebuffer display engine)</span></div>
+            <div className="pl-4 text-amber-300">├── 📁 lib/</div>
+            <div className="pl-8 text-emerald-300">├── 🖼️ running.png <span className="text-slate-500 text-[11px]">(In-car deployment progress screen)</span></div>
+            <div className="pl-8 text-emerald-300">└── 🖼️ done.png <span className="text-slate-500 text-[11px]">(In-car completion splash screen)</span></div>
             <div className="pl-4 text-amber-300">├── 📁 MU9411/</div>
             <div className="pl-8 text-emerald-300">├── 📄 ifs-root.ifs <span className="text-slate-500 text-[11px]">(QNX IFS root partition, SH-4, splash.png, lsd.jxe)</span></div>
             <div className="pl-8 text-emerald-300">└── 📄 efs-system.efs <span className="text-slate-500 text-[11px]">(QNX F3S filesystem, sq_AL.ans, menu_2026.esd)</span></div>
@@ -1321,10 +1452,14 @@ Description = "Day and Night Map Shaders"
             <div className="pl-8 text-slate-300">└── 📄 night_2026.gdb <span className="text-slate-500 text-[11px]">(Day &amp; Night cartographic shaders)</span></div>
             <div className="pl-4 text-amber-300">└── 📁 gem/</div>
             <div className="pl-8 text-emerald-300">├── 📁 screens/</div>
+            <div className="pl-12 text-slate-300">├── 📄 ToolkitDTC.esd <span className="text-slate-500 text-[11px]">(In-car DTC viewer &amp; error memory clearer)</span></div>
+            <div className="pl-12 text-slate-300">├── 📄 GaugesDashboard.esd <span className="text-slate-500 text-[11px]">(Live battery mV, GPS sats, altitude)</span></div>
             <div className="pl-12 text-slate-300">├── 📄 custom_telemetry.esd <span className="text-slate-500 text-[11px]">(ESD\x01 compiled binary menu)</span></div>
             <div className="pl-12 text-slate-300">└── 📄 map_inspector.esd <span className="text-slate-500 text-[11px]">(Real-time FLDB sector validator)</span></div>
             <div className="pl-8 text-emerald-300">└── 📁 scripts/</div>
-            <div className="pl-12 text-slate-300">└── 📄 bench_diag.sh <span className="text-slate-500 text-[11px]">(Auto-launch diagnostic tool)</span></div>
+            <div className="pl-12 text-slate-300">├── 📄 bench_diag.sh <span className="text-slate-500 text-[11px]">(Auto-launch diagnostic tool)</span></div>
+            <div className="pl-12 text-slate-300">├── 📄 sysinfo_dump.sh <span className="text-slate-500 text-[11px]">(Complete system &amp; storage snapshot)</span></div>
+            <div className="pl-12 text-slate-300">└── 📄 password_dump.sh <span className="text-slate-500 text-[11px]">(Wireless &amp; persistent config scanner)</span></div>
           </div>
         </div>
 

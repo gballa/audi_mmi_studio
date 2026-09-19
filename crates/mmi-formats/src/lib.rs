@@ -15,9 +15,11 @@ pub mod smsc_ipf;
 pub mod hb_gdb;
 pub mod hb_grammar;
 pub mod adi_ldr;
+pub mod script_cipher;
 pub mod gate;
 
 pub use adapter::{FormatAdapter, FormatCapabilities};
+pub use script_cipher::{Mmi3gScriptCipher, SEED_INIT};
 pub use opaque_span::OpaqueByteSpan;
 pub use metainfo2::{MetaInfo2, MetaInfo2Adapter, MetaInfo2Builder, crc32_ieee, generate_block_crcs};
 pub use precomp::{PrecompImage, PrecompAdapter, HEADER_SIZE, PRECOMP_MAGIC};
