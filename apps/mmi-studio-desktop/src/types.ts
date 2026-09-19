@@ -96,7 +96,16 @@ export interface RegionalProfileConfig {
 export interface AiAssetItem {
   id: string;
   name: string;
-  category: 'Gauges' | 'Navigation' | 'Vehicle' | 'Climate' | 'Menu Icons' | 'Textures';
+  category:
+    | 'Corner Softkeys'
+    | 'Drive Select'
+    | 'Status Bar'
+    | 'Submenus'
+    | 'Navigation'
+    | 'Gauges'
+    | 'Climate'
+    | 'Menu Icons'
+    | 'Textures';
   width: number;
   height: number;
   description: string;
@@ -132,4 +141,33 @@ export interface MMIThemeConfig {
   activeCarSilhouetteStyle: string;
   activeBackgroundTexture: 'default' | 'carbon_weave' | 'brushed_aluminum' | 'obsidian_night';
   activeNavArrowStyle: string;
+
+  // 4 Corner Softkeys customization
+  cornerBracketColor: string;
+  cornerSoftkeys: {
+    topLeft: { text: string; action: string; visible: boolean };
+    topRight: { text: string; action: string; visible: boolean };
+    bottomLeft: { text: string; action: string; visible: boolean };
+    bottomRight: { text: string; action: string; visible: boolean };
+  };
+
+  // Audi Drive Select State
+  activeDriveMode: 'comfort' | 'auto' | 'dynamic' | 'individual';
+  driveSelectView: 'platter' | 'settings';
+  driveSelectSettings: {
+    engineGearbox: 'Comfort' | 'Auto' | 'Dynamic';
+    steering: 'Comfort' | 'Auto' | 'Dynamic';
+    suspension: 'Comfort' | 'Auto' | 'Dynamic';
+  };
+
+  // Status Bar items
+  statusBar: {
+    clockTime: string;
+    isMuted: boolean;
+    bluetoothConnected: boolean;
+    signalBars: number; // 0..4
+    googleServicesOnline: boolean;
+    dataNetwork: '3G' | 'LTE' | '2G';
+  };
 }
+

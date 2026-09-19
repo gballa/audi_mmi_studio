@@ -16,10 +16,10 @@ import { initialAiAssets } from './data/aiAssetsData';
 import { InspectResult, MMIThemeConfig, SystemString, MapUpdateItem, AiAssetItem } from './types';
 
 const initialThemeConfig: MMIThemeConfig = {
-  accentColor: '#FF9900', // Audi Sport Amber
+  accentColor: '#E0001B', // Genuine RS Misano Red matching MMI 3G+
   backgroundColor: '#0C0E14',
   surfaceColor: '#121620',
-  highlightColor: '#FFB300',
+  highlightColor: '#FF3344',
   needleColor: '#FF0000',
   fontFamily: 'AudiType-Bold',
   fontSizeScale: 1.0,
@@ -32,10 +32,33 @@ const initialThemeConfig: MMIThemeConfig = {
   ambientGlow: true,
   highContrast: false,
   language: 'sq', // Default to Albanian as requested by user
-  activeCarSilhouetteStyle: 'stroke-amber-500/80 fill-slate-900/60',
+  activeCarSilhouetteStyle: 'audi_a6_sedan_3d',
   activeBackgroundTexture: 'default',
-  activeNavArrowStyle: '#FF9900',
+  activeNavArrowStyle: '#E0001B',
+  cornerBracketColor: '#E0001B',
+  cornerSoftkeys: {
+    topLeft: { text: '', action: 'back', visible: true },
+    topRight: { text: '', action: 'options', visible: true },
+    bottomLeft: { text: 'Car systems', action: 'car_systems', visible: true },
+    bottomRight: { text: 'Set individual', action: 'toggle_settings', visible: true },
+  },
+  activeDriveMode: 'comfort',
+  driveSelectView: 'platter',
+  driveSelectSettings: {
+    engineGearbox: 'Comfort',
+    steering: 'Dynamic',
+    suspension: 'Comfort',
+  },
+  statusBar: {
+    clockTime: '16:06',
+    isMuted: true,
+    bluetoothConnected: true,
+    signalBars: 4,
+    googleServicesOnline: true,
+    dataNetwork: '3G',
+  },
 };
+
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('components');
@@ -47,6 +70,14 @@ export const App: React.FC = () => {
 
   // MMI UI Theme & Customization Configuration
   const [themeConfig, setThemeConfig] = useState<MMIThemeConfig>(initialThemeConfig);
+  const [aiSelectedAssetId, setAiSelectedAssetId] = useState<string | null>(null);
+
+  const handleNavigateToAiStudio = (elementId?: string) => {
+    if (elementId) {
+      setAiSelectedAssetId(elementId);
+    }
+    setActiveTab('ai_elements');
+  };
 
   // Sample seed assets for workstation explorer
   const sampleAssets: InspectResult[] = [
@@ -289,7 +320,7 @@ export const App: React.FC = () => {
             onResetTheme={handleResetTheme}
             strings={strings}
             onExportRecipe={handleExportRecipe}
-            onNavigateToAiStudio={() => setActiveTab('ai_elements')}
+            onNavigateToAiStudio={handleNavigateToAiStudio}
           />
         )}
         {activeTab === 'ai_elements' && (
@@ -301,8 +332,10 @@ export const App: React.FC = () => {
             themeConfig={themeConfig}
             onUpdateTheme={handleUpdateTheme}
             onNavigateToScreen={() => setActiveTab('components')}
+            initialSelectedAssetId={aiSelectedAssetId}
           />
         )}
+
         {activeTab === 'localization' && (
           <LocalizationStudio
             strings={strings}
