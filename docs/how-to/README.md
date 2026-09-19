@@ -20,6 +20,7 @@ The **How-To Library** provides concise, procedural guides for accomplishing spe
 
 ## Rebuild, Verification & Packaging
 
+- [**Complete In-Car SD Card Upgrade Guide**](in-car-sd-update-guide.md): Detailed step-by-step procedure for preparing media, in-car SWDL flashing, navigation unblocking, and post-update diagnostics.
 - [**Rebuild and Validate Firmware**](rebuild-and-validate-firmware.md): How to deterministically repackage staged files and execute the 6-tier (`L0`–`L5`) automotive validation suite.
 - [**Prepare SD Deployment Media**](prepare-sd-deployment-media.md): How to partition, format with 32 KiB cluster geometry, and package update files onto FAT32 SD media.
 - [**Simulate QNX Head-Unit Update**](simulate-qnx-update.md): How to run the pre-flight flashing simulation to verify dependency graphs and partition limits.

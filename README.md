@@ -75,7 +75,7 @@ The complete canonical documentation architecture is organized under [`docs/`](d
 | **Architecture** | System principles, crate components, data flows, and STRIDE security model | [System Overview](docs/architecture/overview.md) • [Security Model](docs/architecture/security.md) [EV:doc:docs/architecture/overview.md#L1] |
 | **Development** | Workspace setup, coding standards, testing tiers, and release packaging | [Dev Setup](docs/development/setup.md) • [Testing](docs/development/testing.md) [EV:doc:docs/development/setup.md#L1] |
 | **Operations** | SD media flashing, REM execution, UART monitoring, and emergency recovery | [Deployment](docs/operations/deployment.md) • [Recovery](docs/operations/recovery.md) [EV:doc:docs/operations/deployment.md#L1] |
-| **Decisions (ADRs)** | Architecture Decision Records (ADR-001 through ADR-007) | [ADR Index](docs/decisions/README.md) [EV:doc:docs/decisions/README.md#L1] |
+| **Decisions (ADRs)** | Architecture Decision Records (ADR-001 through ADR-008) | [ADR Index](docs/decisions/README.md) [EV:doc:docs/decisions/README.md#L1] |
 
 ---
 
@@ -90,6 +90,7 @@ Key architectural choices are formally documented under [`docs/decisions/`](docs
 - [**ADR-005**](docs/adr/ADR-005-navigation-cartography-fldb-compiler-and-multi-volume-partitioning.md): Navigation Cartography FLDB Compiler and Multi-Volume Partitioning [EV:doc:docs/research/Audi%20MMI%203G+%20Maps%20Research.md#L1]
 - [**ADR-006**](docs/adr/ADR-006-full-system-firmware-qnx-nor-flash-packaging-and-swdl-manifests.md): Full System Firmware QNX NOR Flash Packaging and SWDL Manifests [EV:doc:docs/research/Audi%20MMI%203G:3G+%20infotainment%20Research.md#L1]
 - [**ADR-007**](docs/adr/ADR-007-albanian-language-localization-and-typography-metrics-pipeline.md): Albanian Language Localization and Typography Metrics Pipeline [EV:doc:docs/spec/AUDI_MMI_STUDIO_AGENT_PROMPT.md#L777]
+- [**ADR-008**](docs/adr/ADR-008-in-car-sd-deployment-hardening-and-hardware-defense.md): In-Car SD Deployment Hardening, Hardware Defense, and Media Sanitization [EV:doc:docs/how-to/in-car-sd-update-guide.md#L1]
 
 ---
 
