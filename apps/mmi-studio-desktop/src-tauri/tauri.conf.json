@@ -40,6 +40,20 @@
     ],
     "category": "DeveloperTool",
     "shortDescription": "Audi MMI 3G/3G+ Reverse Engineering Workstation",
-    "longDescription": "Offline desktop workstation for Audi MMI 3G/3G+ firmware decoding, asset customization, navigation cartography, and SD card packaging."
+    "longDescription": "Offline desktop workstation for Audi MMI 3G/3G+ firmware decoding, asset customization, navigation cartography, and SD card packaging.",
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "10.13"
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-0 | libwebkit2gtk-4.0-37", "libssl3 | libssl1.1", "libgtk-3-0"]
+      }
+    },
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
   }
 }

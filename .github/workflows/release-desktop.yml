@@ -1,0 +1,146 @@
+name: Release Multi-Platform Desktop Workstation
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-macos:
+    name: Build macOS Application (.dmg / .app)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/mmi-studio-desktop/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: apps/mmi-studio-desktop
+        run: npm ci
+
+      - name: Generate Icon Assets
+        run: cargo run --bin generate_icons --manifest-path apps/mmi-studio-desktop/src-tauri/Cargo.toml
+
+      - name: Package macOS Desktop App (.app & .dmg)
+        run: |
+          chmod +x apps/mmi-studio-desktop/scripts/package-macos.sh
+          ./apps/mmi-studio-desktop/scripts/package-macos.sh
+
+      - name: Upload macOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-desktop-bundle
+          path: apps/mmi-studio-desktop/dist-packages/macos/*.dmg
+
+  build-linux:
+    name: Build Ubuntu / Debian Package (.deb / .tar.gz)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libssl-dev
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/mmi-studio-desktop/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: apps/mmi-studio-desktop
+        run: npm ci
+
+      - name: Build Frontend & Backend
+        run: |
+          cd apps/mmi-studio-desktop && npm run build
+          cargo build --release --manifest-path src-tauri/Cargo.toml
+
+      - name: Package Debian & Linux Tarball
+        run: |
+          chmod +x apps/mmi-studio-desktop/scripts/package-linux.sh
+          ./apps/mmi-studio-desktop/scripts/package-linux.sh
+
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-desktop-bundle
+          path: |
+            apps/mmi-studio-desktop/dist-packages/linux/*.deb
+            apps/mmi-studio-desktop/dist-packages/linux/*.tar.gz
+
+  build-windows:
+    name: Build Windows Application (.exe / .zip)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/mmi-studio-desktop/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: apps/mmi-studio-desktop
+        run: npm ci
+
+      - name: Build Frontend & Backend
+        shell: bash
+        run: |
+          cd apps/mmi-studio-desktop && npm run build
+          cargo build --release --manifest-path src-tauri/Cargo.toml
+
+      - name: Package Windows Installer & ZIP
+        shell: bash
+        run: |
+          ./apps/mmi-studio-desktop/scripts/package-windows.sh
+
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-desktop-bundle
+          path: |
+            apps/mmi-studio-desktop/dist-packages/windows/*.exe
+            apps/mmi-studio-desktop/dist-packages/windows/*.zip
+
+  publish-release:
+    name: Publish Release Assets to GitHub
+    needs: [build-macos, build-linux, build-windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/**/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
