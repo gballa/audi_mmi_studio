@@ -82,9 +82,9 @@ export const Header: React.FC<HeaderProps> = ({
   const activeSecondary = secondaryTools.find((t) => t.id === activeTab);
 
   return (
-    <header className="relative flex items-center justify-between px-3 md:px-4 py-2 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 z-30 shadow-md select-none gap-2 w-full min-w-0">
+    <header className="relative flex items-center justify-between px-3 md:px-4 py-2 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 z-40 shadow-md select-none gap-2 w-full min-w-0">
       {/* 1. Left: Audi Emblem, Branding & Train Popover */}
-      <div className="flex items-center gap-2 md:gap-3 shrink-0">
+      <div className="flex items-center gap-2 md:gap-3 shrink-0 relative">
         {/* Audi 4-Rings Emblem */}
         <div
           className="flex items-center gap-2 group cursor-pointer"
@@ -123,7 +123,8 @@ export const Header: React.FC<HeaderProps> = ({
         {isHwInfoOpen && (
           <div
             ref={hwInfoRef}
-            className="absolute top-12 left-4 w-80 bg-slate-950 border border-slate-700 rounded-xl p-4 shadow-2xl z-50 text-xs space-y-2.5 animate-in fade-in zoom-in-95 duration-150"
+            className="absolute top-12 left-0 w-80 bg-slate-950/98 backdrop-blur-xl border border-slate-700 rounded-xl p-4 shadow-2xl z-50 text-xs space-y-2.5 animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-2 border-b border-slate-800">
               <span className="font-bold text-white flex items-center gap-1.5">
@@ -151,12 +152,12 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* 2. Center: Primary Engineering Workflows & Tools Dropdown */}
-      <div className="flex items-center justify-center flex-1 min-w-0 px-1 overflow-x-auto no-scrollbar">
-        <nav className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800/80 shadow-inner shrink-0">
+      <div className="flex items-center justify-center flex-1 min-w-0 px-2 relative">
+        <nav className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800/80 shadow-inner shrink-0 relative">
           {/* Primary Tabs */}
           <button
             onClick={() => onSelectTab('components')}
-            className={`px-2.5 md:px-3 py-1.5 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-2.5 md:px-3 py-1.5 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === 'components'
                 ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20'
                 : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/60'
@@ -169,7 +170,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={() => onSelectTab('ai_elements')}
-            className={`px-2.5 md:px-3 py-1.5 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-2.5 md:px-3 py-1.5 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === 'ai_elements'
                 ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20'
                 : 'text-amber-400 hover:text-amber-300 hover:bg-slate-900/60 font-semibold'
@@ -182,7 +183,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={() => onSelectTab('localization')}
-            className={`px-2.5 md:px-3 py-1.5 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-2.5 md:px-3 py-1.5 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === 'localization'
                 ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20'
                 : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/60'
@@ -196,7 +197,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={() => onSelectTab('maps')}
-            className={`px-2.5 md:px-3 py-1.5 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-2.5 md:px-3 py-1.5 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === 'maps'
                 ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20'
                 : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/60'
@@ -209,7 +210,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={() => onSelectTab('build')}
-            className={`px-2.5 md:px-3.5 py-1.5 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-2.5 md:px-3.5 py-1.5 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === 'build'
                 ? 'bg-emerald-500 text-slate-950 font-bold shadow-md shadow-emerald-500/20'
                 : 'text-emerald-400 hover:text-emerald-300 hover:bg-slate-900/60 font-semibold'
@@ -224,46 +225,63 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Separator */}
           <div className="h-4 w-px bg-slate-800 mx-0.5" />
 
-          {/* Engineering Tools Dropdown */}
+          {/* Fixed Engineering Tools Dropdown */}
           <div className="relative" ref={toolsRef}>
             <button
-              onClick={() => setIsToolsOpen(!isToolsOpen)}
-              className={`px-2 py-1.5 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsToolsOpen((prev) => !prev);
+              }}
+              className={`px-2.5 py-1.5 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer select-none ${
                 isSecondaryActive
-                  ? 'bg-slate-800 text-amber-400 font-bold border border-amber-500/50'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                  ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/50 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/80'
               }`}
+              title="Reverse Engineering & Secondary Labs"
             >
-              <span>{isSecondaryActive && activeSecondary ? activeSecondary.icon : '🔬'}</span>
+              <span className="text-sm">{isSecondaryActive && activeSecondary ? activeSecondary.icon : '🔬'}</span>
               <span className="hidden md:inline">{isSecondaryActive && activeSecondary ? activeSecondary.label : 'Tools'}</span>
-              <span className={`text-[9px] transition-transform duration-200 ${isToolsOpen ? 'rotate-180' : ''}`}>▾</span>
+              <span className={`text-[10px] transition-transform duration-200 ${isToolsOpen ? 'rotate-180 text-amber-400 font-bold' : ''}`}>▾</span>
             </button>
 
+            {/* Dropdown Menu (Guaranteed Not Clipped with High z-index & Fixed Alignment) */}
             {isToolsOpen && (
-              <div className="absolute top-10 right-0 w-64 bg-slate-950 border border-slate-800 rounded-xl p-2 shadow-2xl z-50 text-xs space-y-1 animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  Reverse-Engineering & Diagnostic Tools
+              <div
+                className="absolute top-full mt-2.5 right-0 w-72 bg-slate-950/98 backdrop-blur-2xl border border-slate-700/80 rounded-xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.95)] z-50 text-xs space-y-1 animate-in fade-in zoom-in-95 duration-150 ring-1 ring-slate-800"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between border-b border-slate-800/80 mb-1">
+                  <span>Engineering & RE Labs</span>
+                  <span className="text-[9px] font-mono text-amber-400">4 Modules</span>
                 </div>
-                {secondaryTools.map((tool) => (
-                  <button
-                    key={tool.id}
-                    onClick={() => {
-                      onSelectTab(tool.id);
-                      setIsToolsOpen(false);
-                    }}
-                    className={`w-full text-left p-2 rounded-lg flex items-start gap-2.5 transition ${
-                      activeTab === tool.id
-                        ? 'bg-amber-500/10 border border-amber-500/40 text-amber-300 font-bold'
-                        : 'hover:bg-slate-900 text-slate-300 hover:text-white'
-                    }`}
-                  >
-                    <span className="text-base">{tool.icon}</span>
-                    <div>
-                      <div className="font-semibold">{tool.label}</div>
-                      <div className="text-[10px] text-slate-500">{tool.desc}</div>
-                    </div>
-                  </button>
-                ))}
+                {secondaryTools.map((tool) => {
+                  const isCurrent = activeTab === tool.id;
+                  return (
+                    <button
+                      key={tool.id}
+                      type="button"
+                      onClick={() => {
+                        onSelectTab(tool.id);
+                        setIsToolsOpen(false);
+                      }}
+                      className={`w-full text-left p-2.5 rounded-lg flex items-start gap-3 transition-all cursor-pointer ${
+                        isCurrent
+                          ? 'bg-amber-500/15 border border-amber-500/50 text-amber-300 font-bold shadow-sm'
+                          : 'hover:bg-slate-900 text-slate-300 hover:text-white border border-transparent'
+                      }`}
+                    >
+                      <span className="text-lg leading-none mt-0.5 shrink-0">{tool.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold flex items-center justify-between text-xs">
+                          <span>{tool.label}</span>
+                          {isCurrent && <span className="text-[10px] text-amber-400 font-mono shrink-0">ACTIVE</span>}
+                        </div>
+                        <div className="text-[10px] text-slate-400 leading-tight mt-0.5">{tool.desc}</div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -271,7 +289,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* 3. Right: System Security HUD, Reset Action & Build Trigger */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-2 shrink-0 relative">
         {/* Security & Integrity Status Pill */}
         <div
           ref={secInfoRef}
@@ -291,7 +309,10 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Security Popover */}
         {isSecurityInfoOpen && (
-          <div className="absolute top-12 right-24 w-80 bg-slate-950 border border-slate-700 rounded-xl p-4 shadow-2xl z-50 text-xs space-y-2.5 animate-in fade-in zoom-in-95 duration-150">
+          <div
+            className="absolute top-12 right-0 w-80 bg-slate-950/98 backdrop-blur-xl border border-slate-700 rounded-xl p-4 shadow-2xl z-50 text-xs space-y-2.5 animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between pb-2 border-b border-slate-800">
               <span className="font-bold text-white flex items-center gap-1.5">
                 <span>🛡️</span> Security & Integrity Guarantees

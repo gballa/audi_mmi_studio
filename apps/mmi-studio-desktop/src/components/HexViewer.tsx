@@ -24,7 +24,11 @@ export const HexViewer: React.FC<HexViewerProps> = ({
     segments: [[0, 4.82]],
   },
 }) => {
-  const [selectedByte, setSelectedByte] = useState<{ row: number; col: number; val: string } | null>(null);
+  const [selectedByte, setSelectedByte] = useState<{ row: number; col: number; val: string } | null>({
+    row: 0,
+    col: 0,
+    val: hexData.rows[0]?.hexBytes[0] || '4D',
+  });
 
   const getEntropyColor = (entropy: number) => {
     if (entropy < 3.0) return 'bg-blue-500';
@@ -58,27 +62,37 @@ export const HexViewer: React.FC<HexViewerProps> = ({
       dec: val,
       bin: val.toString(2).padStart(8, '0'),
       char: val >= 32 && val <= 126 ? String.fromCharCode(val) : '·',
+      signed: val > 127 ? val - 256 : val,
     };
   };
 
   const parsedInfo = selectedByte ? parseByteVal(selectedByte.val) : null;
 
   return (
-    <div className="flex flex-col h-full bg-slate-950 text-slate-100 p-4 font-sans">
+    <div className="flex flex-col h-full w-full bg-slate-950 text-slate-100 p-4 md:p-6 font-sans overflow-hidden min-w-0">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800 shrink-0">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">Binary RE Lab & Hex Inspector</h1>
-          <p className="text-xs text-slate-400">
-            Byte-level inspection, virtualized dump, and Shannon entropy analysis
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+              <span>⚡</span>
+              <span>Binary RE Lab & Hex Inspector</span>
+            </h1>
+            <span className="px-2 py-0.5 text-xs bg-slate-800 text-slate-300 font-mono rounded">
+              QNX Bytecode
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Byte-level dissection, virtualized dump, and Shannon entropy analysis for MMI firmware binaries
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-400 font-mono">
-            Offset: 0x{hexData.offset.toString(16).padStart(8, '0')}
+
+        <div className="flex items-center gap-2.5 shrink-0">
+          <span className="text-xs text-slate-400 font-mono bg-slate-900 border border-slate-800 px-2.5 py-1 rounded">
+            Offset: <strong className="text-amber-400">0x{hexData.offset.toString(16).padStart(8, '0')}</strong>
           </span>
           <span
-            className={`px-2.5 py-0.5 text-xs rounded border font-mono ${getClassificationBadge(
+            className={`px-2.5 py-1 text-xs rounded border font-mono font-bold ${getClassificationBadge(
               entropyData.classification
             )}`}
           >
@@ -88,98 +102,105 @@ export const HexViewer: React.FC<HexViewerProps> = ({
       </div>
 
       {/* Entropy Gauge Bar */}
-      <div className="mt-4 bg-slate-900 border border-slate-800 rounded p-3">
-        <div className="flex justify-between text-xs text-slate-400 mb-1">
-          <span>Entropy Profile</span>
-          <span>{entropyData.averageEntropy.toFixed(3)} / 8.000</span>
+      <div className="mt-4 bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 shrink-0">
+        <div className="flex justify-between text-xs text-slate-400 mb-1.5 font-mono">
+          <span className="font-semibold text-slate-300 flex items-center gap-1.5">
+            <span>📊</span> Shannon Entropy Distribution Profile
+          </span>
+          <span className="font-bold text-amber-400">{entropyData.averageEntropy.toFixed(3)} / 8.000 bits/byte</span>
         </div>
-        <div className="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
+        <div className="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800 shadow-inner">
           <div
-            className={`h-full ${getEntropyColor(entropyData.averageEntropy)} transition-all duration-300`}
+            className={`h-full ${getEntropyColor(entropyData.averageEntropy)} transition-all duration-500 shadow-[0_0_10px_currentColor]`}
             style={{ width: `${(entropyData.averageEntropy / 8.0) * 100}%` }}
           />
         </div>
       </div>
 
       {/* Main Grid: Hex table + Byte Inspector */}
-      <div className="flex flex-1 gap-4 mt-4 overflow-hidden">
-        {/* Hex Table */}
-        <div className="flex-1 bg-slate-900 border border-slate-800 rounded p-4 overflow-auto font-mono text-xs">
-          <div className="grid grid-cols-[80px_repeat(16,28px)_180px] gap-x-2 pb-2 mb-2 border-b border-slate-800 text-slate-500 font-semibold select-none">
+      <div className="flex flex-1 gap-5 mt-4 overflow-hidden min-w-0">
+        {/* Hex Table Viewport */}
+        <div className="flex-1 bg-slate-900/90 border border-slate-800 rounded-xl p-4 overflow-auto font-mono text-xs shadow-inner min-w-0">
+          <div className="grid grid-cols-[80px_repeat(16,28px)_180px] gap-x-2 pb-2 mb-2 border-b border-slate-800 text-slate-500 font-semibold select-none min-w-[720px]">
             <div>Offset</div>
             {Array.from({ length: 16 }).map((_, i) => (
               <div key={i} className="text-center">
                 {i.toString(16).toUpperCase().padStart(2, '0')}
               </div>
             ))}
-            <div className="pl-4">Decoded Text</div>
+            <div className="pl-4">ASCII Decode</div>
           </div>
 
-          {hexData.rows.map((row, rowIdx) => (
-            <div
-              key={row.offset}
-              className="grid grid-cols-[80px_repeat(16,28px)_180px] gap-x-2 py-0.5 hover:bg-slate-800/50 rounded"
-            >
-              <div className="text-amber-500/80 select-none">
-                0x{row.offset.toString(16).padStart(8, '0')}
+          <div className="space-y-1 min-w-[720px]">
+            {hexData.rows.map((row, rowIdx) => (
+              <div
+                key={row.offset}
+                className="grid grid-cols-[80px_repeat(16,28px)_180px] gap-x-2 py-1 hover:bg-slate-800/40 rounded transition-colors"
+              >
+                <div className="text-amber-500/90 select-none font-bold">
+                  0x{row.offset.toString(16).padStart(8, '0')}
+                </div>
+                {row.hexBytes.map((byte, colIdx) => {
+                  const isSelected = selectedByte?.row === rowIdx && selectedByte?.col === colIdx;
+                  return (
+                    <div
+                      key={colIdx}
+                      onClick={() => setSelectedByte({ row: rowIdx, col: colIdx, val: byte })}
+                      className={`text-center cursor-pointer rounded transition-all select-none ${
+                        isSelected
+                          ? 'bg-amber-500 text-slate-950 font-bold scale-110 shadow-md ring-2 ring-amber-300'
+                          : byte === '00'
+                          ? 'text-slate-600'
+                          : 'text-slate-200 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      {byte}
+                    </div>
+                  );
+                })}
+                <div className="pl-4 text-slate-400 select-none tracking-widest font-mono">
+                  {row.ascii}
+                </div>
               </div>
-              {row.hexBytes.map((byte, colIdx) => {
-                const isSelected =
-                  selectedByte?.row === rowIdx && selectedByte?.col === colIdx;
-                return (
-                  <div
-                    key={colIdx}
-                    onClick={() =>
-                      setSelectedByte({ row: rowIdx, col: colIdx, val: byte })
-                    }
-                    className={`text-center cursor-pointer rounded transition-colors ${
-                      isSelected
-                        ? 'bg-amber-500 text-black font-bold'
-                        : byte === '00'
-                        ? 'text-slate-600'
-                        : 'text-slate-200 hover:bg-slate-700'
-                    }`}
-                  >
-                    {byte}
-                  </div>
-                );
-              })}
-              <div className="pl-4 text-slate-400 select-none tracking-widest">
-                {row.ascii}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Byte Inspector Panel */}
-        <div className="w-64 bg-slate-900 border border-slate-800 rounded p-4 flex flex-col justify-between">
+        <div className="w-72 xl:w-80 bg-slate-900/90 border border-slate-800 rounded-xl p-5 flex flex-col justify-between shrink-0 shadow-lg">
           <div>
-            <h2 className="text-sm font-semibold text-slate-200 pb-2 border-b border-slate-800">
-              Byte Inspector
-            </h2>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                Byte Inspector
+              </h2>
+              {selectedByte && (
+                <span className="text-[11px] font-mono text-amber-400 font-bold">
+                  Row {selectedByte.row} · Col {selectedByte.col}
+                </span>
+              )}
+            </div>
+
             {parsedInfo ? (
-              <div className="mt-3 space-y-2 text-xs">
-                <div className="flex justify-between py-1 border-b border-slate-800">
-                  <span className="text-slate-400">Hex</span>
-                  <span className="font-mono text-amber-400">{parsedInfo.hex}</span>
+              <div className="mt-4 space-y-2.5 text-xs">
+                <div className="flex justify-between items-center py-1.5 border-b border-slate-800/80">
+                  <span className="text-slate-400">Hex Value:</span>
+                  <span className="font-mono text-amber-400 font-bold text-sm">{parsedInfo.hex}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-slate-800">
-                  <span className="text-slate-400">Decimal</span>
-                  <span className="font-mono text-slate-200">{parsedInfo.dec}</span>
+                <div className="flex justify-between items-center py-1.5 border-b border-slate-800/80">
+                  <span className="text-slate-400">Decimal (Unsigned):</span>
+                  <span className="font-mono text-white font-bold">{parsedInfo.dec}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-slate-800">
-                  <span className="text-slate-400">Binary</span>
-                  <span className="font-mono text-slate-200">{parsedInfo.bin}</span>
+                <div className="flex justify-between items-center py-1.5 border-b border-slate-800/80">
+                  <span className="text-slate-400">Binary (8-bit):</span>
+                  <span className="font-mono text-slate-300 text-[11px] tracking-wider">{parsedInfo.bin}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-slate-800">
-                  <span className="text-slate-400">ASCII Character</span>
-                  <span className="font-mono text-emerald-400 font-bold">{parsedInfo.char}</span>
+                <div className="flex justify-between items-center py-1.5 border-b border-slate-800/80">
+                  <span className="text-slate-400">ASCII Character:</span>
+                  <span className="font-mono text-emerald-400 font-black text-base">{parsedInfo.char}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-slate-800">
-                  <span className="text-slate-400">Signed Int8</span>
-                  <span className="font-mono text-slate-200">
-                    {(parsedInfo.dec > 127 ? parsedInfo.dec - 256 : parsedInfo.dec)}
-                  </span>
+                <div className="flex justify-between items-center py-1.5 border-b border-slate-800/80">
+                  <span className="text-slate-400">Signed Int8:</span>
+                  <span className="font-mono text-slate-300">{parsedInfo.signed}</span>
                 </div>
               </div>
             ) : (
@@ -189,8 +210,8 @@ export const HexViewer: React.FC<HexViewerProps> = ({
             )}
           </div>
 
-          <div className="pt-4 border-t border-slate-800 text-[10px] text-slate-500">
-            Read-only memory view · Safety locked [§14.9]
+          <div className="pt-4 border-t border-slate-800 text-[10px] text-slate-500 font-mono">
+            Read-only memory view · §14.9 Safety locked
           </div>
         </div>
       </div>

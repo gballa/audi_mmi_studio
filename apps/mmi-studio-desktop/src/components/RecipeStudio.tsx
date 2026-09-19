@@ -55,6 +55,19 @@ export const RecipeStudio: React.FC = () => {
       riskClass: 'Content',
       operationsCount: 3,
     },
+    {
+      id: 'turbo_blue_dynamic',
+      name: 'Turbo Blue S-Line Theme',
+      version: '1.0.0',
+      author: 'Audi MMI Studio Workstation',
+      description: 'Vibrant neon blue accent with high-definition cyan dials and telemetry highlights.',
+      baseTrain: 'HN+R_EU_AU_K0942_4',
+      targetTrains: ['HN+R_EU_AU_K0942_4', 'HN+R_EU_AU_P0922', 'HN+_EU_AU3G_K0900'],
+      accentColor: '#0077FF',
+      nightColor: '#003399',
+      riskClass: 'Content',
+      operationsCount: 3,
+    },
   ];
 
   const [selectedId, setSelectedId] = useState<string>('audi_sport_amber');
@@ -63,111 +76,159 @@ export const RecipeStudio: React.FC = () => {
   const activeTheme = presets.find((p) => p.id === selectedId) || presets[0];
 
   const handleSimulateDeploy = () => {
-    setDeployStatus(`Building update media for '${activeTheme.name}'...`);
+    setDeployStatus(`Packaging update media for '${activeTheme.name}'...`);
     setTimeout(() => {
-      setDeployStatus(`Media Volume created: FAT32 update image ready for SD card deployment. Status: BUILD READY — DEPLOYMENT NOT VERIFIED.`);
-    }, 1000);
+      setDeployStatus(
+        `Media Volume created: FAT32 update image ready for SD card deployment. Status: BUILD READY — DEPLOYMENT NOT VERIFIED.`
+      );
+      setTimeout(() => setDeployStatus(null), 5000);
+    }, 1200);
   };
 
   return (
-    <div style={{ display: 'flex', height: '100%', gap: '24px', padding: '24px', background: '#12151a', color: '#e0e6ed', boxSizing: 'border-box' }}>
-      {/* Preset List Sidebar */}
-      <div style={{ width: '340px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#fff' }}>Theme Recipe Library</h3>
-        {presets.map((p) => {
-          const isSelected = p.id === selectedId;
-          return (
-            <div
-              key={p.id}
-              onClick={() => setSelectedId(p.id)}
-              style={{
-                padding: '16px',
-                borderRadius: '8px',
-                background: isSelected ? '#1e2430' : '#161b22',
-                border: isSelected ? `2px solid ${p.accentColor}` : '1px solid #28303e',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontWeight: 'bold', fontSize: '15px', color: '#fff' }}>{p.name}</span>
-                <span
-                  style={{
-                    width: '18px',
-                    height: '18px',
-                    borderRadius: '50%',
-                    background: p.accentColor,
-                    boxShadow: `0 0 8px ${p.accentColor}80`,
-                  }}
-                />
-              </div>
-              <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#8b949e', lineHeight: 1.4 }}>{p.description}</p>
-              <div style={{ display: 'flex', gap: '8px', fontSize: '11px' }}>
-                <span style={{ padding: '2px 8px', borderRadius: '4px', background: '#28303e', color: '#58a6ff' }}>{p.baseTrain}</span>
-                <span style={{ padding: '2px 8px', borderRadius: '4px', background: '#382b15', color: '#e3b341' }}>{p.riskClass}</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Theme Details & Customizer Panel */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', background: '#161b22', padding: '24px', borderRadius: '8px', border: '1px solid #28303e' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <h2 style={{ margin: '0 0 6px 0', fontSize: '22px', color: '#fff' }}>{activeTheme.name}</h2>
-            <div style={{ fontSize: '13px', color: '#8b949e' }}>
-              Author: {activeTheme.author} • Version: {activeTheme.version} • Unit of Work: Declarative JSON
-            </div>
-          </div>
-          <button
-            onClick={handleSimulateDeploy}
-            style={{
-              padding: '10px 20px',
-              borderRadius: '6px',
-              background: activeTheme.accentColor,
-              color: '#000',
-              fontWeight: 'bold',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '14px',
-              transition: 'opacity 0.2s',
-            }}
-          >
-            Package SD-Card Update
-          </button>
+    <div className="flex h-full w-full bg-slate-950 text-slate-100 overflow-hidden font-sans min-w-0">
+      {/* Left Preset List Sidebar */}
+      <div className="w-80 xl:w-96 flex flex-col shrink-0 h-full border-r border-slate-800 bg-slate-900/60 min-w-0">
+        <div className="p-4 border-b border-slate-800 shrink-0">
+          <h2 className="text-base font-bold tracking-tight text-white flex items-center gap-2">
+            <span>📜</span>
+            <span>Theme Recipe Library</span>
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Declarative JSON recipes & cross-firmware train rebasing
+          </p>
         </div>
 
+        <div className="flex-1 overflow-y-auto p-3 space-y-2.5 min-w-0">
+          {presets.map((p) => {
+            const isSelected = p.id === selectedId;
+            return (
+              <div
+                key={p.id}
+                onClick={() => setSelectedId(p.id)}
+                className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                  isSelected
+                    ? 'bg-amber-500/10 border-amber-500 shadow-md ring-1 ring-amber-500/30'
+                    : 'bg-slate-900/70 border-slate-800 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-bold text-xs text-white truncate max-w-[190px]">{p.name}</span>
+                  <span
+                    className="w-4 h-4 rounded-full border border-white/40 shadow-sm shrink-0"
+                    style={{
+                      backgroundColor: p.accentColor,
+                      boxShadow: `0 0 10px ${p.accentColor}80`,
+                    }}
+                  />
+                </div>
+                <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed mb-2">
+                  {p.description}
+                </p>
+                <div className="flex items-center gap-1.5 text-[10px] font-mono">
+                  <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-sky-400 font-semibold truncate max-w-[130px]">
+                    {p.baseTrain.replace('HN+R_EU_AU_', '')}
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-amber-950/60 border border-amber-800/80 text-amber-300 font-semibold">
+                    {p.riskClass}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Right Recipe Details & Customizer Panel */}
+      <div className="flex-1 min-w-0 flex flex-col h-full overflow-y-auto bg-slate-950 p-6 space-y-6">
+        {/* Header Strip */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800 shrink-0">
+          <div>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-bold text-white tracking-tight">{activeTheme.name}</h2>
+              <span className="px-2 py-0.5 text-xs bg-slate-800 border border-slate-700 text-slate-300 font-mono rounded">
+                v{activeTheme.version}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-1">
+              Author: <strong className="text-slate-200">{activeTheme.author}</strong> · Declarative JSON Recipe Spec
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleSimulateDeploy}
+              className="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 text-xs font-bold rounded-lg shadow-lg shadow-amber-500/20 transition flex items-center gap-2"
+            >
+              <span>🚀</span> Package SD-Card Update
+            </button>
+          </div>
+        </div>
+
+        {/* Deploy Notification */}
         {deployStatus && (
-          <div style={{ padding: '12px 16px', borderRadius: '6px', background: '#1c2d42', border: '1px solid #388bfd', color: '#79c0ff', fontSize: '13px' }}>
-            {deployStatus}
+          <div className="p-3 bg-slate-900 border border-emerald-500/80 rounded-xl text-xs font-mono text-emerald-300 flex items-center gap-2 shadow-lg animate-in fade-in">
+            <span>✓</span>
+            <span>{deployStatus}</span>
           </div>
         )}
 
         {/* Color Palette Display */}
-        <div style={{ display: 'flex', gap: '20px', background: '#1e2430', padding: '16px', borderRadius: '6px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '6px', background: activeTheme.accentColor, border: '1px solid #fff' }} />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-slate-900/80 border border-slate-800 rounded-xl">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-lg border-2 border-white/20 shadow-md shrink-0"
+              style={{ backgroundColor: activeTheme.accentColor }}
+            />
             <div>
-              <div style={{ fontSize: '11px', color: '#8b949e' }}>DAY ACCENT</div>
-              <div style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{activeTheme.accentColor}</div>
+              <span className="block text-[10px] uppercase tracking-wider font-bold text-slate-400">Day Accent</span>
+              <span className="font-mono text-xs font-bold text-white">{activeTheme.accentColor}</span>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '6px', background: activeTheme.nightColor, border: '1px solid #fff' }} />
+
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-lg border-2 border-white/20 shadow-md shrink-0"
+              style={{ backgroundColor: activeTheme.nightColor }}
+            />
             <div>
-              <div style={{ fontSize: '11px', color: '#8b949e' }}>NIGHT ACCENT</div>
-              <div style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{activeTheme.nightColor}</div>
+              <span className="block text-[10px] uppercase tracking-wider font-bold text-slate-400">Night Accent</span>
+              <span className="font-mono text-xs font-bold text-white">{activeTheme.nightColor}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center font-mono text-xs text-amber-400 font-bold shrink-0">
+              {activeTheme.operationsCount}
+            </div>
+            <div>
+              <span className="block text-[10px] uppercase tracking-wider font-bold text-slate-400">Operations</span>
+              <span className="text-xs text-slate-200">Asset Injections</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center font-mono text-xs text-emerald-400 font-bold shrink-0">
+              §14.9
+            </div>
+            <div>
+              <span className="block text-[10px] uppercase tracking-wider font-bold text-slate-400">Safety Class</span>
+              <span className="text-xs text-slate-200">{activeTheme.riskClass}</span>
             </div>
           </div>
         </div>
 
         {/* Target Trains & Compatibility */}
-        <div>
-          <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#c9d1d9' }}>Compatible Target Trains (Rebase Engine Supported)</h4>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+        <div className="p-4 bg-slate-900/80 border border-slate-800 rounded-xl space-y-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+            Compatible Target Trains (Rebase Engine Supported)
+          </span>
+          <div className="flex flex-wrap gap-2">
             {activeTheme.targetTrains.map((train) => (
-              <span key={train} style={{ padding: '4px 10px', borderRadius: '4px', background: '#21262d', border: '1px solid #30363d', fontSize: '12px', fontFamily: 'monospace', color: '#7ee787' }}>
+              <span
+                key={train}
+                className="px-2.5 py-1 rounded bg-slate-950 border border-slate-700 text-xs font-mono text-emerald-400 font-semibold"
+              >
                 {train}
               </span>
             ))}
@@ -175,19 +236,22 @@ export const RecipeStudio: React.FC = () => {
         </div>
 
         {/* Simulated Virtual Cluster Display */}
-        <div style={{ flex: 1, background: '#0d1117', borderRadius: '8px', border: '1px solid #30363d', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ fontSize: '12px', color: '#8b949e', marginBottom: '16px' }}>Virtual Cluster Turn Display (800x480 Preview)</div>
-          <svg width="120" height="120" viewBox="0 0 100 100">
-            {/* Instrument turn arrow indicator rendered in active theme accent color */}
+        <div className="flex-1 bg-[#080b10] border border-slate-800 rounded-xl p-6 flex flex-col items-center justify-center relative shadow-inner min-h-[220px]">
+          <span className="text-xs font-mono text-slate-500 mb-4">
+            Virtual Cluster Turn Display (800x480 Preview)
+          </span>
+          <svg width="100" height="100" viewBox="0 0 100 100" className="drop-shadow-lg">
             <path
               d="M 50 15 L 85 50 L 65 50 L 65 85 L 35 85 L 35 50 L 15 50 Z"
               fill={activeTheme.accentColor}
               stroke="#ffffff"
               strokeWidth="2"
-              filter="drop-shadow(0 0 8px rgba(0,0,0,0.8))"
             />
           </svg>
-          <div style={{ marginTop: '16px', fontSize: '13px', fontWeight: 'bold', color: activeTheme.accentColor }}>
+          <div
+            className="mt-4 text-sm font-bold tracking-tight"
+            style={{ color: activeTheme.accentColor }}
+          >
             150 m — Turn Right onto A9 Autobahn
           </div>
         </div>
