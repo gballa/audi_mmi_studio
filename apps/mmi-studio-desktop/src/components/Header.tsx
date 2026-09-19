@@ -9,7 +9,8 @@ export type Tab =
   | 'recipes'
   | 'assets'
   | 'relab'
-  | 'typography';
+  | 'typography'
+  | 'plugins';
 
 interface HeaderProps {
   activeTab: Tab;
@@ -19,6 +20,7 @@ interface HeaderProps {
   onDismissNotification?: () => void;
   stringsCount?: number;
   activeLanguage?: string;
+  onOpenScriptCipher?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -29,6 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
   onDismissNotification,
   stringsCount = 43,
   activeLanguage = 'sq_AL',
+  onOpenScriptCipher,
 }) => {
   const [isToolsOpen, setIsToolsOpen] = useState<boolean>(false);
   const [isHwInfoOpen, setIsHwInfoOpen] = useState<boolean>(false);
@@ -54,7 +57,7 @@ export const Header: React.FC<HeaderProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Keyboard shortcut navigation (1..5 and 'r' for reset)
+  // Keyboard shortcut navigation (1..6 and 'r' for reset)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
@@ -65,6 +68,7 @@ export const Header: React.FC<HeaderProps> = ({
       else if (e.key === '3') onSelectTab('localization');
       else if (e.key === '4') onSelectTab('maps');
       else if (e.key === '5') onSelectTab('build');
+      else if (e.key === '6') onSelectTab('plugins');
       else if (e.key === 'r' || e.key === 'R') onOpenResetModal();
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -209,6 +213,19 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <button
+            onClick={() => onSelectTab('plugins')}
+            className={`px-2.5 md:px-3 py-1.5 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              activeTab === 'plugins'
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20'
+                : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/60'
+            }`}
+            title="ABI v1 Plugin Studio & Architecture Adapters [Hotkey: 6]"
+          >
+            <span>🧩</span>
+            <span className="hidden sm:inline">Plugins</span>
+          </button>
+
+          <button
             onClick={() => onSelectTab('build')}
             className={`px-2.5 md:px-3.5 py-1.5 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === 'build'
@@ -282,6 +299,28 @@ export const Header: React.FC<HeaderProps> = ({
                     </button>
                   );
                 })}
+
+                {/* Harman Script Cipher Utility Trigger */}
+                <div className="pt-1.5 border-t border-slate-800/80 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsToolsOpen(false);
+                      onOpenScriptCipher?.();
+                    }}
+                    className="w-full text-left p-2.5 rounded-lg flex items-start gap-3 hover:bg-amber-500/10 text-amber-400 hover:text-amber-300 transition-all cursor-pointer border border-transparent hover:border-amber-500/30"
+                    title="Open Harman PRNG XOR Stream Cipher Utility"
+                  >
+                    <span className="text-lg leading-none mt-0.5 shrink-0">🔐</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold flex items-center justify-between text-xs">
+                        <span>Harman Script Cipher</span>
+                        <span className="text-[9px] font-mono bg-amber-500/20 px-1 py-0.5 rounded text-amber-300">0x001be3ac</span>
+                      </div>
+                      <div className="text-[10px] text-slate-400 leading-tight mt-0.5">copie_scr.sh PRNG XOR stream encoder & decoder</div>
+                    </div>
+                  </button>
+                </div>
               </div>
             )}
           </div>

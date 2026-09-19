@@ -8,6 +8,8 @@ import { MapStudio } from './components/MapStudio';
 import { ComponentCustomizer } from './components/ComponentCustomizer';
 import { BuildStudio } from './components/BuildStudio';
 import { AiElementStudio } from './components/AiElementStudio';
+import { PluginStudio } from './components/PluginStudio';
+import { ScriptCipherModal } from './components/ScriptCipherModal';
 import { ResetModal, ResetSelectiveOptions } from './components/ResetModal';
 import { Header, Tab } from './components/Header';
 import { initialLocalizationStrings } from './data/localizationData';
@@ -67,6 +69,7 @@ export const App: React.FC = () => {
   const [aiAssets, setAiAssets] = useState<AiAssetItem[]>(initialAiAssets);
   const [exportNotification, setExportNotification] = useState<string | null>(null);
   const [isResetModalOpen, setIsResetModalOpen] = useState<boolean>(false);
+  const [isScriptCipherOpen, setIsScriptCipherOpen] = useState<boolean>(false);
 
   // MMI UI Theme & Customization Configuration
   const [themeConfig, setThemeConfig] = useState<MMIThemeConfig>(initialThemeConfig);
@@ -309,6 +312,7 @@ export const App: React.FC = () => {
         onDismissNotification={() => setExportNotification(null)}
         stringsCount={strings.length}
         activeLanguage="sq_AL"
+        onOpenScriptCipher={() => setIsScriptCipherOpen(true)}
       />
 
       {/* Main Workspace Area */}
@@ -354,6 +358,7 @@ export const App: React.FC = () => {
             onDisableAllUpdates={handleDisableAllMapUpdates}
           />
         )}
+        {activeTab === 'plugins' && <PluginStudio />}
         {activeTab === 'build' && (
           <BuildStudio
             themeConfig={themeConfig}
@@ -397,6 +402,11 @@ export const App: React.FC = () => {
         onResetAll={handleResetAll}
         onResetFeature={handleResetCurrentFeature}
         onResetSelective={handleResetSelective}
+      />
+      {/* Harman Script PRNG Cipher Utility Modal */}
+      <ScriptCipherModal
+        isOpen={isScriptCipherOpen}
+        onClose={() => setIsScriptCipherOpen(false)}
       />
     </div>
   );
