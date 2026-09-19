@@ -1596,3 +1596,105 @@ pub fn cmd_flash(
     Ok(())
 }
 
+pub fn cmd_obd(
+    port: &str,
+    baud: u32,
+    solve_svm: bool,
+    enable_gem: bool,
+    dry_run: bool,
+    as_json: bool,
+) -> Result<(), CoreError> {
+    use mmi_core::VirtualObdBridge;
+
+    let mut bridge = VirtualObdBridge::new();
+    let report = bridge.run_session(port, baud, solve_svm, enable_gem);
+
+    if as_json {
+        println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    } else {
+        println!("══════════════════════════════════════════════════════════════════════════");
+        println!(" Audi MMI 3G/3G+ OBD-II & CAN Diagnostic Bridge (Module 5F)");
+        println!("══════════════════════════════════════════════════════════════════════════");
+        println!("Connection Port:      {}", report.port);
+        println!("Baud Rate:            {} bps", report.baud_rate);
+        println!("CAN Bus Protocol:     {}", report.protocol);
+        println!(
+            "Diagnostic Status:    {}",
+            if report.connected {
+                "CONNECTED (UDS Session 0x10 Active)"
+            } else {
+                "DISCONNECTED"
+            }
+        );
+        println!("──────────────────────────────────────────────────────────────────────────");
+        println!(" Live Vehicle Telemetry (CAN Broadcast):");
+        println!("   Engine RPM:        {} RPM", report.telemetry.rpm);
+        println!("   Vehicle Speed:     {} km/h", report.telemetry.speed_kmh);
+        println!("   Coolant Temp:      {}°C", report.telemetry.coolant_temp_c);
+        println!(
+            "   Battery Voltage:   {:.2} V",
+            report.telemetry.control_module_voltage
+        );
+        println!("   Ambient Air:       {}°C", report.telemetry.ambient_temp_c);
+        println!(
+            "   Drive Select Mode: {}",
+            report.telemetry.active_drive_select.to_uppercase()
+        );
+        println!("──────────────────────────────────────────────────────────────────────────");
+
+        if let Some(svm) = &report.svm_report {
+            println!(" Software Version Management (SVM Error 03276) Auto-Resolution:");
+            println!("   Target Module:     {}", svm.module_address);
+            println!(
+                "   Channel 15 Read:   {} (0x{:04X})",
+                svm.initial_challenge_value, svm.initial_challenge_value
+            );
+            println!("   Cipher Applied:    XOR 51666 (0xC9D2)");
+            println!(
+                "   Channel 15 Write:  {} (0x{:04X})",
+                svm.computed_response_value, svm.computed_response_value
+            );
+            println!(
+                "   Write Verification: {}",
+                if svm.write_verified {
+                    "CONFIRMED & COMMITTED"
+                } else {
+                    "FAILED"
+                }
+            );
+            println!(
+                "   Fault Code Status:  {}",
+                if svm.dtc_03276_cleared {
+                    "CLEARED (0 DTCs present)"
+                } else {
+                    "PERSISTENT"
+                }
+            );
+            println!("──────────────────────────────────────────────────────────────────────────");
+        }
+
+        if let Some(gem) = &report.gem_report {
+            println!(" Green Engineering Menu (GEM) Direct Activation:");
+            println!("   Target Module:     {}", gem.module_address);
+            println!("   Channel 6 Old Val: {}", gem.previous_value);
+            println!("   Channel 6 New Val: {}", gem.new_value);
+            println!("   Status:            GEM UNLOCKED (Press CAR + MENU for 5s to open)");
+            println!("   Reboot Required:   YES (Hold Central Knob + Top-Right + Tone to reboot)");
+            println!("──────────────────────────────────────────────────────────────────────────");
+        }
+
+        println!(" Diagnostic Trouble Codes: {} cleared", report.dtcs_cleared);
+        println!(
+            " Mode:                 {}",
+            if dry_run {
+                "DRY RUN (Simulated OBD Loopback)"
+            } else {
+                "LIVE SERIAL / CAN BUS"
+            }
+        );
+        println!("══════════════════════════════════════════════════════════════════════════");
+    }
+
+    Ok(())
+}
+

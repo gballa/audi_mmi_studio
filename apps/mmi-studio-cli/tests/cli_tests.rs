@@ -643,3 +643,29 @@ fn test_cli_plugins_list_inspect_and_verify() {
     assert!(stdout_verify.contains("\"abi_compatible\": true"));
     assert!(stdout_verify.contains("\"detection_passed\": true"));
 }
+
+#[test]
+fn test_cli_obd_dry_run_and_svm_resolution() {
+    let workspace_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_mmi-studio-cli"))
+        .current_dir(workspace_dir)
+        .arg("obd")
+        .arg("--dry-run")
+        .arg("--solve-svm")
+        .arg("--enable-gem")
+        .arg("--json")
+        .output()
+        .expect("failed to execute cli obd");
+
+    assert!(output.status.success(), "CLI stderr: {}", String::from_utf8_lossy(&output.stderr));
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(stdout.contains("\"connected\": true"));
+    assert!(stdout.contains("\"adaptation_channel\": 15"));
+    assert!(stdout.contains("\"dtc_03276_cleared\": true"));
+    assert!(stdout.contains("\"gem_unlocked\": true"));
+}

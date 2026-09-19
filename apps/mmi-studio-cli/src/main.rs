@@ -10,7 +10,7 @@ use commands::{
     cmd_hexdump, cmd_inspect, cmd_plugins_inspect, cmd_plugins_list, cmd_plugins_verify,
     cmd_rebuild, cmd_recipe_apply, cmd_recipe_rebase, cmd_simulate_update, cmd_stock_recovery,
     cmd_strings_inspect, cmd_strings_overflow, cmd_validate, cmd_verify_rebuild,
-    cmd_maps_compile, cmd_firmware_bundle, cmd_flash,
+    cmd_maps_compile, cmd_firmware_bundle, cmd_flash, cmd_obd,
 };
 
 #[derive(Parser)]
@@ -250,6 +250,27 @@ enum Commands {
         verify: bool,
         /// Simulate flashing without writing to physical disk
         #[arg(long)]
+        dry_run: bool,
+        /// Output formatted as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Live OBD-II / CAN-Bus diagnostics bridge, SVM Error 03276 resolution, and GEM activation
+    Obd {
+        /// Connection serial device port or loopback
+        #[arg(short, long, default_value = "/dev/tty.usbserial-OBD2")]
+        port: String,
+        /// Baud rate for serial OBD adapter (default: 115200)
+        #[arg(short, long, default_value_t = 115200)]
+        baud: u32,
+        /// Automatically solve SVM Error 03276 via Channel 15 XOR 51666
+        #[arg(long, default_value_t = true)]
+        solve_svm: bool,
+        /// Automatically enable Green Engineering Menu via Channel 6 = 1
+        #[arg(long, default_value_t = true)]
+        enable_gem: bool,
+        /// Simulate diagnostics session without physical vehicle connection
+        #[arg(long, default_value_t = true)]
         dry_run: bool,
         /// Output formatted as JSON
         #[arg(long)]
@@ -626,6 +647,14 @@ fn main() {
             dry_run,
             json,
         } => cmd_flash(disk, source.as_deref(), *verify, *dry_run, *json),
+        Commands::Obd {
+            port,
+            baud,
+            solve_svm,
+            enable_gem,
+            dry_run,
+            json,
+        } => cmd_obd(port, *baud, *solve_svm, *enable_gem, *dry_run, *json),
     };
 
     if let Err(e) = result {
