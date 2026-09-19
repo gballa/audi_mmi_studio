@@ -48,6 +48,8 @@ docs/
 │
 ├── how-to/                                   # Procedural task guides
 │   ├── README.md                             # How-To library index
+│   ├── produce-albanian-and-2026-maps-firmware.md # Custom build with sq_AL, 2026 maps & toolkit
+│   ├── in-car-sd-update-guide.md             # Complete in-car SD upgrade procedure
 │   ├── inspect-unknown-binary.md             # Format detection, entropy, and carving
 │   ├── decode-and-replace-assets.md          # Extracting .precomp, editing, conforming
 │   ├── create-and-rebase-theme-recipe.md     # Declarative JSON theming & drift rebase

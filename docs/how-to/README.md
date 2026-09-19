@@ -20,6 +20,7 @@ The **How-To Library** provides concise, procedural guides for accomplishing spe
 
 ## Rebuild, Verification & Packaging
 
+- [**Produce Custom Firmware with Albanian Language & 2026 Maps**](produce-albanian-and-2026-maps-firmware.md): Complete end-to-end tutorial for configuring RS themes, Albanian translations (`sq_AL`), 2026 cartography, diagnostic tools, and flashing SD media.
 - [**Complete In-Car SD Card Upgrade Guide**](in-car-sd-update-guide.md): Detailed step-by-step procedure for preparing media, in-car SWDL flashing, navigation unblocking, and post-update diagnostics.
 - [**Rebuild and Validate Firmware**](rebuild-and-validate-firmware.md): How to deterministically repackage staged files and execute the 6-tier (`L0`–`L5`) automotive validation suite.
 - [**Prepare SD Deployment Media**](prepare-sd-deployment-media.md): How to partition, format with 32 KiB cluster geometry, and package update files onto FAT32 SD media.

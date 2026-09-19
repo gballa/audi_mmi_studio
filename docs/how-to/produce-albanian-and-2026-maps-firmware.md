@@ -1,0 +1,273 @@
+# How-To: Produce a Custom Firmware Build with Albanian Language & 2026 Maps
+
+This guide details the complete end-to-end procedure for producing, packaging, verifying, and deploying a customized **Audi MMI 3G High / Plus [HN+]** firmware update featuring:
+1. **Albanian Language Localization (`sq_AL`)**: Full 43+ system string catalog with typography overflow validation on the 800×480 screen.
+2. **2026 Navigation Cartography**: OpenStreetMap (OSM) vector networks, the A1 Thumanë–Kashar motorway, Llogara tunnel, Tirana outer orbital, EV charging hubs, speed cameras, and high-contrast Day/Night XAR style tables.
+3. **Custom RS Styling & Assets**: RS Misano Red accents, high-contrast gauges, and Gemini Nano Banana asset badges.
+4. **In-Car Diagnostics & Toolkit Suite**: Embedded Renesas SH-4 on-screen display (`showScreen`), Harman PRNG encrypted script launcher (`copie_scr.sh`), Green Engineering Menu DTC scanner/clearer (`ToolkitDTC.esd`), and live vehicle telemetry (`GaugesDashboard.esd`).
+
+---
+
+## 1. Prerequisites & Environment
+
+### Hardware Requirements
+- **Target Vehicle**: Audi MMI 3G High or 3G+ (Firmware Train: `HN+R_EU_AU_K0942_4` or compatible `HN+` trains, MainUnit: `MU9411`).
+- **Removable Media**: High-speed full-size SD/SDHC Card (8 GB to 32 GB, Class 10 / UHS-I).
+- **Vehicle Power**: External 12V 25A+ battery maintainer or running engine during in-car installation.
+
+### Workstation Prerequisites
+- **Rust Toolchain**: 1.75+ (Offline compilation supported).
+- **Node.js**: v18+ (For Desktop GUI).
+- **Local Repository**: Cloned and verified via `./scripts/verify-workstation.sh`.
+
+---
+
+## 2. Option A: Interactive Desktop GUI Workflow
+
+To launch the desktop engineering workstation:
+```bash
+cd apps/mmi-studio-desktop
+npm run dev
+```
+Open `http://localhost:5173` in your browser.
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ [1. Themes & UI]  [2. Gemini AI]  [3. Shqip]  [4. 2026 Maps]  [5. Plugins]  [6. SD Export] │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Step 1: Themes & UI Styling (`Hotkey: 1`)
+1. Click the top-left Audi badge to inspect target hardware specifications (`HN+R_EU_AU_K0942_4`, `MU9411`, QNX 6.5.0, 800×480 @ 60Hz).
+2. Configure styling parameters:
+   - **Accent Color**: `#E0001B` (Audi Sport RS Misano Red).
+   - **Needle Color**: `#FF0000`.
+   - **Font Family**: `AudiType-Bold`.
+   - **Ambient Glow**: Enabled.
+   - **Car Silhouette**: `audi_a6_sedan_3d` or matching vehicle chassis.
+3. Click **"Export Theme Recipe"** to save your configuration as a declarative JSON recipe.
+
+### Step 2: Gemini AI Asset Customization (`Hotkey: 2`)
+1. Inspect the visual assets in the AI studio.
+2. Apply styled treatments to car silhouettes, climate icons, drive select platters, and status badges.
+3. Verify that changes adhere to offline mock baselines without egress leakage.
+
+### Step 3: Albanian Language Catalog (`Shqip` — `Hotkey: 3`)
+1. The workstation pre-loads **43+ authentic Albanian automotive translations**:
+   - `Navigacioni` (Navigation)
+   - `Radio & Media` (Radio & Media)
+   - `Cilësimet e Automjetit` (Car Systems / Vehicle Settings)
+   - `Harta 2026 Shqipëri` (2026 Albania Maps)
+   - `Klima & Ngrohja` (Air Conditioning / Climate)
+   - `Telefon & Bluetooth` (Telephone / Bluetooth)
+2. Review translations or enter custom wording in the interactive table.
+3. Check the **Typography Bounding Box & Overflow Analyzer** to guarantee that long Albanian strings never overflow or truncate on the 800×480 display canvas.
+4. Click **"Preview in MMI Screen Canvas"** to inspect live font rendering.
+
+### Step 4: 2026 Map Cartography Patches (`2026 Maps` — `Hotkey: 4`)
+1. In the **2026 Maps** tab, verify that all target infrastructure updates are enabled:
+   - `al-a1-thumane-kashar`: A1 Thumanë–Kashar 130 km/h dual-carriageway motorway.
+   - `al-llogara-tunnel`: Llogara bypass and subsurface tunnel link.
+   - `al-tirana-ring`: Tirana Great Orbital Ring Road completion.
+   - `al-ev-corridor`: Adriatic-Ionian high-power EV charging hubs.
+   - `al-radar-cameras`: Highway fixed speed camera positions.
+2. Toggle high-contrast Day and Night style palettes (`styles_day.xar`, `styles_night.xar`).
+
+### Step 5: Plugins & Third-Party Adapters (`Hotkey: 6`)
+1. Inspect registered format adapters in **Plugin Studio** (MMI 3G Precomp, MIB2 High MCF, MIB3 Android Automotive, RNS 850).
+2. Verify that sandboxing isolation parameters are strictly enforced (64–128 MB RAM limits, execution timeouts, zero external socket access).
+3. Test custom payloads using the **Interactive Sandbox Test Runner**.
+
+### Step 6: Harman PRNG Script Cipher Utility (`Tools Menu`)
+1. Click **Tools ▾** in the top navigation bar and select **"Harman Script Cipher"**.
+2. Review or edit the shell script in the live editor.
+3. Notice the real-time 16-byte hex dump preview generated by the Harman bit-rotation PRNG stream cipher (`SEED_INIT = 0x001be3ac`).
+4. Click **"Download Encrypted (copie_scr.sh)"** or **"Download Plaintext (copie_scr_plain.sh)"** if authoring standalone autorun scripts.
+
+### Step 7: SD Card Assembly & Deployment (`SD Export` — `Hotkey: 5`)
+1. Configure the **In-Car Diagnostics & Toolkit Suite** checkboxes:
+   - `[x] Framebuffer On-Screen Display HUD (showScreen, running.png, done.png)`
+   - `[x] Harman PRNG Stream Cipher (copie_scr.sh encrypted with seed 0x001be3ac)`
+   - `[x] In-Car DTC Error Checker & Clearer (ToolkitDTC.esd)`
+   - `[x] Live In-Car Telemetry & Gauges Dashboard (GaugesDashboard.esd)`
+   - `[x] Hardware System Baseline Snapshot Dumper (sysinfo_dump.sh)`
+   - `[x] Wi-Fi & Bluetooth Credential Backup Tool (password_dump.sh)`
+2. Click **"Stage & Build SD Card Firmware"**:
+   - The workstation compiles all components into `output/mmi3g_sd_card_update/`.
+   - Emits root `metainfo2.txt`, `build_manifest.json`, and kernel partitions.
+3. Click **"Simulate QNX Head Unit Update"**:
+   - Executes a 6-stage pre-flight verification (CRC, Flash Space, Mounts, Backup, Write, Validation).
+4. Click **"Sanitize Removable SD Volume"**:
+   - Automatically strips hidden macOS files (`.DS_Store`, `._*`) that cause QNX read failures.
+5. Select the target physical SD volume (e.g. `/Volumes/MMI3G_NAV`) and click **"Flash to SD Card"**.
+
+---
+
+## 3. Option B: Headless Terminal CLI Pipeline
+
+For automated, scripted, or CI/CD builds, execute the native Rust CLI commands:
+
+### Step 1: Compile 2026 Navigation Cartography
+Compile OpenStreetMap vector networks, POIs, and styles into native Harman FLDB format:
+```bash
+cargo run -p mmi-studio-cli --release -- maps compile \
+  --region AL \
+  --release 2026_ECE \
+  --enable-gmp \
+  --output output/maps_2026
+```
+
+### Step 2: Package Full Firmware Bundle with Albanian Language
+Package the full firmware release, embedding `sq_AL.ans`, the 2026 navigation database, diagnostic screens, and Renesas SH-4 binaries:
+```bash
+cargo run -p mmi-studio-cli --release -- firmware package \
+  --train HN+R_EU_AU_K0942_4 \
+  --release 2026_ECE \
+  --variant MU9411 \
+  --output output/mmi3g_sd_card_update
+```
+
+### Step 3: Sanitize SD Volume (Eliminate macOS Host Bleed)
+Purge AppleDouble resource forks and OS dotfiles:
+```bash
+cargo run -p mmi-studio-cli --release -- sanitize-media \
+  --media-dir output/mmi3g_sd_card_update
+```
+
+### Step 4: Dry-Run Physical Flashing & Attestation Check
+Simulate writing to the SD card to verify FAT32 geometry (32KB clusters), MBR partition table, and dual-layer checksums:
+```bash
+cargo run -p mmi-studio-cli --release -- flash \
+  --disk /Volumes/MMI3G_NAV \
+  --dry-run \
+  --verify
+```
+
+### Step 5: Flash to Physical SD Card
+Write the validated bundle directly to physical SD media with post-write block verification:
+```bash
+cargo run -p mmi-studio-cli --release -- flash \
+  --disk /Volumes/MMI3G_NAV \
+  --verify
+```
+
+### Step 6: Create Emergency Stock Recovery Media
+Generate a standalone recovery SD card from pristine baselines before touching the vehicle:
+```bash
+cargo run -p mmi-studio-cli --release -- stock-recovery create \
+  --output output/stock_recovery_sd
+```
+
+---
+
+## 4. Generated SD Card Filesystem Hierarchy
+
+The resulting SD card contains the exact directory structure required by the QNX MMI operating system:
+
+```
+/Volumes/MMI3G_NAV/
+├── metainfo2.txt                    # Root SWDL manifest with checksums
+├── build_manifest.json              # Cryptographic BLAKE3 attestation ledger
+├── finalScript                      # Trigger script for QNX update engine
+├── copie_scr.sh                     # Encrypted autorun script (PRNG seed 0x001be3ac)
+├── copie_scr_plain.sh               # Plaintext shell script backup
+├── stock_recovery.sh                # Emergency rollback script
+├── README_SD_CARD.txt               # In-car operational instructions
+├── bin/
+│   └── showScreen                   # Renesas SH-4 OSD display engine
+├── lib/
+│   ├── running.png                  # Yellow OSD notification ("Script Running...")
+│   └── done.png                     # Green OSD notification ("Update Complete!")
+├── MU9411/
+│   ├── ifs-root.ifs                 # Core QNX OS kernel image
+│   ├── efs-system.efs               # System applications filesystem
+│   ├── precomp/
+│   │   └── theme_custom.precomp     # Red RS theme & UI assets
+│   └── strings/
+│       ├── sq_AL.ans                # Compiled Albanian translation catalog
+│       └── sq_AL_catalog.json       # Source JSON string definitions
+├── HBNavDB/
+│   ├── nav_data.db                  # Harman FLDB database (544-byte pages)
+│   └── 2026_albania_patch.pkg       # Vector tile highway network & POIs
+├── MapStyles/
+│   ├── styles_day.xar               # Day palette styling
+│   ├── styles_night.xar             # Night palette styling
+│   └── night_2026.gdb               # SQLite 3D cartographic geometry database
+└── gem/
+    ├── screens/
+    │   ├── ToolkitDTC.esd           # In-car DTC scanner & memory clearer
+    │   ├── GaugesDashboard.esd      # Live sensor telemetry & battery monitor
+    │   ├── custom_telemetry.esd     # Hardware diagnostics screen
+    │   └── map_inspector.esd        # GPS & map coordinate validator
+    └── scripts/
+        ├── sysinfo_dump.sh          # System info snapshot tool
+        ├── password_dump.sh         # Wi-Fi & Bluetooth key extractor
+        └── bench_diag.sh            # Bench testing script
+```
+
+---
+
+## 5. In-Car Installation & Verification Procedure
+
+Follow these steps when inserting the SD card into the vehicle:
+
+```
+[Phase 1: Power & Prep] ──> [Phase 2: SD Slot 1 Autorun] ──> [Phase 3: SWDL Update] ──> [Phase 4: Reset & DTC Clear]
+```
+
+### Phase 1: Preparation
+1. Connect an external 12V 25A+ battery charger to the under-hood terminals, or leave the engine idling.
+2. Insert the **Emergency Recovery SD Card** into **SD Slot 2** (right slot).
+3. Ensure SD Slot 1 is empty and no devices are connected to the AMI port.
+
+### Phase 2: Automated Script Runner Execution
+1. Insert the newly prepared update SD card into **SD Slot 1** (left slot).
+2. The head unit's background daemon `proc_scriptlauncher` detects the media:
+   - Automatically decrypts `copie_scr.sh` using seed `0x001be3ac`.
+   - The OSD binary displays `running.png` (Yellow banner) on the MMI screen.
+   - Engages flash locks (`/tmp/disableReclaim`) to prevent flash corruption.
+   - Takes a pre-update NVRAM backup to `$SDPATH/backup/`.
+   - Deploys the Albanian language catalog (`sq_AL.ans`) to `/mnt/efs-system/`.
+   - Copies custom Green Menu screens to `/mnt/efs-system/gem/`.
+   - Applies the permanent navigation unblocker hook so 2026 maps never time out.
+   - The OSD binary displays `done.png` (Green banner).
+3. Wait 30 seconds until disk activity ceases.
+
+### Phase 3: Firmware & Navigation SWDL Upgrade (If updating map database)
+1. **Enter Red Engineering Menu (REM)**:
+   - Hold **[CAR]** + **[BACK]** (MMI 3G+) or **[SETUP]** + **[RETURN]** (MMI 3G High) for 5 seconds.
+2. Select **Update** -> Source: **SD 1** -> **Standard**.
+3. Select **Start Update** -> **Start**.
+4. Allow partitions to flash sequentially (`ifs-root` -> `efs-system` -> `HBNavDB`).
+5. Upon 100% completion, select **Continue** -> **Abort documentation** (bypasses dealer server feedback).
+6. Select **Restart MMI**.
+
+### Phase 4: Hardware Reset & Post-Install Diagnostics
+1. **Perform 3-Finger MMI Hardware Reset**:
+   - Simultaneously press and release **[MENU] + [Center Rotary Knob] + [Upper-Right Softkey]**.
+2. **Access Green Engineering Menu (GEM)**:
+   - Hold **[CAR] + [MENU]** for 5 seconds.
+   - Navigate to `/screens/ToolkitDTC.esd` to scan and clear any diagnostic trouble codes.
+   - Open `/screens/GaugesDashboard.esd` to verify live battery voltage and GPS telemetry.
+3. **Resolve SVM Fault Code 03276 (Optional)**:
+   - If Diagnostic Trouble Code `03276` appears in Module 5F, run the automated solver:
+     ```bash
+     cargo run -p mmi-studio-cli -- obd svm-clear --train HN+R_EU_AU_K0942_4
+     ```
+
+---
+
+## 6. Verification Checklist
+
+Before taking the vehicle onto the road, verify the following:
+
+- [ ] **Albanian Language Active**: System menus display Albanian text without clipping or overflow.
+- [ ] **2026 Cartography Loaded**: Map display shows updated highway alignments (A1 Thumanë–Kashar, Llogara tunnel).
+- [ ] **Navigation Lock Interlock**: Navigation remains fully active after 5 minutes of driving (no "Navigation data blocked" banner).
+- [ ] **GPS Satellite Fix**: 3D positioning acquired with valid elevation.
+- [ ] **Fault Memory Clean**: Module 5F error memory checked and cleared.
+
+> [!IMPORTANT]
+> All firmware packages emitted by this workstation adhere strictly to **§14.9 Safety Policy**:
+> `BUILD READY — DEPLOYMENT NOT VERIFIED`
+> Hardware-level recovery verification must always be performed prior to permanent vehicle flashing.
