@@ -46,13 +46,11 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
     let width = 0;
     for (let i = 0; i < text.length; i++) {
       const char = text[i];
-      // Capital letters and wider glyphs
       if (/[A-ZËÇMWQO#@]/.test(char)) {
         width += size * boldMultiplier * 1.25;
       } else if (/[ijl1!.,;:'|\s]/.test(char)) {
         width += size * boldMultiplier * 0.45;
       } else if (/[ëç]/.test(char)) {
-        // Albanian diacritics maintain standard vowel width + accent clearance
         width += size * boldMultiplier * 1.05;
       } else {
         width += size * boldMultiplier;
@@ -105,11 +103,11 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
   };
 
   return (
-    <div className="flex h-full bg-slate-950 text-slate-100 overflow-hidden font-sans">
+    <div className="flex h-full w-full bg-slate-950 text-slate-100 overflow-hidden font-sans min-w-0">
       {/* Left String Directory */}
-      <div className="w-96 flex flex-col border-r border-slate-800 bg-slate-900/60">
+      <div className="w-80 xl:w-96 flex flex-col shrink-0 h-full border-r border-slate-800 bg-slate-900/60 min-w-0">
         {/* Header & Filter */}
-        <div className="p-3 border-b border-slate-800 space-y-2">
+        <div className="p-3 border-b border-slate-800 space-y-2 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-base font-bold tracking-tight text-white">🇦🇱 Albanian Studio</span>
@@ -150,7 +148,7 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
         </div>
 
         {/* String List */}
-        <div className="flex-1 overflow-y-auto divide-y divide-slate-800/50">
+        <div className="flex-1 overflow-y-auto divide-y divide-slate-800/50 min-w-0">
           {filteredStrings.map((item) => {
             const isSelected = item.id === activeStringId;
             const w = calcTextWidth(item.sq, 14, fontFamily);
@@ -165,8 +163,8 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-slate-400 truncate max-w-[190px]">{item.id}</span>
-                  <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-mono text-slate-400 truncate max-w-[170px] xl:max-w-[210px]">{item.id}</span>
+                  <div className="flex items-center gap-1.5 shrink-0">
                     {hasOverflow ? (
                       <span className="px-1.5 py-0.2 text-[9px] bg-red-950 border border-red-800 text-red-300 font-bold rounded">
                         OVERFLOW
@@ -187,13 +185,13 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
       </div>
 
       {/* Right String Inspector & Bounding Box Studio */}
-      <div className="flex-1 flex flex-col overflow-y-auto bg-slate-950 p-6 space-y-6">
+      <div className="flex-1 min-w-0 flex flex-col h-full overflow-y-auto bg-slate-950 p-4 lg:p-6 space-y-5">
         {/* Top Action Bar */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-white tracking-tight">Localization & Overflow Safety Engine</h2>
-              <span className="px-2 py-0.5 text-[10px] bg-blue-950 border border-blue-800 text-blue-300 rounded font-mono">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 border-b border-slate-800 shrink-0">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-base md:text-lg font-bold text-white tracking-tight">Localization & Overflow Safety Engine</h2>
+              <span className="px-2 py-0.5 text-[10px] bg-blue-950 border border-blue-800 text-blue-300 rounded font-mono shrink-0">
                 TrueType / Linotype Rasterizer
               </span>
             </div>
@@ -202,54 +200,54 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap shrink-0">
             {exportNotice && (
-              <span className="text-xs text-emerald-400 font-medium animate-pulse mr-2">{exportNotice}</span>
+              <span className="text-xs text-emerald-400 font-medium animate-pulse mr-1">{exportNotice}</span>
             )}
             {onPreviewStringInScreen && activeItem && (
               <button
                 onClick={() => onPreviewStringInScreen(activeItem)}
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded border border-slate-700 transition"
+                className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded border border-slate-700 transition flex items-center gap-1.5 shrink-0"
               >
-                👁️ Preview on 800x480 Screen
+                <span>👁️</span> Preview in Canvas
               </button>
             )}
             {onResetAllStrings && (
               <button
                 onClick={onResetAllStrings}
-                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold rounded border border-slate-700 transition flex items-center gap-1"
-                title="Reset all 43+ strings back to verified baseline"
+                className="px-2.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold rounded border border-slate-700 transition flex items-center gap-1 shrink-0"
+                title="Reset all strings back to verified baseline"
               >
-                <span>↺</span> Reset All Translations
+                <span>↺</span> Reset All
               </button>
             )}
             <button
               onClick={handleExportCatalog}
-              className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded shadow transition"
+              className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded shadow transition flex items-center gap-1.5 shrink-0"
             >
-              Export sq_AL Translation Catalog
+              <span>💾</span> Export sq_AL
             </button>
           </div>
         </div>
 
         {activeItem ? (
-          <div className="space-y-6">
+          <div className="space-y-5 min-w-0">
             {/* Metadata Banner */}
-            <div className="grid grid-cols-4 gap-4 p-4 bg-slate-900 border border-slate-800 rounded-lg">
-              <div>
-                <span className="block text-[11px] font-semibold text-slate-400">Key ID</span>
-                <span className="font-mono text-xs text-amber-400 font-bold">{activeItem.id}</span>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3.5 bg-slate-900 border border-slate-800 rounded-lg min-w-0">
+              <div className="min-w-0">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Key ID</span>
+                <span className="font-mono text-xs text-amber-400 font-bold truncate block">{activeItem.id}</span>
               </div>
-              <div>
-                <span className="block text-[11px] font-semibold text-slate-400">MMI Subsystem</span>
-                <span className="text-xs text-slate-200 font-medium">{activeItem.category}</span>
+              <div className="min-w-0">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">MMI Subsystem</span>
+                <span className="text-xs text-slate-200 font-medium truncate block">{activeItem.category}</span>
               </div>
-              <div>
-                <span className="block text-[11px] font-semibold text-slate-400">Target Display Box</span>
-                <span className="text-xs font-mono text-slate-200">{activeItem.maxPixels} px (max width)</span>
+              <div className="min-w-0">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Display Slot</span>
+                <span className="text-xs font-mono text-slate-200 truncate block">{activeItem.maxPixels} px max</span>
               </div>
-              <div>
-                <span className="block text-[11px] font-semibold text-slate-400">Context Location</span>
+              <div className="min-w-0">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context</span>
                 <span className="text-xs text-slate-300 truncate block" title={activeItem.context}>
                   {activeItem.context}
                 </span>
@@ -257,7 +255,7 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
             </div>
 
             {/* Translation Input Matrix */}
-            <div className="space-y-4 bg-slate-900/60 p-5 rounded-lg border border-slate-800">
+            <div className="space-y-4 bg-slate-900/60 p-4 md:p-5 rounded-lg border border-slate-800 min-w-0">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Translation Matrix</h3>
 
               {/* English OEM Original */}
@@ -283,7 +281,7 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
 
               {/* Albanian Interactive Translation */}
               <div className="space-y-2 pt-2 border-t border-slate-800">
-                <div className="flex justify-between items-center text-xs">
+                <div className="flex flex-wrap justify-between items-center gap-2 text-xs">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-amber-400">🇦🇱 Gjuha Shqipe (Albanian Translation):</span>
                     <span className="text-[10px] text-slate-400 font-mono">Supports ë, ç, Ë, Ç</span>
@@ -304,22 +302,22 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
                     value={activeItem.sq}
                     onChange={(e) => onUpdateString(activeItem.id, e.target.value)}
-                    className={`flex-1 px-3 py-2.5 bg-slate-950 border text-sm text-white font-medium rounded focus:outline-none transition ${
+                    className={`flex-1 px-3 py-2 bg-slate-950 border text-sm text-white font-medium rounded focus:outline-none transition min-w-0 ${
                       isSqOverflow ? 'border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.2)]' : 'border-slate-700 focus:border-amber-500'
                     }`}
                   />
                   {/* Quick Diacritic Insert Buttons */}
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     {['ë', 'ç', 'Ë', 'Ç'].map((char) => (
                       <button
                         key={char}
                         onClick={() => onUpdateString(activeItem.id, activeItem.sq + char)}
-                        className="w-8 h-9 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded font-mono font-bold text-sm text-amber-400"
+                        className="w-8 h-9 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded font-mono font-bold text-sm text-amber-400 transition"
                         title={`Insert ${char}`}
                       >
                         {char}
@@ -328,10 +326,10 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
                     {onResetSingleString && (
                       <button
                         onClick={() => onResetSingleString(activeItem.id)}
-                        className="px-2.5 h-9 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded font-medium text-xs text-slate-300 hover:text-white flex items-center gap-1 ml-1"
+                        className="px-2.5 h-9 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded font-medium text-xs text-slate-300 hover:text-white flex items-center gap-1 ml-1 transition"
                         title="Reset this string to baseline translation"
                       >
-                        <span>↺</span> Reset
+                        <span>↺</span>
                       </button>
                     )}
                   </div>
@@ -340,12 +338,12 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
             </div>
 
             {/* Visual Bounding Box Simulator */}
-            <div className="bg-slate-900 border border-slate-800 rounded-lg p-5 space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 md:p-5 space-y-4 min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   Hardware Text Bounding Box Simulation (MMI 800x480 Cluster)
                 </h3>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                   <select
                     value={fontFamily}
                     onChange={(e) => setFontFamily(e.target.value as any)}
@@ -371,35 +369,37 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
                 </div>
               </div>
 
-              {/* Display Simulation Stage */}
-              <div className="flex flex-col items-center justify-center p-8 bg-[#0c0e12] border border-slate-800/80 rounded-lg relative overflow-hidden">
+              {/* Display Simulation Stage - with dedicated scroll container to prevent page overflow */}
+              <div className="w-full overflow-x-auto p-6 bg-[#0c0e12] border border-slate-800/80 rounded-lg flex flex-col items-center justify-center relative min-w-0">
                 <div className="text-[11px] text-slate-500 mb-2 font-mono">
-                  Allocated UI Slot: {activeItem.maxPixels} px
+                  Hardware UI Slot: {activeItem.maxPixels} px
                 </div>
 
                 {/* Target Hardware Bounding Box */}
-                <div
-                  className={`relative border-2 ${
-                    isSqOverflow
-                      ? 'border-red-500 bg-red-950/20 shadow-[0_0_24px_rgba(239,68,68,0.25)]'
-                      : 'border-emerald-500/80 bg-emerald-950/10'
-                  } rounded p-2 flex items-center justify-center transition-all`}
-                  style={{ width: `${activeItem.maxPixels}px`, height: '48px' }}
-                >
-                  <span
-                    className="whitespace-nowrap select-none text-slate-100 font-semibold"
-                    style={{
-                      fontSize: `${fontSize}px`,
-                      fontFamily: fontFamily.includes('Extended') ? 'sans-serif' : 'sans-serif',
-                      fontWeight: fontFamily.includes('Bold') ? 700 : 500,
-                    }}
+                <div className="max-w-full overflow-x-auto py-2 px-4 flex justify-center">
+                  <div
+                    className={`relative border-2 ${
+                      isSqOverflow
+                        ? 'border-red-500 bg-red-950/20 shadow-[0_0_24px_rgba(239,68,68,0.25)]'
+                        : 'border-emerald-500/80 bg-emerald-950/10'
+                    } rounded p-2 flex items-center justify-center transition-all shrink-0`}
+                    style={{ width: `${Math.min(Math.max(activeItem.maxPixels, 80), 1200)}px`, height: '48px' }}
                   >
-                    {activeItem.sq}
-                  </span>
+                    <span
+                      className="whitespace-nowrap select-none text-slate-100 font-semibold"
+                      style={{
+                        fontSize: `${fontSize}px`,
+                        fontFamily: fontFamily.includes('Extended') ? 'sans-serif' : 'sans-serif',
+                        fontWeight: fontFamily.includes('Bold') ? 700 : 500,
+                      }}
+                    >
+                      {activeItem.sq}
+                    </span>
 
-                  {/* Absolute Pixel Guides */}
-                  <div className="absolute -top-3 right-0 text-[9px] font-mono text-slate-400">
-                    Max: {activeItem.maxPixels}px
+                    {/* Absolute Pixel Guides */}
+                    <div className="absolute -top-3 right-0 text-[9px] font-mono text-slate-400">
+                      Max: {activeItem.maxPixels}px
+                    </div>
                   </div>
                 </div>
 
@@ -408,7 +408,7 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
                     <strong>Hardware Clipping Hazard:</strong> The Albanian translation is{' '}
                     <span className="font-mono font-bold text-red-300">+{sqOverflowAmount}px</span> wider than the
                     display box allocation. On the physical Audi MMI 3G display, characters beyond this limit will be
-                    clipped or truncated. Shorten the phrase or select a narrower wording.
+                    clipped or truncated.
                   </div>
                 )}
               </div>
