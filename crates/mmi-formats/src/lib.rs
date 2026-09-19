@@ -19,13 +19,13 @@ pub mod gate;
 
 pub use adapter::{FormatAdapter, FormatCapabilities};
 pub use opaque_span::OpaqueByteSpan;
-pub use metainfo2::{MetaInfo2, MetaInfo2Adapter};
+pub use metainfo2::{MetaInfo2, MetaInfo2Adapter, MetaInfo2Builder, crc32_ieee, generate_block_crcs};
 pub use precomp::{PrecompImage, PrecompAdapter, HEADER_SIZE, PRECOMP_MAGIC};
 pub use mapstyle_xar::{MapStyleXar, MapStyleXarAdapter};
 pub use hb_navdb::{HbNavDb, HbNavDbAdapter, HbNavDbHeader, FLDB_MAGIC};
 pub use hb_atlas::{HbAtlas, HbAtlasAdapter, HbAtlasHeader, ATLAS_MAGIC_TAG};
-pub use qnx_ifs::{QnxIfs, QnxIfsAdapter, QnxIfsHeader, QNX_IFS_MAGIC};
-pub use qnx_efs::{QnxEfs, QnxEfsAdapter, QnxEfsHeader, QNX_F3S_MAGIC};
+pub use qnx_ifs::{QnxIfs, QnxIfsAdapter, QnxIfsHeader, QnxIfsBuilder, QNX_IFS_MAGIC, MAX_IFS_ROOT_SIZE};
+pub use qnx_efs::{QnxEfs, QnxEfsAdapter, QnxEfsHeader, QnxEfsBuilder, QNX_F3S_MAGIC, MAX_EFS_SYSTEM_SIZE};
 pub use hb_ans::{HbAns, HbAnsAdapter, HbAnsHeader, ANS_MAGIC};
 pub use hb_fpga::{HbFpga, HbFpgaAdapter, HbFpgaHeader, FPGA_HDG_TAG};
 pub use smsc_ipf::{SmscIpf, SmscIpfAdapter, SmscIpfHeader, SMSC_IPF_MAGIC};

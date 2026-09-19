@@ -633,6 +633,7 @@ dependencies = [
  "mmi-rebuild",
  "mmi-recipe",
  "mmi-validation",
+ "rusqlite",
  "serde",
  "serde_json",
  "sha2",

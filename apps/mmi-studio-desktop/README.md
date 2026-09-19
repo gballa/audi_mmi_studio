@@ -74,8 +74,21 @@ The user interface is organized into five specialized engineering panels:
 
 5. **`TypographyStudio`**:
    - Multi-encoding localized string inspector (ASCII, UTF-8, UTF-16LE, EUC-JP).
-   - Dynamic bounding box simulation against real TrueType fonts.
+   - Albanian (`sq_AL`) full system translation catalog inspection and editing.
+   - Dynamic bounding box simulation against genuine Audi TrueType fonts (`AudiType-Extended.ttf`).
    - Real-time text clipping and overflow warnings.
+
+6. **`MapStudio`**:
+   - 2026 OpenStreetMap vector navigation compiler for Audi MMI 3G+.
+   - 3 Regional Profiles: Albania & Western Balkans Micro (~52 MB), Central Europe DACH (~6.2 GB), Pan-European ECE (~28.2 GB).
+   - Google Maps Platform POI enrichment (EV fast charging hubs, commercial fuel brands, speed radar coordinates).
+   - Live VCDS Adaptation Channel 15 XOR 51666 (`0xC9D2`) calculator to eliminate SVM error 03276.
+
+7. **`BuildStudio`**:
+   - End-to-end full system firmware packager for physical SD cards.
+   - Live NOR Flash Partition Capacity Gauges (`ifs-root` <= 43.74 MB, `efs-system` <= 38.80 MB).
+   - Complete SD card root tree preview showing all partition binaries, navigation DB, and launcher scripts (`copie_scr.sh`, `finalScript`, `stock_recovery.sh`).
+   - Step-by-step physical SD card formatting (FAT32, MBR, 32 KiB cluster geometry) and vehicle flashing runbook.
 
 ---
 

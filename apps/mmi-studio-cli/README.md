@@ -68,6 +68,8 @@ To view full CLI help:
 | `plugins list` | List discovered third-party format adapter plugins | `-d/--dir`, `--json` |
 | `plugins inspect` | Inspect plugin manifest, ABI version, and declared types | `plugin`, `--json` |
 | `plugins verify` | Verify plugin sandboxing and execute format detection | `plugin`, `-t/--test-file`, `--json` |
+| `maps compile` | Compile OpenStreetMap vector data & GMP POIs into FLDB media | `-o/--output`, `-r/--region`, `-i/--osm-input`, `--enable-gmp` |
+| `firmware package` | Package full system firmware, NOR flash partitions, & scripts | `-o/--output`, `-t/--train`, `-r/--release`, `-v/--variant` |
 
 ---
 
@@ -212,6 +214,50 @@ To inspect or verify custom format adapter plugins in `.mmistudio/plugins/`:
 ./target/release/mmi-studio-cli plugins verify \
   .mmistudio/plugins/sample-plugin \
   --test-file originals/MU9411/Speech/prompts.ans
+```
+
+---
+
+### 8. Packaging Full System Firmware SD Bundles
+
+To produce an end-to-end SD card bundle with QNX NOR flash partitions (`ifs-root.ifs`, `efs-system.efs`), Albanian localization, and SWDL block CRC32 manifests:
+
+```bash
+./target/release/mmi-studio-cli firmware package \
+  --output output/firmware_sd_bundle \
+  --train "HN+R_EU_AU_K0942_4" \
+  --release "2026_ECE" \
+  --variant "MU9411"
+```
+
+The output contains:
+- `MU9411/ifs-root.ifs`: SH-4 QNX root partition with 2026 splash screen and HMI bytecode (checked against 43.74 MB NOR limit).
+- `MU9411/efs-system.efs`: QNX F3S filesystem mounted at `/mnt/efs-system` containing Albanian language catalogs and GEM menus (checked against 38.8 MB limit).
+- `HBNavDB/nav_data.db`: Native 544-byte physical pages with CRC-16.
+- `metainfo2.txt`: Harman/Becker SWDL manifest with per-512KB CRC32 blocks.
+- `copie_scr.sh`: Automatic SD card insertion launcher payload for `proc_scriptlauncher`.
+- `finalScript`: Post-installation buffer flush and reboot script.
+- `stock_recovery.sh`: Emergency NAND rollback for QNX UART serial console.
+
+---
+
+### 9. Compiling 2026 Navigation Maps (OSM & Google Maps Platform)
+
+To compile modern OpenStreetMap cartography and enrich it with Google Maps Platform POIs:
+
+```bash
+# 1. Compile Albania & Western Balkans Micro profile
+./target/release/mmi-studio-cli maps compile \
+  --output /Volumes/MMI3G_NAV \
+  --region AL \
+  --release "2026_ECE"
+
+# 2. Compile with Google Maps Platform POI enrichment (EV charging, fuel, radars)
+./target/release/mmi-studio-cli maps compile \
+  --output /Volumes/MMI3G_NAV \
+  --region AL \
+  --enable-gmp \
+  --gmp-api-key "YOUR_API_KEY"
 ```
 
 ---

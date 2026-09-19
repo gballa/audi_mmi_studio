@@ -36,3 +36,4 @@ tracing-subscriber.workspace = true
 [dev-dependencies]
 tempfile.workspace = true
 image.workspace = true
+rusqlite.workspace = true

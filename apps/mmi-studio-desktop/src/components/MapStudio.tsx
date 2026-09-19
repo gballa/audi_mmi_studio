@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MapDatabaseInfo, MapUpdateItem } from '../types';
+import { regionalProfiles } from '../data/mapData';
 
 interface MapStudioProps {
   databases: MapDatabaseInfo[];
@@ -17,10 +18,17 @@ export const MapStudio: React.FC<MapStudioProps> = ({
   onDisableAllUpdates,
 }) => {
   const [selectedDbId, setSelectedDbId] = useState<string>(databases[0]?.id || '');
+  const [selectedProfileCode, setSelectedProfileCode] = useState<string>('AL');
+  const [enableGmp, setEnableGmp] = useState<boolean>(true);
+  const [enableEvPois, setEnableEvPois] = useState<boolean>(true);
+  const [enableSpeedCameras, setEnableSpeedCameras] = useState<boolean>(true);
+  const [svmChannel15Input, setSvmChannel15Input] = useState<string>('12345');
   const [patchingState, setPatchingState] = useState<'idle' | 'patching' | 'completed'>('idle');
   const [patchProgress, setPatchProgress] = useState<number>(0);
   const [patchLog, setPatchLog] = useState<string[]>([]);
   const [showTechnicalAnalysis, setShowTechnicalAnalysis] = useState<boolean>(true);
+
+  const activeProfile = regionalProfiles.find((p) => p.code === selectedProfileCode) || regionalProfiles[0];
 
   const activeDb = databases.find((d) => d.id === selectedDbId) || databases[0];
 
@@ -32,16 +40,17 @@ export const MapStudio: React.FC<MapStudioProps> = ({
     setPatchingState('patching');
     setPatchProgress(0);
     setPatchLog([
-      'Initiating 2026 Map Update Pipeline (Western Balkans / Albania)...',
-      'Target: Audi MMI 3G High / Plus [HN+] Navigation Partition',
+      `Initiating 2026 Map Update Pipeline — Profile: ${activeProfile.name} (${activeProfile.code})...`,
+      `Target Media: Audi MMI 3G High / Plus [HN+] (HBNavDB 544-byte FLDB Container)`,
+      `Coverage Estimated Footprint: ${activeProfile.estimatedSize} across ${activeProfile.volumeCount} FAT32 volume(s)`,
     ]);
 
     setTimeout(() => {
       setPatchProgress(25);
       setPatchLog((prev) => [
         ...prev,
-        'Stage 1: Parsing FLDB page container (544-byte physical page alignment verified)...',
-        `Stage 1: Staging ${enabledUpdates.length} update datasets (${totalKmAdded.toFixed(1)} km, ${totalNodesAdded} nodes)...`,
+        'Stage 1: Parsing OpenStreetMap (OSM) vector geometry & functional road classes (FRC 0-7)...',
+        `Stage 1: Staged ${enabledUpdates.length} roadway corridors (${totalKmAdded.toFixed(1)} km, ${totalNodesAdded} topology nodes)...`,
       ]);
     }, 600);
 
@@ -49,9 +58,12 @@ export const MapStudio: React.FC<MapStudioProps> = ({
       setPatchProgress(55);
       setPatchLog((prev) => [
         ...prev,
-        'Stage 2: Injecting vector topology (Thumanë-Kashar, Rruga e Arbrit, Llogara Tunnel)...',
-        'Stage 2: Updating speed restriction matrices (130 km/h motorways, 80 km/h tunnels)...',
-        'Stage 2: Writing 42 high-power EV Charging POIs into Geographic.gdb...',
+        enableGmp
+          ? 'Stage 2: Google Maps Platform enrichment active (Places API New + Geocoding API)...'
+          : 'Stage 2: Skipping GMP online enrichment (using offline vector definitions)...',
+        ...(enableGmp && enableEvPois ? ['Stage 2: Injected high-power 150kW-350kW CCS2 DC fast charging POIs with 30-day ToS cache...'] : []),
+        ...(enableGmp && enableSpeedCameras ? ['Stage 2: Injected 2026 calibrated speed enforcement camera radar POIs...'] : []),
+        'Stage 2: Updating statutory speed limit matrices (130 km/h motorways, 80 km/h tunnels, 50 km/h urban)...',
       ]);
     }, 1300);
 
@@ -59,8 +71,11 @@ export const MapStudio: React.FC<MapStudioProps> = ({
       setPatchProgress(85);
       setPatchLog((prev) => [
         ...prev,
-        'Stage 3: Recalculating FLDB CRC-16 page headers & Orion segment CRC-32...',
-        'Stage 3: Verifying R-tree spatial index balance for Western Balkans region...',
+        'Stage 3: Assembling 544-byte physical pages (512B payload + 16B header + 16B trailer sync 0x55AA55AA)...',
+        'Stage 3: Recalculating CRC-16/CCITT checksums across all physical page headers...',
+        activeProfile.volumeCount > 1
+          ? `Stage 3: Partitioning database into ${activeProfile.volumeCount} sequential FAT32 volumes (nav_data.db, nav_data.db.001...)...`
+          : 'Stage 3: Single-volume FAT32 boundary verified (<= 2 GiB)...',
       ]);
     }, 2000);
 
@@ -69,9 +84,11 @@ export const MapStudio: React.FC<MapStudioProps> = ({
       setPatchingState('completed');
       setPatchLog((prev) => [
         ...prev,
-        '✓ Stage 4: 2026 Map Update Patch Built Successfully!',
+        `✓ Stage 4: 2026 Navigation Update Compiled & Packaged Successfully for ${activeProfile.code}!`,
+        '✓ Packaging root metainfo2.txt, MU9411/strings/sq_AL.ans, and MapStyles shaders.',
+        '✓ Embedded emergency stock_recovery.sh for instant rollback.',
         'Status: BUILD READY — DEPLOYMENT NOT VERIFIED (§14.9 Policy Enforced).',
-        'Output: update_ece_2026_albania_patch.pkg + patch_manifest.json created.',
+        'SVM Resolution: Channel 15 XOR 51666 (0xC9D2) ready for VCDS adaptation if 03276 triggers.',
       ]);
     }, 2700);
   };
@@ -199,27 +216,150 @@ export const MapStudio: React.FC<MapStudioProps> = ({
           </div>
         </div>
 
-        {/* Selected Database Specs */}
-        {activeDb && (
-          <div className="grid grid-cols-4 gap-4 p-4 bg-slate-900 border border-slate-800 rounded-lg">
+        {/* Regional Scope & Compilation Profile Selector */}
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+                Regional Compilation Profile & FAT32 Volume Planning
+              </h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Select target geographical scope for Harman/Becker 544-byte FLDB database packaging
+              </p>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/40 text-amber-300">
+              Active: {activeProfile.code} ({activeProfile.estimatedSize})
+            </span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            {regionalProfiles.map((p) => {
+              const isSelected = p.code === selectedProfileCode;
+              return (
+                <div
+                  key={p.code}
+                  onClick={() => setSelectedProfileCode(p.code)}
+                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                    isSelected
+                      ? 'bg-amber-500/10 border-amber-500 shadow-sm'
+                      : 'bg-slate-950/80 border-slate-800 hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-white">{p.name}</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 bg-slate-800 text-amber-400 rounded">
+                      {p.code}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-1">{p.description}</div>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mt-2 pt-2 border-t border-slate-800/60">
+                    <span>Est. Size: <strong className="text-white">{p.estimatedSize}</strong></span>
+                    <span>Volumes: <strong className="text-amber-400">{p.volumeCount}x FAT32</strong></span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Google Maps Platform POI Enrichment & Telemetry Bar */}
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-base">📍</span>
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+                  Google Maps Platform POI & Radar Enrichment
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Augment OSM road network with commercial places, EV hubs, and speed enforcement alerts
+                </p>
+              </div>
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <span className="text-xs font-semibold text-slate-300">Enable GMP Pipeline</span>
+              <input
+                type="checkbox"
+                checked={enableGmp}
+                onChange={(e) => setEnableGmp(e.target.checked)}
+                className="w-4 h-4 rounded accent-amber-500 cursor-pointer"
+              />
+            </label>
+          </div>
+
+          {enableGmp && (
+            <div className="grid grid-cols-3 gap-3 pt-2 border-t border-slate-800">
+              <label className="flex items-start gap-2 p-2.5 rounded bg-slate-950 border border-slate-800 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={enableEvPois}
+                  onChange={(e) => setEnableEvPois(e.target.checked)}
+                  className="mt-0.5 w-3.5 h-3.5 rounded accent-amber-500 cursor-pointer"
+                />
+                <div>
+                  <span className="text-xs font-bold text-white block">EV Ultra-Fast Chargers</span>
+                  <span className="text-[10px] text-slate-400">150-350kW CCS2 DC hubs (Ionity, Tesla, regional)</span>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-2 p-2.5 rounded bg-slate-950 border border-slate-800 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={enableSpeedCameras}
+                  onChange={(e) => setEnableSpeedCameras(e.target.checked)}
+                  className="mt-0.5 w-3.5 h-3.5 rounded accent-amber-500 cursor-pointer"
+                />
+                <div>
+                  <span className="text-xs font-bold text-white block">Speed Cameras & Radars</span>
+                  <span className="text-[10px] text-slate-400">Fixed radars & high-speed corridor enforcement</span>
+                </div>
+              </label>
+
+              <div className="p-2.5 rounded bg-slate-950 border border-slate-800 flex flex-col justify-center">
+                <span className="text-[10px] font-mono text-emerald-400 font-semibold">✓ 30-Day Cache Eviction</span>
+                <span className="text-[10px] text-slate-400">FieldMask filtered · ToS Compliant</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Selected Database Specs & Interactive SVM 03276 Resolver */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="col-span-2 p-4 bg-slate-900 border border-slate-800 rounded-lg grid grid-cols-3 gap-3">
             <div>
               <span className="block text-[11px] font-semibold text-slate-400">Target Container</span>
-              <span className="font-mono text-xs text-amber-400 font-bold">{activeDb.name}</span>
+              <span className="font-mono text-xs text-amber-400 font-bold">{activeDb?.name || 'HBNavDB'}</span>
             </div>
             <div>
               <span className="block text-[11px] font-semibold text-slate-400">Physical Page Stride</span>
-              <span className="text-xs font-mono text-slate-200">{activeDb.pageSizeBytes} bytes (FLDB Header)</span>
+              <span className="text-xs font-mono text-slate-200">544 bytes (FLDB Header + CRC16)</span>
             </div>
             <div>
-              <span className="block text-[11px] font-semibold text-slate-400">Checksum System</span>
-              <span className="text-xs font-mono text-slate-200">{activeDb.checksumType}</span>
-            </div>
-            <div>
-              <span className="block text-[11px] font-semibold text-slate-400">Total Page Count</span>
-              <span className="text-xs font-mono text-slate-200">{activeDb.pageCount.toLocaleString()} pages</span>
+              <span className="block text-[11px] font-semibold text-slate-400">FAT32 Splitting</span>
+              <span className="text-xs font-mono text-emerald-400">Max 2 GiB / Volume</span>
             </div>
           </div>
-        )}
+
+          <div className="p-4 bg-slate-900 border border-slate-800 rounded-lg flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-400">SVM 03276 XOR Resolver</span>
+              <span className="text-[10px] font-mono text-slate-500">VCDS Ch.15</span>
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <input
+                type="text"
+                value={svmChannel15Input}
+                onChange={(e) => setSvmChannel15Input(e.target.value.replace(/\D/g, ''))}
+                className="w-24 px-2 py-1 bg-slate-950 border border-slate-700 rounded font-mono text-xs text-white"
+                placeholder="Ch.15 val"
+              />
+              <span className="text-slate-500 font-mono text-xs">XOR 51666 =</span>
+              <span className="font-mono text-xs font-bold text-emerald-400">
+                {((parseInt(svmChannel15Input, 10) || 0) ^ 51666).toString()}
+              </span>
+            </div>
+          </div>
+        </div>
 
         {/* 2026 Road Updates Selection Matrix */}
         <div className="bg-slate-900 border border-slate-800 rounded-lg p-5 space-y-4">

@@ -1,0 +1,41 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": 1,
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [19.8187, 41.3250],
+          [19.8187, 41.3275],
+          [19.8187, 41.3300]
+        ]
+      },
+      "properties": {
+        "highway": "primary",
+        "lanes": "2",
+        "maxspeed": "80",
+        "name": "Bulevardi Kryesor",
+        "turn:lanes": "through|right"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 2,
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [19.8187, 41.3275],
+          [19.8150, 41.3275]
+        ]
+      },
+      "properties": {
+        "highway": "residential",
+        "lanes": "2",
+        "maxspeed": "40",
+        "name": "Rruga e Qytetit"
+      }
+    }
+  ]
+}

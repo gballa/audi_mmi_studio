@@ -82,6 +82,14 @@ export interface MapUpdateItem {
   enabled: boolean;
 }
 
+export interface RegionalProfileConfig {
+  code: string;
+  name: string;
+  estimatedSize: string;
+  volumeCount: number;
+  description: string;
+}
+
 /**
  * MMI UI System Element for Gemini Nano Banana AI restyling
  */

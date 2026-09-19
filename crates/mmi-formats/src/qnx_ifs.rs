@@ -103,3 +103,72 @@ impl FormatAdapter for QnxIfsAdapter {
         }
     }
 }
+
+pub const MAX_IFS_ROOT_SIZE: usize = 45_875_200; // 43.75 MB partition boundary (0x00680000..0x030FFFFF)
+pub const QNX_MACHINE_SH4: u16 = 0x0006; // Renesas SH-4 (SH7785) architecture
+
+/// Builder for creating and repacking valid QNX IFS images.
+#[derive(Debug, Clone)]
+pub struct QnxIfsBuilder {
+    pub machine_type: u16,
+    pub files: Vec<(String, Vec<u8>)>,
+}
+
+impl Default for QnxIfsBuilder {
+    fn default() -> Self {
+        Self::new(QNX_MACHINE_SH4)
+    }
+}
+
+impl QnxIfsBuilder {
+    pub fn new(machine_type: u16) -> Self {
+        Self {
+            machine_type,
+            files: Vec::new(),
+        }
+    }
+
+    pub fn add_file(&mut self, path: impl Into<String>, data: &[u8]) {
+        self.files.push((path.into(), data.to_vec()));
+    }
+
+    pub fn build(&self) -> Result<Vec<u8>, CoreError> {
+        let mut payload = Vec::new();
+        for (path, content) in &self.files {
+            let path_bytes = path.as_bytes();
+            payload.extend_from_slice(&(path_bytes.len() as u16).to_le_bytes());
+            payload.extend_from_slice(path_bytes);
+            payload.extend_from_slice(&(content.len() as u32).to_le_bytes());
+            payload.extend_from_slice(content);
+        }
+
+        let startup_size = IFS_HEADER_MIN_SIZE as u32;
+        let stored_size = payload.len() as u32;
+        let image_size = startup_size + stored_size;
+        let ram_size = image_size * 2;
+
+        let total_size = IFS_HEADER_MIN_SIZE + payload.len();
+        if total_size > MAX_IFS_ROOT_SIZE {
+            return Err(CoreError::ImmutabilityViolation(format!(
+                "IFS image size ({} bytes) exceeds NOR flash ifs-root partition maximum ({} bytes)",
+                total_size, MAX_IFS_ROOT_SIZE
+            )));
+        }
+
+        let mut image = vec![0u8; total_size];
+        image[0..4].copy_from_slice(&QNX_IFS_MAGIC);
+        image[4..6].copy_from_slice(&1u16.to_le_bytes()); // version = 1
+        image[6..8].copy_from_slice(&0u16.to_le_bytes()); // flags = 0
+        image[8..10].copy_from_slice(&(IFS_HEADER_MIN_SIZE as u16).to_le_bytes());
+        image[10..12].copy_from_slice(&self.machine_type.to_le_bytes());
+        image[12..16].copy_from_slice(&startup_size.to_le_bytes());
+        image[16..20].copy_from_slice(&stored_size.to_le_bytes());
+        image[20..24].copy_from_slice(&image_size.to_le_bytes());
+        image[24..28].copy_from_slice(&ram_size.to_le_bytes());
+
+        image[IFS_HEADER_MIN_SIZE..].copy_from_slice(&payload);
+
+        Ok(image)
+    }
+}
+

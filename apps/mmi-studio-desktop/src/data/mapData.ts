@@ -1,4 +1,28 @@
-import { MapDatabaseInfo, MapUpdateItem } from '../types';
+import { MapDatabaseInfo, MapUpdateItem, RegionalProfileConfig } from '../types';
+
+export const regionalProfiles: RegionalProfileConfig[] = [
+  {
+    code: 'AL',
+    name: 'Albania & Western Balkans Micro',
+    estimatedSize: '~52 MB',
+    volumeCount: 1,
+    description: 'Fast compile corridor (<10s). Single FAT32 volume. Ingests Thumanë-Kashar, Rruga e Arbrit & Llogara Tunnel.',
+  },
+  {
+    code: 'DACH',
+    name: 'Central Europe Regional DACH (DE, AT, CH)',
+    estimatedSize: '~6.2 GB',
+    volumeCount: 3,
+    description: 'Germany, Austria, Switzerland high-density network. Split into 3 FAT32 volumes (< 2 GiB each).',
+  },
+  {
+    code: 'ECE',
+    name: 'Full Pan-European Territory (ECE 2026)',
+    estimatedSize: '~28.2 GB',
+    volumeCount: 23,
+    description: 'Complete OEM 8R0051884KL replacement layout across 45 countries. 23 sequential 2 GiB volumes.',
+  },
+];
 
 export const mapDatabases: MapDatabaseInfo[] = [
   {

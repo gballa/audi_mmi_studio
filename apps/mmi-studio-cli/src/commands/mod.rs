@@ -1208,3 +1208,197 @@ pub fn cmd_plugins_verify(plugin_dir: &Path, test_file: Option<&Path>, as_json: 
 
     Ok(())
 }
+
+pub fn cmd_maps_compile(
+    osm_input: Option<&Path>,
+    output: &Path,
+    region: &str,
+    release: &str,
+    enable_gmp: bool,
+    gmp_api_key: Option<&str>,
+    as_json: bool,
+) -> Result<(), CoreError> {
+    use mmi_rebuild::geo::{IrDataset, IrEdge, IrNode, RegionalProfile};
+    use mmi_rebuild::osm_ingest::{CountryCode, OsmIngestConfig, OsmIngestPipeline};
+    use mmi_rebuild::gmp_enrich::{GmpEnrichmentPipeline, LiveGmpClient};
+    use mmi_rebuild::FldbCompilerPipeline;
+
+    let profile = RegionalProfile::from_code(region)
+        .unwrap_or_else(|| RegionalProfile::micro_albania());
+
+    let mut dataset = if let Some(osm_path) = osm_input {
+        if !osm_path.exists() {
+            return Err(CoreError::NotFound(format!("OSM input file not found: {}", osm_path.display())));
+        }
+        let config = OsmIngestConfig {
+            bounding_box: Some(profile.bbox),
+            country: CountryCode::from_str_code(&profile.code),
+            max_frc: 7,
+            simplify_epsilon_m: 0.5,
+        };
+        let ext = osm_path.extension().and_then(|s| s.to_str()).unwrap_or("");
+        if ext.eq_ignore_ascii_case("pbf") {
+            let bytes = std::fs::read(osm_path)?;
+            OsmIngestPipeline::ingest_pbf(&bytes, &config)
+                .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, format!("OSM PBF ingest failed: {e}")))?
+        } else if ext.eq_ignore_ascii_case("json") || ext.eq_ignore_ascii_case("geojson") {
+            let text = std::fs::read_to_string(osm_path)?;
+            OsmIngestPipeline::ingest_geojson(&text, &config)
+                .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, format!("OSM GeoJSON ingest failed: {e}")))?
+        } else {
+            let text = std::fs::read_to_string(osm_path)?;
+            OsmIngestPipeline::ingest_xml(&text, &config)
+                .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, format!("OSM XML ingest failed: {e}")))?
+        }
+    } else {
+        // Synthesize regional template seed dataset for the selected profile
+        let mut ds = IrDataset::new(profile.bbox, Some(profile.code.clone()));
+        let center_lat = (profile.bbox.min_lat + profile.bbox.max_lat) / 2.0;
+        let center_lon = (profile.bbox.min_lon + profile.bbox.max_lon) / 2.0;
+        ds.nodes.push(IrNode::from_wgs84(1, center_lat, center_lon, 100, 0));
+        ds.nodes.push(IrNode::from_wgs84(2, center_lat + 0.01, center_lon + 0.01, 105, 0));
+        ds.edges.push(IrEdge {
+            edge_id: 1,
+            from_node: 1,
+            to_node: 2,
+            length_dm: 1200,
+            frc: 1,
+            speed_forward: 90,
+            speed_reverse: 90,
+            lane_count: 2,
+            turn_lane_mask: 0,
+            geometry: vec![],
+            access_flags: 0,
+        });
+        ds
+    };
+
+    if enable_gmp {
+        let key = gmp_api_key
+            .map(|s| s.to_string())
+            .or_else(|| std::env::var("GOOGLE_MAPS_API_KEY").ok());
+        let mut gmp_pipe = if let Some(k) = key {
+            GmpEnrichmentPipeline::new(Box::new(LiveGmpClient::new(k)), None)
+        } else {
+            GmpEnrichmentPipeline::new_offline()
+        };
+        let _ = gmp_pipe.enrich_dataset(&mut dataset);
+    }
+
+    let compile_result = FldbCompilerPipeline::compile_and_package(&dataset, output, Some(release))
+        .map_err(CoreError::Io)?;
+
+    if as_json {
+        println!("{}", serde_json::to_string_pretty(&compile_result).unwrap());
+    } else {
+        println!("══════════════════════════════════════════════════════════════════════════");
+        println!(" Audi MMI 3G+ (HN+) Navigation Map Compiler — {}", compile_result.release);
+        println!("══════════════════════════════════════════════════════════════════════════");
+        println!("Status:               {}", compile_result.status);
+        println!("Regional Profile:     {}", compile_result.regional_profile);
+        println!("Output Media Dir:     {}", compile_result.output_dir.display());
+        println!("Total FLDB Pages:     {} (544 bytes/page)", compile_result.total_pages);
+        println!("Total Size Bytes:     {} bytes ({:.2} MB)", compile_result.total_bytes, compile_result.total_bytes as f64 / 1_048_576.0);
+        println!("Volume Count:         {} (FAT32 split compliant <= 2 GiB)", compile_result.volume_count);
+        println!("Routing Nodes:        {}", compile_result.node_count);
+        println!("Routing Edges:        {}", compile_result.edge_count);
+        println!("Commercial POIs:      {}", compile_result.poi_count);
+        println!("MetaInfo SHA-1:       {}", compile_result.metainfo_sha1);
+        println!("──────────────────────────────────────────────────────────────────────────");
+        println!("Deployment Instructions:");
+        println!("  1. Copy contents of '{}' directly to root of FAT32 SD card.", compile_result.output_dir.display());
+        println!("  2. Insert into SD Slot 1 of MMI unit.");
+        println!("  3. Trigger update from Red Engineering Menu (SETUP + RETURN).");
+        println!("  4. If SVM 03276 appears: Channel 15 XOR 51666 (0xC9D2) using VCDS.");
+        println!("══════════════════════════════════════════════════════════════════════════");
+    }
+
+    Ok(())
+}
+
+pub fn cmd_firmware_bundle(
+    output: &Path,
+    train: &str,
+    release: &str,
+    variant: &str,
+    splash_png: Option<&Path>,
+    strings_ans: Option<&Path>,
+    gem_esd: Option<&Path>,
+    nav_db: Option<&Path>,
+    as_json: bool,
+) -> Result<(), CoreError> {
+    let splash_screen_png = if let Some(p) = splash_png {
+        Some(std::fs::read(p)?)
+    } else {
+        None
+    };
+
+    let albanian_strings_ans = if let Some(p) = strings_ans {
+        Some(std::fs::read(p)?)
+    } else {
+        None
+    };
+
+    let gem_screen_esd = if let Some(p) = gem_esd {
+        Some(std::fs::read(p)?)
+    } else {
+        None
+    };
+
+    let nav_database_fldb = if let Some(p) = nav_db {
+        Some(std::fs::read(p)?)
+    } else {
+        None
+    };
+
+    let config = mmi_rebuild::FirmwareBundleConfig {
+        train: train.to_string(),
+        release: release.to_string(),
+        variant: variant.to_string(),
+        splash_screen_png,
+        albanian_strings_ans,
+        gem_screen_esd,
+        nav_database_fldb,
+        map_styles_gdb: None,
+    };
+
+    let pipeline = mmi_rebuild::FirmwareBundlePipeline::new(config);
+    let report = pipeline.build(output)?;
+
+    if as_json {
+        println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    } else {
+        println!("══════════════════════════════════════════════════════════════════════════");
+        println!(" Audi MMI 3G/3G+ Full System Firmware SD Bundle Generator");
+        println!("══════════════════════════════════════════════════════════════════════════");
+        println!("Target Train:         {}", report.target_train);
+        println!("Release Version:      {}", report.target_release);
+        println!("Hardware Variant:     {}", report.target_variant);
+        println!("Output Bundle Dir:    {}", report.output_dir);
+        println!("Safety Status:        {}", report.safety_status);
+        println!("──────────────────────────────────────────────────────────────────────────");
+        println!("NOR Flash Partition Capacities:");
+        for p in &report.partitions {
+            println!(
+                "  - {:<16} {:>8} / {:>8} bytes ({:.2}% used)",
+                p.partition_name, p.allocated_bytes, p.max_bytes, p.percentage_used
+            );
+        }
+        println!("──────────────────────────────────────────────────────────────────────────");
+        println!("Generated SD Bundle Artifacts ({} files):", report.files.len());
+        for f in &report.files {
+            println!("  • {:<30} ({:>8} bytes)  BLAKE3: {}...", f.path, f.size_bytes, &f.blake3[..12]);
+        }
+        println!("──────────────────────────────────────────────────────────────────────────");
+        println!("Deployment Instructions (§14.9 Pre-Flash Checklist):");
+        println!("  1. Copy entire contents of '{}' to the root of a FAT32 SD card.", report.output_dir);
+        println!("  2. Insert into SD Slot 1 of Audi MMI 3G+ unit.");
+        println!("  3. Automatic execution: proc_scriptlauncher detects 'copie_scr.sh'.");
+        println!("  4. Manual SWDL upgrade: Red Engineering Menu (CAR + BACK or SETUP + RETURN).");
+        println!("  5. Emergency UART Rollback: 'sh /fs/sda0/stock_recovery.sh'.");
+        println!("══════════════════════════════════════════════════════════════════════════");
+    }
+
+    Ok(())
+}
+

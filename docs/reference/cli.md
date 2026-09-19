@@ -261,3 +261,48 @@ mmi-studio-cli plugins inspect <PLUGIN_PATH> [--json]
 ```bash
 mmi-studio-cli plugins verify <PLUGIN_PATH> [-t <TEST_FILE>] [--json]
 ```
+
+---
+
+## 19. `maps compile`
+Compiles OpenStreetMap vector networks, POIs, and Google Maps Platform enrichment data into native Audi MMI 3G+ Harman/Becker FLDB 544-byte physical pages with automatic 2 GiB volume partitioning.
+
+### Syntax
+```bash
+mmi-studio-cli maps compile -o <OUTPUT_DIR> [-r <REGION>] [-i <OSM_INPUT>] [--release <TAG>] [--enable-gmp] [--gmp-api-key <KEY>] [--json]
+```
+
+### Arguments & Options
+| Parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `-o`, `--output` | Path | Required | Target output directory for SD deployment media. |
+| `-r`, `--region` | String | `"AL"` | Regional profile: `AL` (Albania & Western Balkans Micro), `DACH`, or `ECE`. |
+| `-i`, `--osm-input` | Path | None | Optional path to custom OSM vector file (`.pbf`, `.xml`, `.geojson`). |
+| `--release` | String | `"2026_ECE"` | Release version string for manifest generation. |
+| `--enable-gmp` | Flag | `false` | Enable Google Maps Platform POI enrichment under strict ToS compliance. |
+| `--gmp-api-key` | String | None | Optional Google Maps Platform API key (or demo key). |
+| `--json` | Flag | `false` | Emit compilation report as JSON. |
+
+---
+
+## 20. `firmware package`
+Packages full system firmware partitions (`ifs-root.ifs` and `efs-system.efs`), Albanian localization, navigation databases, and automation scripts into a ready-to-flash SD card bundle.
+
+### Syntax
+```bash
+mmi-studio-cli firmware package -o <OUTPUT_DIR> [-t <TRAIN>] [-r <RELEASE>] [-v <VARIANT>] [--splash-png <FILE>] [--strings-ans <FILE>] [--gem-esd <FILE>] [--nav-db <FILE>] [--json]
+```
+
+### Arguments & Options
+| Parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `-o`, `--output` | Path | Required | Target directory for SD deployment bundle. |
+| `-t`, `--train` | String | `"HN+R_EU_AU_K0942_4"` | Software train identifier. |
+| `-r`, `--release` | String | `"2026_ECE"` | Release version string. |
+| `-v`, `--variant` | String | `"MU9411"` | Hardware variant code. |
+| `--splash-png` | Path | None | Optional custom splash screen PNG for `/usr/config/ci/splash.png`. |
+| `--strings-ans` | Path | None | Optional Albanian or custom strings `.ans` catalog for `strings/sq_AL.ans`. |
+| `--gem-esd` | Path | None | Optional Green Engineering Menu `.esd` definition for `engdefs/menu_2026.esd`. |
+| `--nav-db` | Path | None | Optional pre-compiled navigation database `.db`. |
+| `--json` | Flag | `false` | Output bundle summary and partition statistics as JSON. |
+

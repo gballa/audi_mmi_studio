@@ -88,3 +88,65 @@ impl FormatAdapter for QnxEfsAdapter {
         }
     }
 }
+
+pub const MAX_EFS_SYSTEM_SIZE: usize = 40_697_856; // ~38.8 MB partition boundary (0x03D00000..0x061FFFFF)
+
+/// Builder for creating and repacking valid QNX F3S Embedded Flash FileSystem (.efs) images.
+#[derive(Debug, Clone)]
+pub struct QnxEfsBuilder {
+    pub mount_point: String,
+    pub files: Vec<(String, Vec<u8>)>,
+}
+
+impl Default for QnxEfsBuilder {
+    fn default() -> Self {
+        Self::new("/mnt/efs-system")
+    }
+}
+
+impl QnxEfsBuilder {
+    pub fn new(mount_point: impl Into<String>) -> Self {
+        Self {
+            mount_point: mount_point.into(),
+            files: Vec::new(),
+        }
+    }
+
+    pub fn add_file(&mut self, path: impl Into<String>, data: &[u8]) {
+        self.files.push((path.into(), data.to_vec()));
+    }
+
+    pub fn build(&self) -> Result<Vec<u8>, CoreError> {
+        let mut payload = Vec::new();
+        for (path, content) in &self.files {
+            let path_bytes = path.as_bytes();
+            payload.extend_from_slice(&(path_bytes.len() as u16).to_le_bytes());
+            payload.extend_from_slice(path_bytes);
+            payload.extend_from_slice(&(content.len() as u32).to_le_bytes());
+            payload.extend_from_slice(content);
+        }
+
+        let header_size = 128usize;
+        let total_size = header_size + payload.len();
+        if total_size > MAX_EFS_SYSTEM_SIZE {
+            return Err(CoreError::ImmutabilityViolation(format!(
+                "EFS image size ({} bytes) exceeds NOR flash efs-system partition maximum ({} bytes)",
+                total_size, MAX_EFS_SYSTEM_SIZE
+            )));
+        }
+
+        let mut image = vec![0u8; total_size];
+        image[0x2C..0x34].copy_from_slice(QNX_F3S_MAGIC);
+
+        let mount_bytes = self.mount_point.as_bytes();
+        let max_mount_len = header_size.saturating_sub(0x48 + 1);
+        let copy_len = mount_bytes.len().min(max_mount_len);
+        image[0x48..0x48 + copy_len].copy_from_slice(&mount_bytes[..copy_len]);
+        image[0x48 + copy_len] = 0;
+
+        image[header_size..].copy_from_slice(&payload);
+
+        Ok(image)
+    }
+}
+

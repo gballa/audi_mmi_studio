@@ -113,3 +113,98 @@ impl FormatAdapter for MetaInfo2Adapter {
         }
     }
 }
+
+pub const CRC32_BLOCK_SIZE: usize = 524_288; // 512 KiB per SWDL specification
+
+/// Standard IEEE 802.3 CRC32 calculation matching QNX SWDL.
+pub fn crc32_ieee(data: &[u8]) -> u32 {
+    let mut crc = 0xFFFF_FFFFu32;
+    for &byte in data {
+        crc ^= byte as u32;
+        for _ in 0..8 {
+            if (crc & 1) != 0 {
+                crc = (crc >> 1) ^ 0xEDB8_8320;
+            } else {
+                crc >>= 1;
+            }
+        }
+    }
+    !crc
+}
+
+/// Generates per-512KB CRC32 entries for a given file byte buffer.
+pub fn generate_block_crcs(data: &[u8]) -> Vec<u32> {
+    let mut crcs = Vec::new();
+    let mut offset = 0;
+    while offset < data.len() {
+        let end = (offset + CRC32_BLOCK_SIZE).min(data.len());
+        crcs.push(crc32_ieee(&data[offset..end]));
+        offset = end;
+    }
+    crcs
+}
+
+/// Builder for constructing valid Harman/Becker metainfo2.txt manifests.
+#[derive(Debug, Clone, Default)]
+pub struct MetaInfo2Builder {
+    pub release: String,
+    pub vendor: String,
+    pub compatible_trains: String,
+    pub variant: String,
+    pub sections: Vec<(String, Vec<(String, String)>)>,
+}
+
+impl MetaInfo2Builder {
+    pub fn new(release: &str, train: &str) -> Self {
+        Self {
+            release: release.to_string(),
+            vendor: "Harman/Becker".to_string(),
+            compatible_trains: train.to_string(),
+            variant: "9411".to_string(),
+            sections: Vec::new(),
+        }
+    }
+
+    pub fn add_section(&mut self, name: &str, entries: Vec<(&str, &str)>) {
+        let converted: Vec<(String, String)> = entries
+            .into_iter()
+            .map(|(k, v)| (k.to_string(), v.to_string()))
+            .collect();
+        self.sections.push((name.to_string(), converted));
+    }
+
+    pub fn add_binary_with_blocks(&mut self, section_name: &str, path: &str, data: &[u8]) {
+        let mut entries = vec![
+            ("path".to_string(), path.to_string()),
+            ("fileSize".to_string(), data.len().to_string()),
+        ];
+
+        let block_crcs = generate_block_crcs(data);
+        for (i, crc) in block_crcs.iter().enumerate() {
+            entries.push((format!("CheckSum.{}", i + 1), format!("0x{:08X}", crc)));
+        }
+
+        self.sections.push((section_name.to_string(), entries));
+    }
+
+    pub fn build(&self) -> String {
+        let mut out = String::new();
+        out.push_str("[common]\n");
+        out.push_str(&format!("release = \"{}\"\n", self.release));
+        out.push_str(&format!("vendor = \"{}\"\n", self.vendor));
+        out.push_str("sourceVersion = \"K0942_4\"\n");
+        out.push_str(&format!("compatibleTrains = \"{}\"\n", self.compatible_trains));
+        out.push_str(&format!("variant = \"{}\"\n\n", self.variant));
+
+        for (sec_name, entries) in &self.sections {
+            out.push_str(&format!("[{}]\n", sec_name));
+            for (k, v) in entries {
+                out.push_str(&format!("{} = \"{}\"\n", k, v));
+            }
+            out.push('\n');
+        }
+
+        out
+    }
+}
+

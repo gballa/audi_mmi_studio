@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="mmi-test-fixture">
+  <node id="101" lat="41.3275" lon="19.8187">
+    <tag k="name" v="Central Junction"/>
+  </node>
+  <node id="102" lat="41.3300" lon="19.8187"/>
+  <node id="103" lat="41.3275" lon="19.8220"/>
+  <node id="104" lat="41.3250" lon="19.8187"/>
+  <node id="105" lat="41.3275" lon="19.8150"/>
+  <node id="106" lat="41.3350" lon="19.8187"/>
+
+  <!-- Approach Road from South (Way 201) -->
+  <way id="201">
+    <nd ref="104"/>
+    <nd ref="101"/>
+    <tag k="highway" v="primary"/>
+    <tag k="lanes" v="2"/>
+    <tag k="turn:lanes" v="left|through;right"/>
+    <tag k="maxspeed" v="80"/>
+    <tag k="name" v="Bulevardi Dëshmorët e Kombit"/>
+  </way>
+
+  <!-- Departure Road to North (Way 202) -->
+  <way id="202">
+    <nd ref="101"/>
+    <nd ref="102"/>
+    <nd ref="106"/>
+    <tag k="highway" v="motorway"/>
+    <tag k="lanes" v="4"/>
+    <tag k="maxspeed" v="130"/>
+    <tag k="oneway" v="yes"/>
+    <tag k="toll" v="yes"/>
+    <tag k="name" v="Autostrada A1"/>
+  </way>
+
+  <!-- Departure Road to West (Way 203) -->
+  <way id="203">
+    <nd ref="101"/>
+    <nd ref="105"/>
+    <tag k="highway" v="residential"/>
+    <tag k="lanes" v="2"/>
+    <tag k="maxspeed" v="40"/>
+    <tag k="name" v="Rruga Myslym Shyri"/>
+  </way>
+
+  <!-- Departure Road to East (Way 204) -->
+  <way id="204">
+    <nd ref="101"/>
+    <nd ref="103"/>
+    <tag k="highway" v="secondary"/>
+    <tag k="lanes" v="2"/>
+    <tag k="name" v="Rruga e Barrikadave"/>
+  </way>
+
+  <!-- Turn restriction: No Left Turn from Way 201 via Node 101 into Way 203 -->
+  <relation id="301">
+    <member type="way" ref="201" role="from"/>
+    <member type="node" ref="101" role="via"/>
+    <member type="way" ref="203" role="to"/>
+    <tag k="type" v="restriction"/>
+    <tag k="restriction" v="no_left_turn"/>
+  </relation>
+</osm>

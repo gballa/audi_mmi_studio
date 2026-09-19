@@ -1,0 +1,94 @@
+{
+  "places": [
+    {
+      "id": "ChIJ_albania_ionity_01",
+      "displayName": {
+        "text": "Ionity Vorë EV Ultra-Fast Charging",
+        "languageCode": "sq"
+      },
+      "location": {
+        "latitude": 41.3892,
+        "longitude": 19.6548
+      },
+      "formattedAddress": "Autostrada Tiranë-Durrës Km 14, Vorë, Albania",
+      "primaryType": "electric_vehicle_charging_station",
+      "evChargeOptions": {
+        "connectorCount": 6,
+        "connectorAggregation": [
+          {
+            "type": "EV_CONNECTOR_TYPE_CCS_COMBO_2",
+            "maxChargeRateKw": 350.0,
+            "count": 6
+          }
+        ]
+      }
+    },
+    {
+      "id": "ChIJ_dach_tesla_muc_01",
+      "displayName": {
+        "text": "Tesla Supercharger München-Pasing",
+        "languageCode": "de"
+      },
+      "location": {
+        "latitude": 48.1498,
+        "longitude": 11.4619
+      },
+      "formattedAddress": "Landsberger Str. 428, 81241 München, Germany",
+      "primaryType": "electric_vehicle_charging_station",
+      "evChargeOptions": {
+        "connectorCount": 12,
+        "connectorAggregation": [
+          {
+            "type": "EV_CONNECTOR_TYPE_CCS_COMBO_2",
+            "maxChargeRateKw": 250.0,
+            "count": 12
+          },
+          {
+            "type": "EV_CONNECTOR_TYPE_TESLA",
+            "maxChargeRateKw": 250.0,
+            "count": 12
+          }
+        ]
+      }
+    },
+    {
+      "id": "ChIJ_albania_shell_tirana_01",
+      "displayName": {
+        "text": "Shell Rruga Teodor Keko",
+        "languageCode": "sq"
+      },
+      "location": {
+        "latitude": 41.3218,
+        "longitude": 19.7891
+      },
+      "formattedAddress": "Rruga Teodor Keko, Tiranë 1001, Albania",
+      "primaryType": "gas_station"
+    },
+    {
+      "id": "ChIJ_dach_aral_a9_01",
+      "displayName": {
+        "text": "Aral Tankstelle A9 Holledau",
+        "languageCode": "de"
+      },
+      "location": {
+        "latitude": 48.5630,
+        "longitude": 11.5890
+      },
+      "formattedAddress": "A9 Raststätte Holledau, 85283 Wolnzach, Germany",
+      "primaryType": "gas_station"
+    },
+    {
+      "id": "ChIJ_camera_tirana_ring_01",
+      "displayName": {
+        "text": "Speed Camera Tirana Outer Ring (80 km/h)",
+        "languageCode": "en"
+      },
+      "location": {
+        "latitude": 41.3150,
+        "longitude": 19.8220
+      },
+      "formattedAddress": "Unaza e Madhe, Tiranë, Albania",
+      "primaryType": "speed_camera"
+    }
+  ]
+}

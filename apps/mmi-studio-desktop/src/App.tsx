@@ -9,21 +9,11 @@ import { ComponentCustomizer } from './components/ComponentCustomizer';
 import { BuildStudio } from './components/BuildStudio';
 import { AiElementStudio } from './components/AiElementStudio';
 import { ResetModal, ResetSelectiveOptions } from './components/ResetModal';
+import { Header, Tab } from './components/Header';
 import { initialLocalizationStrings } from './data/localizationData';
 import { mapDatabases, mapUpdates2026 } from './data/mapData';
 import { initialAiAssets } from './data/aiAssetsData';
 import { InspectResult, MMIThemeConfig, SystemString, MapUpdateItem, AiAssetItem } from './types';
-
-type Tab =
-  | 'components'
-  | 'ai_elements'
-  | 'localization'
-  | 'maps'
-  | 'build'
-  | 'recipes'
-  | 'assets'
-  | 'relab'
-  | 'typography';
 
 const initialThemeConfig: MMIThemeConfig = {
   accentColor: '#FF9900', // Audi Sport Amber
@@ -279,142 +269,16 @@ export const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 select-none overflow-hidden font-sans">
-      {/* Top Navigation Bar */}
-      <header className="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded bg-amber-500 flex items-center justify-center font-black text-slate-950 text-xs shadow">
-            MMI
-          </div>
-          <div>
-            <h1 className="text-sm font-bold tracking-tight text-white flex items-center gap-2">
-              Audi MMI Studio Workstation
-              <span className="px-1.5 py-0.2 text-[9px] bg-red-950/80 border border-red-800 text-red-300 font-mono rounded font-bold">
-                sq_AL Active
-              </span>
-            </h1>
-            <span className="text-[10px] text-slate-400 font-mono">
-              MMI 3G High / Plus [HN+] · ECE 2026 Navigation
-            </span>
-          </div>
-        </div>
-
-        {/* Center Primary Engineering Tabs */}
-        <nav className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
-          <button
-            onClick={() => setActiveTab('components')}
-            className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all flex items-center gap-1.5 ${
-              activeTab === 'components'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <span>🖥️</span> Screen & Components
-          </button>
-          <button
-            onClick={() => setActiveTab('ai_elements')}
-            className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all flex items-center gap-1.5 ${
-              activeTab === 'ai_elements'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow'
-                : 'text-amber-400 hover:text-amber-300 font-semibold'
-            }`}
-          >
-            <span>🍌</span> Gemini AI Elements
-          </button>
-          <button
-            onClick={() => setActiveTab('localization')}
-            className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all flex items-center gap-1.5 ${
-              activeTab === 'localization'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <span>🇦🇱</span> Localization (sq_AL)
-          </button>
-          <button
-            onClick={() => setActiveTab('maps')}
-            className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all flex items-center gap-1.5 ${
-              activeTab === 'maps'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <span>🗺️</span> 2026 Map Studio
-          </button>
-          <button
-            onClick={() => setActiveTab('build')}
-            className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all flex items-center gap-1.5 ${
-              activeTab === 'build'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow'
-                : 'text-emerald-400 hover:text-emerald-300 font-semibold'
-            }`}
-          >
-            <span>🚀</span> Build & SD Deploy
-          </button>
-          <button
-            onClick={() => setActiveTab('recipes')}
-            className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all ${
-              activeTab === 'recipes'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Theme Recipes
-          </button>
-          <button
-            onClick={() => setActiveTab('typography')}
-            className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all ${
-              activeTab === 'typography'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Typography
-          </button>
-          <button
-            onClick={() => setActiveTab('relab')}
-            className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all ${
-              activeTab === 'relab'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Binary RE Lab
-          </button>
-          <button
-            onClick={() => setActiveTab('assets')}
-            className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all ${
-              activeTab === 'assets'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Asset Census
-          </button>
-        </nav>
-
-        {/* Right Status Badges & Reset Action */}
-        <div className="flex items-center gap-2">
-          {exportNotification && (
-            <span className="text-xs text-amber-400 font-bold animate-pulse">
-              {exportNotification}
-            </span>
-          )}
-          <button
-            onClick={() => setIsResetModalOpen(true)}
-            className="px-2.5 py-1 text-xs font-semibold rounded border border-slate-700 bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white flex items-center gap-1.5 transition shadow-sm"
-            title="Open MMI Workstation Reset Manager (Feature or Factory Reset)"
-          >
-            <span className="text-amber-400 font-bold">↺</span> Reset...
-          </button>
-          <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] rounded border border-emerald-800 bg-emerald-950/80 text-emerald-400 font-mono">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            AIRGAP ACTIVE
-          </span>
-          <span className="px-2 py-0.5 text-[10px] rounded border border-slate-700 bg-slate-800 text-slate-300 font-mono">
-            IMMUTABLE ORIGINALS
-          </span>
-        </div>
-      </header>
+      {/* Optimized Top Navigation Header */}
+      <Header
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        onOpenResetModal={() => setIsResetModalOpen(true)}
+        notification={exportNotification}
+        onDismissNotification={() => setExportNotification(null)}
+        stringsCount={strings.length}
+        activeLanguage="sq_AL"
+      />
 
       {/* Main Workspace Area */}
       <main className="flex-1 overflow-hidden relative">

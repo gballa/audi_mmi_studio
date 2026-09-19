@@ -10,6 +10,7 @@ use commands::{
     cmd_hexdump, cmd_inspect, cmd_plugins_inspect, cmd_plugins_list, cmd_plugins_verify,
     cmd_rebuild, cmd_recipe_apply, cmd_recipe_rebase, cmd_simulate_update, cmd_stock_recovery,
     cmd_strings_inspect, cmd_strings_overflow, cmd_validate, cmd_verify_rebuild,
+    cmd_maps_compile, cmd_firmware_bundle,
 };
 
 #[derive(Parser)]
@@ -225,6 +226,78 @@ enum Commands {
     Plugins {
         #[command(subcommand)]
         action: PluginCommands,
+    },
+    /// Navigation cartography compilation and Google Maps Platform enrichment
+    Maps {
+        #[command(subcommand)]
+        action: MapsCommands,
+    },
+    /// Full system firmware SD bundle packaging (ifs-root, efs-system, HBNavDB, metainfo2, scripts)
+    Firmware {
+        #[command(subcommand)]
+        action: FirmwareCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum FirmwareCommands {
+    /// Package full system firmware, modified assets, Albanian localization, and maps into an SD card bundle
+    Package {
+        /// Target output directory for SD card bundle
+        #[arg(short, long)]
+        output: PathBuf,
+        /// Software train identifier (default HN+R_EU_AU_K0942_4)
+        #[arg(short, long, default_value = "HN+R_EU_AU_K0942_4")]
+        train: String,
+        /// Release version tag (default 2026_ECE)
+        #[arg(short, long, default_value = "2026_ECE")]
+        release: String,
+        /// Hardware variant (default MU9411)
+        #[arg(short, long, default_value = "MU9411")]
+        variant: String,
+        /// Optional path to custom splash screen PNG
+        #[arg(long)]
+        splash_png: Option<PathBuf>,
+        /// Optional path to Albanian or custom strings .ans catalog
+        #[arg(long)]
+        strings_ans: Option<PathBuf>,
+        /// Optional path to custom Green Engineering Menu .esd definition
+        #[arg(long)]
+        gem_esd: Option<PathBuf>,
+        /// Optional path to pre-compiled navigation database .db
+        #[arg(long)]
+        nav_db: Option<PathBuf>,
+        /// Output formatted as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum MapsCommands {
+    /// Compile OpenStreetMap vector networks and POIs into native Audi MMI 3G+ FLDB SD media
+    Compile {
+        /// Optional path to OSM vector data (.pbf, .xml, .geojson)
+        #[arg(short = 'i', long)]
+        osm_input: Option<PathBuf>,
+        /// Target output directory for SD card deployment media
+        #[arg(short, long)]
+        output: PathBuf,
+        /// Regional profile (AL: Albania/Micro, DACH: Central Europe, ECE: Full European Territory)
+        #[arg(short, long, default_value = "AL")]
+        region: String,
+        /// Release version tag (e.g. 2026_ECE)
+        #[arg(long, default_value = "2026_ECE")]
+        release: String,
+        /// Enable Google Maps Platform POI enrichment (EV charging, fuel, cameras)
+        #[arg(long)]
+        enable_gmp: bool,
+        /// Optional Google Maps Platform API key (or demo key)
+        #[arg(long)]
+        gmp_api_key: Option<String>,
+        /// Output formatted as JSON
+        #[arg(long)]
+        json: bool,
     },
 }
 
@@ -485,6 +558,48 @@ fn main() {
                 test_file,
                 json,
             } => cmd_plugins_verify(plugin, test_file.as_deref(), *json),
+        },
+        Commands::Maps { action } => match action {
+            MapsCommands::Compile {
+                osm_input,
+                output,
+                region,
+                release,
+                enable_gmp,
+                gmp_api_key,
+                json,
+            } => cmd_maps_compile(
+                osm_input.as_deref(),
+                output,
+                region,
+                release,
+                *enable_gmp,
+                gmp_api_key.as_deref(),
+                *json,
+            ),
+        },
+        Commands::Firmware { action } => match action {
+            FirmwareCommands::Package {
+                output,
+                train,
+                release,
+                variant,
+                splash_png,
+                strings_ans,
+                gem_esd,
+                nav_db,
+                json,
+            } => cmd_firmware_bundle(
+                output,
+                train,
+                release,
+                variant,
+                splash_png.as_deref(),
+                strings_ans.as_deref(),
+                gem_esd.as_deref(),
+                nav_db.as_deref(),
+                *json,
+            ),
         },
     };
 

@@ -1,0 +1,41 @@
+{
+  "status": "OK",
+  "results": [
+    {
+      "place_id": "ChIJ_geo_skanderbeg_01",
+      "formatted_address": "Sheshi Skënderbej, Tiranë 1001, Albania",
+      "geometry": {
+        "location": {
+          "latitude": 41.3275,
+          "longitude": 19.8187
+        },
+        "location_type": "ROOFTOP"
+      },
+      "types": ["premise", "point_of_interest"]
+    },
+    {
+      "place_id": "ChIJ_geo_audi_hq_01",
+      "formatted_address": "Auto-Union-Straße 1, 85057 Ingolstadt, Germany",
+      "geometry": {
+        "location": {
+          "latitude": 48.7842,
+          "longitude": 11.4116
+        },
+        "location_type": "ROOFTOP"
+      },
+      "types": ["street_address"]
+    },
+    {
+      "place_id": "ChIJ_geo_brandenburg_gate_01",
+      "formatted_address": "Pariser Platz, 10117 Berlin, Germany",
+      "geometry": {
+        "location": {
+          "latitude": 52.5163,
+          "longitude": 13.3777
+        },
+        "location_type": "GEOMETRIC_CENTER"
+      },
+      "types": ["tourist_attraction", "point_of_interest"]
+    }
+  ]
+}

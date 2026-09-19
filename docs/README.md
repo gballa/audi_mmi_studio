@@ -91,12 +91,14 @@ docs/
 │
 ├── decisions/                                # Architectural decisions
 │   ├── README.md                             # ADR index
-│   └── adr/                                  # ADR-001 through ADR-004
+│   └── adr/                                  # ADR-001 through ADR-007
 │
 ├── audit/                                    # Reference corpus scan records
 │   └── SOURCE_AUDIT.md                       # Scan of 63.97 GiB genuine reference corpus
 ├── research/                                 # Reverse engineering research records
-│   └── RQ-REGISTER.md                        # Master registry of 12 reverse engineering RQs
+│   ├── RQ-REGISTER.md                        # Master registry of 12 reverse engineering RQs
+│   ├── "Audi MMI 3G+ Maps Research.md"       # Navigation FLDB, 544B pages, OSM & GMP analysis
+│   └── "Audi MMI 3G:3G+ infotainment Research.md" # QNX NOR flash layout, SWDL & scripts analysis
 └── spec/                                     # Master engineering specifications
     ├── AUDI_MMI_STUDIO_AGENT_PROMPT.md       # Master engineering specification
     ├── PROJECT.md                            # High-level architecture & scope
@@ -127,7 +129,7 @@ All project documents are cataloged and categorized below [EV:doc:docs/README.md
 | [`docs/architecture/*`](architecture/overview.md) | Architecture | Active | System design, components, data flows, security [EV:doc:docs/architecture/overview.md#L1] |
 | [`docs/development/*`](development/setup.md) | Development | Active | Developer setup, coding rules, testing, release packaging [EV:doc:docs/development/setup.md#L1] |
 | [`docs/operations/*`](operations/deployment.md) | Operations | Active | In-vehicle deployment, monitoring, emergency recovery [EV:doc:docs/operations/deployment.md#L1] |
-| [`docs/decisions/*`](decisions/README.md) | Decisions | Active | Architecture Decision Records (ADR-001..ADR-004) [EV:doc:docs/decisions/README.md#L1] |
+| [`docs/decisions/*`](decisions/README.md) | Decisions | Active | Architecture Decision Records (ADR-001..ADR-007) [EV:doc:docs/decisions/README.md#L1] |
 | [`docs/audit/SOURCE_AUDIT.md`](audit/SOURCE_AUDIT.md) | Audit | Preserved | Complete scan of 63.97 GiB reference corpus [EV:doc:docs/audit/SOURCE_AUDIT.md#L1] |
 | [`docs/research/RQ-REGISTER.md`](research/RQ-REGISTER.md) | Research | Preserved | Research register for 12 reverse engineering questions [EV:doc:docs/research/RQ-REGISTER.md#L1] |
 | [`docs/spec/*`](spec/AUDI_MMI_STUDIO_AGENT_PROMPT.md) | Specification | Preserved | Master prompt specification and project roadmap [EV:doc:docs/spec/AUDI_MMI_STUDIO_AGENT_PROMPT.md#L1] |

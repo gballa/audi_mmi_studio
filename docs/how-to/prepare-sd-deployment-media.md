@@ -39,8 +39,37 @@ sudo fdisk /dev/sdX
 sudo mkfs.vfat -F 32 -s 64 -n "MMI3G_NAV" /dev/sdX1
 ```
 
-### Step 2: Build Deployment Media Structure via CLI
-Use `mmi-studio-cli build-media` to construct the update package:
+### Step 2: Build Deployment Media via CLI
+
+You can generate SD media using either full firmware packaging, standalone cartography compilation, or standard stage building:
+
+#### Option A: Package Full System Firmware (Recommended for UI/Language/Maps)
+```bash
+./target/release/mmi-studio-cli firmware package \
+  --output /Volumes/MMI3G_NAV \
+  --train "HN+R_EU_AU_K0942_4" \
+  --release "2026_ECE" \
+  --variant "MU9411"
+```
+*Expected Result*: Populates `/Volumes/MMI3G_NAV/` with:
+- `metainfo2.txt` (SWDL manifest with per-512KB CRC32 blocks)
+- `copie_scr.sh` (Automatic SD insertion launcher for `proc_scriptlauncher`)
+- `finalScript` (Post-flash sync and reboot script)
+- `stock_recovery.sh` (Emergency UART rollback script)
+- `MU9411/ifs-root.ifs` (SH-4 QNX root partition with 2026 splash and HMI bytecode)
+- `MU9411/efs-system.efs` (QNX F3S filesystem with Albanian language catalog and GEM menus)
+- `HBNavDB/nav_data.db` (Harman/Becker FLDB 544-byte pages)
+- `build_manifest.json` (Cryptographic attestation and BLAKE3 hashes)
+
+#### Option B: Compile Modern Navigation Cartography
+```bash
+./target/release/mmi-studio-cli maps compile \
+  --output /Volumes/MMI3G_NAV \
+  --region AL \
+  --release "2026_ECE"
+```
+
+#### Option C: Build Custom Staged Theme Package
 ```bash
 ./target/release/mmi-studio-cli build-media \
   --stage default \
@@ -48,10 +77,6 @@ Use `mmi-studio-cli build-media` to construct the update package:
   --volume-label "MMI3G_NAV" \
   --volume-size-gb 32
 ```
-*Expected Result*: Output populates `/Volumes/MMI3G_NAV/` with:
-- `metainfo2.txt` (Main release manifest and CRC32/SHA-1 checksums)
-- Module directories (`MU9411/`, `ScreenLayouts/`)
-- Volume split index files if the total size exceeds 32 GB.
 
 ### Step 3: Unmount Safely
 Always cleanly flush disk caches before ejecting:
