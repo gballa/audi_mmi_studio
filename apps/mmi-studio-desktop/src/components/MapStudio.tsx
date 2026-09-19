@@ -5,12 +5,16 @@ interface MapStudioProps {
   databases: MapDatabaseInfo[];
   updates: MapUpdateItem[];
   onToggleUpdate: (id: string) => void;
+  onResetUpdates?: () => void;
+  onDisableAllUpdates?: () => void;
 }
 
 export const MapStudio: React.FC<MapStudioProps> = ({
   databases,
   updates,
   onToggleUpdate,
+  onResetUpdates,
+  onDisableAllUpdates,
 }) => {
   const [selectedDbId, setSelectedDbId] = useState<string>(databases[0]?.id || '');
   const [patchingState, setPatchingState] = useState<'idle' | 'patching' | 'completed'>('idle');
@@ -164,24 +168,35 @@ export const MapStudio: React.FC<MapStudioProps> = ({
             </p>
           </div>
 
-          <button
-            onClick={handleRunPatcher}
-            disabled={patchingState === 'patching' || enabledUpdates.length === 0}
-            className={`px-4 py-2 text-xs font-bold rounded shadow transition-all flex items-center gap-2 ${
-              patchingState === 'patching'
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-amber-500 hover:bg-amber-400 text-slate-950'
-            }`}
-          >
-            {patchingState === 'patching' ? (
-              <>
-                <span className="w-3 h-3 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                Compiling 2026 Map Patch...
-              </>
-            ) : (
-              <>⚡ Compile & Inject 2026 Map Update</>
+          <div className="flex items-center gap-2">
+            {onResetUpdates && (
+              <button
+                onClick={onResetUpdates}
+                className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold rounded border border-slate-700 transition flex items-center gap-1"
+                title="Reset all 2026 map patches back to recommended default"
+              >
+                <span>↺</span> Reset Map Patches
+              </button>
             )}
-          </button>
+            <button
+              onClick={handleRunPatcher}
+              disabled={patchingState === 'patching' || enabledUpdates.length === 0}
+              className={`px-4 py-2 text-xs font-bold rounded shadow transition-all flex items-center gap-2 ${
+                patchingState === 'patching'
+                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                  : 'bg-amber-500 hover:bg-amber-400 text-slate-950'
+              }`}
+            >
+              {patchingState === 'patching' ? (
+                <>
+                  <span className="w-3 h-3 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                  Compiling 2026 Map Patch...
+                </>
+              ) : (
+                <>⚡ Compile & Inject 2026 Map Update</>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Selected Database Specs */}
@@ -212,9 +227,20 @@ export const MapStudio: React.FC<MapStudioProps> = ({
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
               Available 2026 Infrastructure Updates ({enabledUpdates.length}/{updates.length} Staged)
             </h3>
-            <div className="flex items-center gap-4 text-xs font-mono text-slate-400">
-              <span>Roads Added: <strong className="text-white">{totalKmAdded.toFixed(1)} km</strong></span>
-              <span>Vector Nodes: <strong className="text-white">{totalNodesAdded.toLocaleString()}</strong></span>
+            <div className="flex items-center gap-3">
+              {onDisableAllUpdates && (
+                <button
+                  onClick={onDisableAllUpdates}
+                  className="text-[11px] text-slate-400 hover:text-amber-400 font-mono transition px-2 py-0.5 rounded bg-slate-950 border border-slate-800 hover:border-slate-700"
+                  title="Disable all custom map patches (revert to pure stock baseline)"
+                >
+                  ↺ Disable All (Stock Baseline)
+                </button>
+              )}
+              <div className="flex items-center gap-4 text-xs font-mono text-slate-400">
+                <span>Roads Added: <strong className="text-white">{totalKmAdded.toFixed(1)} km</strong></span>
+                <span>Vector Nodes: <strong className="text-white">{totalNodesAdded.toLocaleString()}</strong></span>
+              </div>
             </div>
           </div>
 

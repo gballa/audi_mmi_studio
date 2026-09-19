@@ -5,12 +5,16 @@ interface LocalizationStudioProps {
   strings: SystemString[];
   onUpdateString: (id: string, newAlbanian: string) => void;
   onPreviewStringInScreen?: (stringItem: SystemString) => void;
+  onResetAllStrings?: () => void;
+  onResetSingleString?: (id: string) => void;
 }
 
 export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
   strings,
   onUpdateString,
   onPreviewStringInScreen,
+  onResetAllStrings,
+  onResetSingleString,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -210,6 +214,15 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
                 👁️ Preview on 800x480 Screen
               </button>
             )}
+            {onResetAllStrings && (
+              <button
+                onClick={onResetAllStrings}
+                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold rounded border border-slate-700 transition flex items-center gap-1"
+                title="Reset all 43+ strings back to verified baseline"
+              >
+                <span>↺</span> Reset All Translations
+              </button>
+            )}
             <button
               onClick={handleExportCatalog}
               className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded shadow transition"
@@ -312,6 +325,15 @@ export const LocalizationStudio: React.FC<LocalizationStudioProps> = ({
                         {char}
                       </button>
                     ))}
+                    {onResetSingleString && (
+                      <button
+                        onClick={() => onResetSingleString(activeItem.id)}
+                        className="px-2.5 h-9 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded font-medium text-xs text-slate-300 hover:text-white flex items-center gap-1 ml-1"
+                        title="Reset this string to baseline translation"
+                      >
+                        <span>↺</span> Reset
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

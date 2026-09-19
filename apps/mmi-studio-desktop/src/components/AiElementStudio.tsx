@@ -4,6 +4,8 @@ import { AiAssetItem, MMIThemeConfig } from '../types';
 interface AiElementStudioProps {
   assets: AiAssetItem[];
   onUpdateAsset: (updatedAsset: AiAssetItem) => void;
+  onResetAsset?: (id: string) => void;
+  onResetAllAssets?: () => void;
   themeConfig: MMIThemeConfig;
   onUpdateTheme: (newConfig: Partial<MMIThemeConfig>) => void;
   onNavigateToScreen: () => void;
@@ -12,6 +14,8 @@ interface AiElementStudioProps {
 export const AiElementStudio: React.FC<AiElementStudioProps> = ({
   assets,
   onUpdateAsset,
+  onResetAsset,
+  onResetAllAssets,
   onUpdateTheme,
   onNavigateToScreen,
 }) => {
@@ -101,12 +105,23 @@ export const AiElementStudio: React.FC<AiElementStudioProps> = ({
       {/* Left System Element Selector */}
       <div className="w-80 flex flex-col border-r border-slate-800 bg-slate-900/60 overflow-y-auto">
         <div className="p-4 border-b border-slate-800">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🍌</span>
-            <div>
-              <h2 className="text-sm font-bold tracking-tight text-white">MMI UI Element Catalog</h2>
-              <span className="text-[10px] text-amber-400 font-mono">Gemini Nano Banana Studio</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🍌</span>
+              <div>
+                <h2 className="text-sm font-bold tracking-tight text-white">MMI UI Element Catalog</h2>
+                <span className="text-[10px] text-amber-400 font-mono">Gemini Nano Banana Studio</span>
+              </div>
             </div>
+            {onResetAllAssets && (
+              <button
+                onClick={onResetAllAssets}
+                className="text-[10px] text-slate-400 hover:text-amber-400 flex items-center gap-1 font-mono transition py-1 px-1.5 rounded hover:bg-slate-800 border border-transparent hover:border-slate-700"
+                title="Reset all AI elements back to stock OEM"
+              >
+                <span>↺</span> Reset All
+              </button>
+            )}
           </div>
           <p className="text-[11px] text-slate-400 mt-1">
             Select an MMI visual asset to preview and restyle using AI image generation.
@@ -226,6 +241,15 @@ export const AiElementStudio: React.FC<AiElementStudioProps> = ({
             >
               Apply to Live Screen
             </button>
+            {onResetAsset && activeAsset.status === 'AI Modified' && (
+              <button
+                onClick={() => onResetAsset(activeAsset.id)}
+                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold rounded border border-slate-700 transition flex items-center gap-1"
+                title="Reset this element to stock OEM"
+              >
+                <span>↺</span> Reset to Stock
+              </button>
+            )}
             <button
               onClick={onNavigateToScreen}
               className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded border border-slate-700 transition"
@@ -438,13 +462,23 @@ export const AiElementStudio: React.FC<AiElementStudioProps> = ({
               <span>Bytes sent: {(airlockBytesCount / 1024).toFixed(1)} KB</span>
             </div>
 
-            <button
-              onClick={() => setIsAirlockOpen(true)}
-              disabled={isGenerating || !promptText.trim()}
-              className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-800 disabled:text-slate-600 text-slate-950 text-xs font-bold rounded-lg shadow-lg flex items-center gap-2 transition-all scale-100 hover:scale-[1.02]"
-            >
-              <span>🍌</span> Generate with Gemini Nano Banana
-            </button>
+            <div className="flex items-center gap-2">
+              {onResetAsset && activeAsset.status === 'AI Modified' && (
+                <button
+                  onClick={() => onResetAsset(activeAsset.id)}
+                  className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center gap-1.5"
+                >
+                  <span>↺</span> Reset to Stock
+                </button>
+              )}
+              <button
+                onClick={() => setIsAirlockOpen(true)}
+                disabled={isGenerating || !promptText.trim()}
+                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-800 disabled:text-slate-600 text-slate-950 text-xs font-bold rounded-lg shadow-lg flex items-center gap-2 transition-all scale-100 hover:scale-[1.02]"
+              >
+                <span>🍌</span> Generate with Gemini Nano Banana
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { MMIThemeConfig, SystemString } from '../types';
 interface ComponentCustomizerProps {
   themeConfig: MMIThemeConfig;
   onUpdateTheme: (newConfig: Partial<MMIThemeConfig>) => void;
+  onResetTheme?: () => void;
   strings: SystemString[];
   onExportRecipe: () => void;
   onNavigateToAiStudio?: () => void;
@@ -12,6 +13,7 @@ interface ComponentCustomizerProps {
 export const ComponentCustomizer: React.FC<ComponentCustomizerProps> = ({
   themeConfig,
   onUpdateTheme,
+  onResetTheme,
   strings,
   onExportRecipe,
   onNavigateToAiStudio,
@@ -287,6 +289,15 @@ export const ComponentCustomizer: React.FC<ComponentCustomizerProps> = ({
           >
             Export Custom Theme & UI Recipe
           </button>
+          {onResetTheme && (
+            <button
+              onClick={onResetTheme}
+              className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white text-xs font-medium rounded border border-slate-800 hover:border-slate-700 transition flex items-center justify-center gap-1.5"
+              title="Revert all colors, needles, and component settings to OEM baseline"
+            >
+              <span>↺</span> Reset Theme to OEM Baseline
+            </button>
+          )}
         </div>
       </div>
 

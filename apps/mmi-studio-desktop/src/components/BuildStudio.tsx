@@ -5,12 +5,14 @@ interface BuildStudioProps {
   themeConfig: MMIThemeConfig;
   strings: SystemString[];
   mapUpdates: MapUpdateItem[];
+  onResetBuild?: () => void;
 }
 
 export const BuildStudio: React.FC<BuildStudioProps> = ({
   themeConfig,
   strings,
   mapUpdates,
+  onResetBuild,
 }) => {
   const [buildState, setBuildState] = useState<'idle' | 'building' | 'completed'>('completed');
   const [buildProgress, setBuildProgress] = useState<number>(100);
@@ -124,6 +126,13 @@ Description = "Day and Night Map Shaders"
     URL.revokeObjectURL(url);
   };
 
+  const handleInternalResetBuild = () => {
+    setBuildState('idle');
+    setBuildProgress(0);
+    setBuildLogs(['Build staging cleared. Ready to compile fresh update media.']);
+    if (onResetBuild) onResetBuild();
+  };
+
   return (
     <div className="flex h-full bg-slate-950 text-slate-100 overflow-hidden font-sans">
       {/* Left Staged Overview & Action Panel */}
@@ -230,6 +239,14 @@ Description = "Day and Night Map Shaders"
             className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded border border-slate-700 transition"
           >
             📥 Download Root metainfo2.txt File
+          </button>
+
+          <button
+            onClick={handleInternalResetBuild}
+            className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white text-xs font-medium rounded border border-slate-800 hover:border-slate-700 transition flex items-center justify-center gap-1.5"
+            title="Clear build state, reset logs, and return to idle"
+          >
+            <span>↺</span> Reset Build Staging & Logs
           </button>
         </div>
 

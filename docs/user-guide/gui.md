@@ -11,9 +11,10 @@ Welcome to the **Audi MMI Studio Workstation** user guide. This document provide
 4. [Studio 3: 🇦🇱 Localization & Albanian Translation Studio](#4-studio-3--localization--albanian-translation-studio)
 5. [Studio 4: 🗺️ 2026 Map Studio & Road Network Injector](#5-studio-4-️-2026-map-studio--road-network-injector)
 6. [Studio 5: 🚀 Build & SD Deploy Studio](#6-studio-5--build--sd-deploy-studio)
-7. [Where is the Output Bundle?](#7-where-is-the-output-bundle)
-8. [Step-by-Step SD Card Preparation & Vehicle Flashing](#8-step-by-step-sd-card-preparation--vehicle-flashing)
-9. [Safety Policy & Emergency Recovery](#9-safety-policy--emergency-recovery)
+7. [Configuration Reset & Baseline Restoration](#7--configuration-reset--baseline-restoration)
+8. [Where is the Output Bundle?](#8-where-is-the-output-bundle)
+9. [Step-by-Step SD Card Preparation & Vehicle Flashing](#9-step-by-step-sd-card-preparation--vehicle-flashing)
+10. [Safety Policy & Emergency Recovery](#10-safety-policy--emergency-recovery)
 
 ---
 
@@ -146,7 +147,35 @@ The **Build & SD Deploy** studio brings together your Albanian translations, Gem
 
 ---
 
-## 7. Where is the Output Bundle?
+## 7. ↺ Configuration Reset & Baseline Restoration
+
+The workstation includes a comprehensive multi-tier reset system, allowing you to either roll back everything to factory baseline or revert only a specific feature.
+
+### A. Resetting a Single Feature (In-Studio Actions)
+* **🎨 UI & Component Theme**: Click **"↺ Reset Theme to OEM Baseline"** in the left control panel to restore default amber/red accent, stock needle, and AudiType typography.
+* **🍌 Gemini AI Elements**: 
+  * Click **"↺ Reset to Stock"** on the selected asset to restore just that element (e.g. gauge needle or turn arrow).
+  * Click **"↺ Reset All"** in the Element Catalog header to restore all 8 visual assets to OEM baseline.
+* **🇦🇱 Albanian Localization**:
+  * Click **"↺ Reset"** next to any translation input to restore that individual string.
+  * Click **"↺ Reset All Translations"** in the top action bar to restore all 43+ strings.
+* **🗺️ 2026 Navigation Maps**:
+  * Click **"↺ Reset Map Patches"** to restore recommended 2026 updates.
+  * Click **"[Disable All (Stock)]"** to unstage all vector corridors and test against pure stock navigation tables.
+* **🚀 Build Staging**: Click **"↺ Reset Build Staging & Logs"** to clear staged build state and return the runner to idle.
+
+### B. Global Reset Manager (`↺ Reset...` in Header)
+Clicking the **"↺ Reset..."** button in the top navigation bar opens the **MMI Workstation Reset Manager** modal with three modes:
+1. **Option 1: Reset Active Feature Only**: Automatically detects which tab you are currently viewing and gives you a single-click reset for just that feature without touching your other work.
+2. **Option 2: Selective Reset**: Checkbox matrix allowing you to select any combination of features (*UI Theme, AI Elements, Albanian Translations, 2026 Maps, Build Staging*) to reset together.
+3. **Option 3: Full Factory Reset (Reset Everything)**: Restores the entire workstation session across all studios back to pristine OEM stock defaults (requires explicit confirmation).
+
+> [!NOTE]
+> **Immutable Originals Guarantee**: Originals stored in `originals/` are strictly read-only and immutable. Resetting never deletes or modifies reference firmware files—it only clears your staged customizations.
+
+---
+
+## 8. Where is the Output Bundle?
 
 All generated files are written directly to your workspace at:
 
@@ -180,7 +209,7 @@ output/mmi3g_sd_card_update/
 
 ---
 
-## 8. Step-by-Step SD Card Preparation & Vehicle Flashing
+## 9. Step-by-Step SD Card Preparation & Vehicle Flashing
 
 ### Step 1: Format the SD Card
 * **Capacity**: Use a high-quality **32 GB** or **64 GB** Class 10 / UHS-I SD card.
@@ -221,7 +250,7 @@ output/mmi3g_sd_card_update/
 
 ---
 
-## 9. Safety Policy & Emergency Recovery
+## 10. Safety Policy & Emergency Recovery
 
 ### Mandatory §14.9 Policy
 All builds and documentation carry the mandatory status:
