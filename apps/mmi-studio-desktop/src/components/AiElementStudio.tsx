@@ -34,6 +34,8 @@ export const AiElementStudio: React.FC<AiElementStudioProps> = ({
   const [airlockTransmissionsCount, setAirlockTransmissionsCount] = useState<number>(3);
   const [airlockBytesCount, setAirlockBytesCount] = useState<number>(49152);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [bulkThemePrompt, setBulkThemePrompt] = useState<string>('Audi RS Performance Crimson & Twill Carbon Weave');
+  const [isBulkGenerating, setIsBulkGenerating] = useState<boolean>(false);
 
   const categories = [
     'All',
@@ -142,6 +144,59 @@ export const AiElementStudio: React.FC<AiElementStudioProps> = ({
 
     setToastMessage(`Applied '${activeAsset.name}' directly to Virtual Screen!`);
     setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const handleBulkGenerateTheme = (promptToUse?: string) => {
+    const prompt = promptToUse || bulkThemePrompt;
+    setIsBulkGenerating(true);
+    setTimeout(() => {
+      setIsBulkGenerating(false);
+      const lower = prompt.toLowerCase();
+      let primaryColor = '#E0001B';
+      let texture: 'default' | 'carbon_weave' | 'brushed_aluminum' = 'default';
+
+      if (lower.includes('cyan') || lower.includes('ice') || lower.includes('e-tron') || lower.includes('blue')) {
+        primaryColor = '#00D4FF';
+        texture = 'brushed_aluminum';
+      } else if (lower.includes('amber') || lower.includes('quattro') || lower.includes('gold') || lower.includes('yellow')) {
+        primaryColor = '#FFB300';
+        texture = 'brushed_aluminum';
+      } else if (lower.includes('carbon') || lower.includes('black') || lower.includes('stealth')) {
+        primaryColor = lower.includes('emerald') || lower.includes('green') ? '#10B981' : '#E0001B';
+        texture = 'carbon_weave';
+      } else if (lower.includes('emerald') || lower.includes('green')) {
+        primaryColor = '#10B981';
+      }
+
+      // Update all assets in census
+      assets.forEach((a) => {
+        let style = primaryColor;
+        if (a.category === 'Textures') {
+          style = texture === 'carbon_weave' ? 'carbon_fiber_matrix' : 'brushed_aluminum_inlay';
+        }
+        onUpdateAsset({
+          ...a,
+          currentStyle: style,
+          aiPromptApplied: prompt,
+          modelUsed: selectedModel,
+          status: 'AI Modified',
+        });
+      });
+
+      // Update themeConfig directly
+      onUpdateTheme({
+        accentColor: primaryColor,
+        needleColor: primaryColor,
+        cornerBracketColor: primaryColor,
+        activeBackgroundTexture: texture,
+        ambientGlow: true,
+      });
+
+      setAirlockTransmissionsCount((prev) => prev + assets.length);
+      setAirlockBytesCount((prev) => prev + assets.length * 4096);
+      setToastMessage(`Bulk Harmonized ${assets.length} UI elements with "${prompt}"!`);
+      setTimeout(() => setToastMessage(null), 4000);
+    }, 1200);
   };
 
   // Helper to render asset visually in preview box
@@ -402,6 +457,82 @@ export const AiElementStudio: React.FC<AiElementStudioProps> = ({
 
       {/* Center Live Asset Preview & Comparison */}
       <div className="flex-1 flex flex-col overflow-y-auto bg-slate-950 p-6 space-y-6">
+        {/* Bulk Vehicle Theme Synthesizer Cockpit */}
+        <div className="bg-[#090d16] border border-amber-500/40 rounded-xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)] space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🍌</span>
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-300">
+                  Bulk Gemini Nano Banana Global Theme Synthesizer
+                </h3>
+                <p className="text-[11px] text-slate-400">
+                  One-click harmonize all {assets.length} UI elements across gauges, platters, needles, brackets & textures.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[10px] font-mono text-slate-400">Target Model:</span>
+              <span className="text-[10px] font-mono text-amber-400 px-2 py-0.5 bg-slate-900 border border-slate-700 rounded font-bold">
+                {selectedModel}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-center gap-3">
+            <input
+              type="text"
+              value={bulkThemePrompt}
+              onChange={(e) => setBulkThemePrompt(e.target.value)}
+              placeholder="e.g. Audi RS Performance Crimson with 2x2 Twill Carbon Weave..."
+              className="flex-1 w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+            />
+            <button
+              type="button"
+              disabled={isBulkGenerating}
+              onClick={() => handleBulkGenerateTheme()}
+              className={`w-full md:w-auto px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-lg shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 shrink-0 cursor-pointer ${
+                isBulkGenerating ? 'opacity-75 cursor-not-allowed' : ''
+              }`}
+            >
+              {isBulkGenerating ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                  <span>Synthesizing {assets.length} Elements...</span>
+                </>
+              ) : (
+                <>
+                  <span>⚡</span>
+                  <span>Harmonize All Elements</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Quick Bulk Presets */}
+          <div className="flex items-center gap-2 flex-wrap pt-1">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Fast Presets:</span>
+            {[
+              { label: '🏎️ RS Performance Crimson & Carbon', prompt: 'Audi RS Performance Crimson with 2x2 Twill Carbon Weave' },
+              { label: '⚡ e-tron GT Ice Cyan & Titanium', prompt: 'Audi e-tron GT Ice Cyan with brushed titanium finish' },
+              { label: '🏁 Heritage Quattro Amber', prompt: 'Audi Heritage Quattro Competition Amber Gold & Aluminum' },
+              { label: '🖤 Black Edition Emerald Glow', prompt: 'Audi Black Edition Stealth Matte Carbon with Emerald Glow' },
+            ].map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => {
+                  setBulkThemePrompt(p.prompt);
+                  handleBulkGenerateTheme(p.prompt);
+                }}
+                className="px-2.5 py-1 rounded bg-[#0f1422] hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 text-[11px] text-slate-300 hover:text-white transition cursor-pointer"
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Top Control Bar */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-800">
           <div>

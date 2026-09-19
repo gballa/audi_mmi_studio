@@ -251,22 +251,22 @@ export const ComponentCustomizer: React.FC<ComponentCustomizerProps> = ({
                     <span className="text-slate-400 text-[11px] capitalize">
                       {key === 'engineGearbox' ? 'Engine / Gearbox' : key}:
                     </span>
-                    <button
-                      onClick={() => {
-                        const opts: ('Comfort' | 'Auto' | 'Dynamic')[] = ['Comfort', 'Auto', 'Dynamic'];
-                        const cur = themeConfig.driveSelectSettings[key];
-                        const next = opts[(opts.indexOf(cur) + 1) % opts.length];
+                    <select
+                      value={themeConfig.driveSelectSettings[key]}
+                      onChange={(e) => {
                         onUpdateTheme({
                           driveSelectSettings: {
                             ...themeConfig.driveSelectSettings,
-                            [key]: next,
+                            [key]: e.target.value as 'Comfort' | 'Auto' | 'Dynamic',
                           },
                         });
                       }}
-                      className="px-2 py-0.5 rounded bg-red-950/40 border border-red-500/60 text-white text-[11px] font-bold"
+                      className="px-2 py-1 rounded bg-[#0b0f19] border border-slate-700 text-amber-400 text-[11px] font-bold focus:border-red-500 focus:outline-none cursor-pointer"
                     >
-                      ▼ {themeConfig.driveSelectSettings[key]}
-                    </button>
+                      <option value="Comfort">Comfort</option>
+                      <option value="Auto">Auto</option>
+                      <option value="Dynamic">Dynamic</option>
+                    </select>
                   </div>
                 ))}
               </div>

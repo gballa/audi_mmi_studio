@@ -24,6 +24,8 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
 }) => {
   const [knobRotation, setKnobRotation] = useState<number>(0);
   const [activeSubmenuRow, setActiveSubmenuRow] = useState<'engine' | 'steering' | 'suspension'>('steering');
+  const [openDropdownRow, setOpenDropdownRow] = useState<'engine' | 'steering' | 'suspension' | null>(null);
+  const [navViewMode, setNavViewMode] = useState<'perspective' | 'interactive_vector'>('interactive_vector');
   const [inspectModalElement, setInspectModalElement] = useState<string | null>(null);
 
   // Localized string helper
@@ -61,18 +63,6 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
         onUpdateTheme({ driveSelectView: 'platter' });
       }
     }
-  };
-
-  const handleCycleSetting = (settingKey: 'engineGearbox' | 'steering' | 'suspension') => {
-    const options: ('Comfort' | 'Auto' | 'Dynamic')[] = ['Comfort', 'Auto', 'Dynamic'];
-    const currentVal = themeConfig.driveSelectSettings[settingKey];
-    const nextIdx = (options.indexOf(currentVal) + 1) % options.length;
-    onUpdateTheme({
-      driveSelectSettings: {
-        ...themeConfig.driveSelectSettings,
-        [settingKey]: options[nextIdx],
-      },
-    });
   };
 
   const handleElementClick = (e: React.MouseEvent, elementId: string) => {
@@ -513,31 +503,71 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                       setActiveSubmenuRow('engine');
                       handleElementClick(e, 'settings_row_highlight');
                     }}
-                    className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer ${
+                    className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer relative ${
                       activeSubmenuRow === 'engine'
-                        ? 'bg-red-950/40 border-red-500/50 shadow-md'
-                        : 'bg-slate-900/60 border-slate-800/80 hover:border-slate-700'
+                        ? 'bg-[#150a0d] border-red-500/70 shadow-md'
+                        : 'bg-[#0b0e17] border-slate-800/80 hover:border-slate-700'
                     }`}
                   >
                     <span className="text-sm font-semibold text-white">
                       {themeConfig.language === 'sq' ? 'Motori / kutia e marsheve' : 'Engine / gearbox'}
                     </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCycleSetting('engineGearbox');
-                        handleElementClick(e, 'settings_dropdown_pill');
-                      }}
-                      style={{
-                        borderColor: bracketColor,
-                        backgroundColor: 'rgba(224, 0, 27, 0.35)',
-                        boxShadow: themeConfig.ambientGlow ? `0 0 10px ${bracketColor}60` : 'none',
-                      }}
-                      className="px-4 py-1.5 rounded-md border text-xs font-bold text-white flex items-center gap-2 hover:scale-105 transition"
-                    >
-                      <span className="text-xs">▼</span>
-                      <span>{themeConfig.driveSelectSettings.engineGearbox}</span>
-                    </button>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveSubmenuRow('engine');
+                          setOpenDropdownRow(openDropdownRow === 'engine' ? null : 'engine');
+                          handleElementClick(e, 'settings_dropdown_pill');
+                        }}
+                        style={{
+                          borderColor: bracketColor,
+                          backgroundColor: '#1b0609',
+                          boxShadow: themeConfig.ambientGlow ? `0 0 12px ${bracketColor}70` : 'none',
+                        }}
+                        className="px-4 py-1.5 rounded-md border text-xs font-bold text-white flex items-center gap-2 hover:scale-105 transition cursor-pointer select-none"
+                      >
+                        <span className={`text-[10px] transition-transform ${openDropdownRow === 'engine' ? 'rotate-180 text-amber-400 font-bold' : 'text-slate-300'}`}>▼</span>
+                        <span>{themeConfig.driveSelectSettings.engineGearbox}</span>
+                      </button>
+
+                      {/* Dropdown Popup Menu with 100% Solid Matching Background */}
+                      {openDropdownRow === 'engine' && (
+                        <div
+                          className="absolute top-full mt-1.5 right-0 w-36 bg-[#090d16] border-2 border-red-600 rounded-lg shadow-[0_20px_45px_rgba(0,0,0,0.98)] z-50 overflow-hidden py-1 text-xs"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {(['Comfort', 'Auto', 'Dynamic'] as const).map((opt) => {
+                            const isSelected = themeConfig.driveSelectSettings.engineGearbox === opt;
+                            return (
+                              <button
+                                key={opt}
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onUpdateTheme({
+                                    driveSelectSettings: {
+                                      ...themeConfig.driveSelectSettings,
+                                      engineGearbox: opt,
+                                    },
+                                  });
+                                  setOpenDropdownRow(null);
+                                }}
+                                className={`w-full px-3 py-2 text-left flex items-center justify-between font-bold transition cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-red-950 text-red-200 font-extrabold border-l-2 border-red-500'
+                                    : 'text-slate-200 hover:bg-slate-800 hover:text-white'
+                                }`}
+                              >
+                                <span>{themeConfig.language === 'sq' ? (opt === 'Comfort' ? 'Komfort' : opt === 'Auto' ? 'Automatik' : 'Dinamik') : opt}</span>
+                                {isSelected && <span className="text-red-400 font-mono">✓</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Row 2: Steering */}
@@ -547,31 +577,71 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                       setActiveSubmenuRow('steering');
                       handleElementClick(e, 'settings_row_highlight');
                     }}
-                    className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer ${
+                    className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer relative ${
                       activeSubmenuRow === 'steering'
-                        ? 'bg-red-950/40 border-red-500/50 shadow-md'
-                        : 'bg-slate-900/60 border-slate-800/80 hover:border-slate-700'
+                        ? 'bg-[#150a0d] border-red-500/70 shadow-md'
+                        : 'bg-[#0b0e17] border-slate-800/80 hover:border-slate-700'
                     }`}
                   >
                     <span className="text-sm font-semibold text-white">
                       {themeConfig.language === 'sq' ? 'Timoni' : 'Steering'}
                     </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCycleSetting('steering');
-                        handleElementClick(e, 'settings_dropdown_pill');
-                      }}
-                      style={{
-                        borderColor: bracketColor,
-                        backgroundColor: 'rgba(224, 0, 27, 0.35)',
-                        boxShadow: themeConfig.ambientGlow ? `0 0 10px ${bracketColor}60` : 'none',
-                      }}
-                      className="px-4 py-1.5 rounded-md border text-xs font-bold text-white flex items-center gap-2 hover:scale-105 transition"
-                    >
-                      <span className="text-xs">▼</span>
-                      <span>{themeConfig.driveSelectSettings.steering}</span>
-                    </button>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveSubmenuRow('steering');
+                          setOpenDropdownRow(openDropdownRow === 'steering' ? null : 'steering');
+                          handleElementClick(e, 'settings_dropdown_pill');
+                        }}
+                        style={{
+                          borderColor: bracketColor,
+                          backgroundColor: '#1b0609',
+                          boxShadow: themeConfig.ambientGlow ? `0 0 12px ${bracketColor}70` : 'none',
+                        }}
+                        className="px-4 py-1.5 rounded-md border text-xs font-bold text-white flex items-center gap-2 hover:scale-105 transition cursor-pointer select-none"
+                      >
+                        <span className={`text-[10px] transition-transform ${openDropdownRow === 'steering' ? 'rotate-180 text-amber-400 font-bold' : 'text-slate-300'}`}>▼</span>
+                        <span>{themeConfig.driveSelectSettings.steering}</span>
+                      </button>
+
+                      {/* Dropdown Popup Menu with 100% Solid Matching Background */}
+                      {openDropdownRow === 'steering' && (
+                        <div
+                          className="absolute top-full mt-1.5 right-0 w-36 bg-[#090d16] border-2 border-red-600 rounded-lg shadow-[0_20px_45px_rgba(0,0,0,0.98)] z-50 overflow-hidden py-1 text-xs"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {(['Comfort', 'Auto', 'Dynamic'] as const).map((opt) => {
+                            const isSelected = themeConfig.driveSelectSettings.steering === opt;
+                            return (
+                              <button
+                                key={opt}
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onUpdateTheme({
+                                    driveSelectSettings: {
+                                      ...themeConfig.driveSelectSettings,
+                                      steering: opt,
+                                    },
+                                  });
+                                  setOpenDropdownRow(null);
+                                }}
+                                className={`w-full px-3 py-2 text-left flex items-center justify-between font-bold transition cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-red-950 text-red-200 font-extrabold border-l-2 border-red-500'
+                                    : 'text-slate-200 hover:bg-slate-800 hover:text-white'
+                                }`}
+                              >
+                                <span>{themeConfig.language === 'sq' ? (opt === 'Comfort' ? 'Komfort' : opt === 'Auto' ? 'Automatik' : 'Dinamik') : opt}</span>
+                                {isSelected && <span className="text-red-400 font-mono">✓</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Row 3: Suspension */}
@@ -581,37 +651,77 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                       setActiveSubmenuRow('suspension');
                       handleElementClick(e, 'settings_row_highlight');
                     }}
-                    className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer ${
+                    className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer relative ${
                       activeSubmenuRow === 'suspension'
-                        ? 'bg-red-950/40 border-red-500/50 shadow-md'
-                        : 'bg-slate-900/60 border-slate-800/80 hover:border-slate-700'
+                        ? 'bg-[#150a0d] border-red-500/70 shadow-md'
+                        : 'bg-[#0b0e17] border-slate-800/80 hover:border-slate-700'
                     }`}
                   >
                     <span className="text-sm font-semibold text-white">
                       {themeConfig.language === 'sq' ? 'Amortizimi / Pezullimi' : 'Suspension'}
                     </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCycleSetting('suspension');
-                        handleElementClick(e, 'settings_dropdown_pill');
-                      }}
-                      style={{
-                        borderColor: bracketColor,
-                        backgroundColor: 'rgba(224, 0, 27, 0.35)',
-                        boxShadow: themeConfig.ambientGlow ? `0 0 10px ${bracketColor}60` : 'none',
-                      }}
-                      className="px-4 py-1.5 rounded-md border text-xs font-bold text-white flex items-center gap-2 hover:scale-105 transition"
-                    >
-                      <span className="text-xs">▼</span>
-                      <span>{themeConfig.driveSelectSettings.suspension}</span>
-                    </button>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveSubmenuRow('suspension');
+                          setOpenDropdownRow(openDropdownRow === 'suspension' ? null : 'suspension');
+                          handleElementClick(e, 'settings_dropdown_pill');
+                        }}
+                        style={{
+                          borderColor: bracketColor,
+                          backgroundColor: '#1b0609',
+                          boxShadow: themeConfig.ambientGlow ? `0 0 12px ${bracketColor}70` : 'none',
+                        }}
+                        className="px-4 py-1.5 rounded-md border text-xs font-bold text-white flex items-center gap-2 hover:scale-105 transition cursor-pointer select-none"
+                      >
+                        <span className={`text-[10px] transition-transform ${openDropdownRow === 'suspension' ? 'rotate-180 text-amber-400 font-bold' : 'text-slate-300'}`}>▼</span>
+                        <span>{themeConfig.driveSelectSettings.suspension}</span>
+                      </button>
+
+                      {/* Dropdown Popup Menu with 100% Solid Matching Background */}
+                      {openDropdownRow === 'suspension' && (
+                        <div
+                          className="absolute top-full mt-1.5 right-0 w-36 bg-[#090d16] border-2 border-red-600 rounded-lg shadow-[0_20px_45px_rgba(0,0,0,0.98)] z-50 overflow-hidden py-1 text-xs"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {(['Comfort', 'Auto', 'Dynamic'] as const).map((opt) => {
+                            const isSelected = themeConfig.driveSelectSettings.suspension === opt;
+                            return (
+                              <button
+                                key={opt}
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onUpdateTheme({
+                                    driveSelectSettings: {
+                                      ...themeConfig.driveSelectSettings,
+                                      suspension: opt,
+                                    },
+                                  });
+                                  setOpenDropdownRow(null);
+                                }}
+                                className={`w-full px-3 py-2 text-left flex items-center justify-between font-bold transition cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-red-950 text-red-200 font-extrabold border-l-2 border-red-500'
+                                    : 'text-slate-200 hover:bg-slate-800 hover:text-white'
+                                }`}
+                              >
+                                <span>{themeConfig.language === 'sq' ? (opt === 'Comfort' ? 'Komfort' : opt === 'Auto' ? 'Automatik' : 'Dinamik') : opt}</span>
+                                {isSelected && <span className="text-red-400 font-mono">✓</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 {/* Submenu Bottom Prompt */}
                 <div className="flex justify-between items-center text-xs text-slate-400 font-mono pt-2 border-t border-slate-800">
-                  <span>Click dropdown pill to cycle mode</span>
+                  <span>Click setting dropdown pill to select Comfort, Auto, or Dynamic</span>
                   <span className="text-amber-400 font-semibold">Active: Individual</span>
                 </div>
               </div>
@@ -622,31 +732,159 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
           {/* VIEW C: NAVIGATION 3D ROUTE */}
           {/* ------------------------------------------------------------ */}
           {activeScreenTab === 'navigation' && (
-            <div className="relative w-full h-full flex flex-col justify-between overflow-hidden">
-              {/* Virtual Map Canvas Geometry */}
-              <div className="absolute inset-0 opacity-40">
-                <svg className="w-full h-full" viewBox="0 0 800 380">
-                  <line x1="0" y1="190" x2="800" y2="190" stroke="#1e293b" strokeWidth="1" />
-                  <polygon points="0,190 800,190 800,380 0,380" fill="#0f172a" />
-                  <polygon points="380,190 420,190 680,380 120,380" fill="#1e293b" />
-                  <line x1="400" y1="190" x2="400" y2="380" stroke="#f8fafc" strokeWidth="4" strokeDasharray="16,16" />
-                  <path
-                    d="M 400 340 L 400 240 L 530 210"
-                    fill="none"
-                    stroke={bracketColor}
-                    strokeWidth="8"
-                    strokeLinecap="round"
-                    style={{ filter: themeConfig.ambientGlow ? `drop-shadow(0 0 8px ${bracketColor})` : 'none' }}
-                  />
-                </svg>
+            <div className="relative w-full h-full flex flex-col justify-between overflow-hidden bg-[#070b12]">
+              {/* Mode Toggle Bar */}
+              <div className="absolute top-2 right-4 z-20 flex items-center gap-1.5 bg-[#080d17] border border-slate-700/80 rounded-lg p-1 shadow-lg text-[10px] font-mono">
+                <button
+                  type="button"
+                  onClick={() => setNavViewMode('perspective')}
+                  className={`px-2 py-0.5 rounded transition cursor-pointer ${
+                    navViewMode === 'perspective'
+                      ? 'bg-red-950 text-red-300 font-bold border border-red-500/50'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  3D Horizon
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNavViewMode('interactive_vector')}
+                  className={`px-2 py-0.5 rounded transition cursor-pointer ${
+                    navViewMode === 'interactive_vector'
+                      ? 'bg-red-950 text-red-300 font-bold border border-red-500/50'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  2026 Vector Map
+                </button>
               </div>
 
+              {/* VIEW 1: 3D Horizon Perspective */}
+              {navViewMode === 'perspective' && (
+                <div className="absolute inset-0">
+                  <div className="absolute inset-0 opacity-40">
+                    <svg className="w-full h-full" viewBox="0 0 800 380">
+                      <line x1="0" y1="190" x2="800" y2="190" stroke="#1e293b" strokeWidth="1" />
+                      <polygon points="0,190 800,190 800,380 0,380" fill="#0f172a" />
+                      <polygon points="380,190 420,190 680,380 120,380" fill="#1e293b" />
+                      <line x1="400" y1="190" x2="400" y2="380" stroke="#f8fafc" strokeWidth="4" strokeDasharray="16,16" />
+                      <path
+                        d="M 400 340 L 400 240 L 530 210"
+                        fill="none"
+                        stroke={bracketColor}
+                        strokeWidth="8"
+                        strokeLinecap="round"
+                        style={{ filter: themeConfig.ambientGlow ? `drop-shadow(0 0 8px ${bracketColor})` : 'none' }}
+                      />
+                    </svg>
+                  </div>
+                </div>
+              )}
+
+              {/* VIEW 2: 2026 Interactive Vector Cartography */}
+              {navViewMode === 'interactive_vector' && (
+                <div className="absolute inset-0 overflow-hidden">
+                  {/* Vector Map Canvas */}
+                  <svg className="w-full h-full" viewBox="0 0 800 380">
+                    {/* Topographic Landmass & Subtle Grid */}
+                    <rect width="800" height="380" fill="#070a10" />
+                    <defs>
+                      <pattern id="navGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#111928" strokeWidth="1" />
+                      </pattern>
+                      <radialGradient id="vehiclePulse" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor={bracketColor} stopOpacity="0.8" />
+                        <stop offset="100%" stopColor={bracketColor} stopOpacity="0" />
+                      </radialGradient>
+                    </defs>
+                    <rect width="800" height="380" fill="url(#navGrid)" />
+
+                    {/* Secondary Arterial Roads */}
+                    <path d="M 50 320 Q 250 280 400 220 T 750 150" fill="none" stroke="#1e293b" strokeWidth="6" strokeLinecap="round" />
+                    <path d="M 120 40 Q 280 120 400 220 T 680 340" fill="none" stroke="#1e293b" strokeWidth="6" strokeLinecap="round" />
+
+                    {/* Autostrada A1 Corridor (Primary Highway Dual Carriageway) */}
+                    <path d="M 80 360 C 220 300, 320 250, 410 190 C 510 130, 620 90, 760 60" fill="none" stroke="#334155" strokeWidth="14" strokeLinecap="round" />
+                    <path d="M 80 360 C 220 300, 320 250, 410 190 C 510 130, 620 90, 760 60" fill="none" stroke="#0f172a" strokeWidth="10" strokeLinecap="round" />
+
+                    {/* Active Navigation Guidance Ribbon */}
+                    <path
+                      d="M 280 270 C 340 230, 410 190, 520 130 L 680 80"
+                      fill="none"
+                      stroke={bracketColor}
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                      style={{ filter: themeConfig.ambientGlow ? `drop-shadow(0 0 10px ${bracketColor})` : 'none' }}
+                    />
+
+                    {/* Junction Roundabout Node */}
+                    <circle cx="410" cy="190" r="14" fill="#0f172a" stroke="#475569" strokeWidth="3" />
+                    <circle cx="410" cy="190" r="4" fill="#64748b" />
+
+                    {/* City Labels */}
+                    <text x="140" y="320" fill="#94a3b8" fontSize="12" fontFamily="sans-serif" fontWeight="bold">TIRANA</text>
+                    <text x="680" y="100" fill="#cbd5e1" fontSize="13" fontFamily="sans-serif" fontWeight="bold">DURRËS</text>
+                    <text x="430" y="175" fill="#f59e0b" fontSize="10" fontFamily="sans-serif" fontWeight="600">Jct 4: Rruga e Kombit</text>
+
+                    {/* POI Markers */}
+                    {/* Fuel Station POI */}
+                    <g transform="translate(480, 140)">
+                      <circle cx="0" cy="0" r="10" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.5" />
+                      <text x="0" y="3" fill="#60a5fa" fontSize="9" textAnchor="middle" fontWeight="bold">⛽</text>
+                      <text x="14" y="3" fill="#94a3b8" fontSize="9" fontFamily="monospace">Shell (350m)</text>
+                    </g>
+
+                    {/* Rest Area POI */}
+                    <g transform="translate(240, 290)">
+                      <circle cx="0" cy="0" r="10" fill="#1e293b" stroke="#10b981" strokeWidth="1.5" />
+                      <text x="0" y="3" fill="#34d399" fontSize="9" textAnchor="middle" fontWeight="bold">🅿️</text>
+                      <text x="14" y="3" fill="#94a3b8" fontSize="9" fontFamily="monospace">Rest Area (1.2km)</text>
+                    </g>
+
+                    {/* Vehicle GPS Position Indicator (Pulse + Chevron) */}
+                    <circle cx="280" cy="270" r="22" fill="url(#vehiclePulse)" />
+                    <circle cx="280" cy="270" r="8" fill="#ffffff" stroke={bracketColor} strokeWidth="3" />
+                    <polygon points="280,260 274,276 280,272 286,276" fill={bracketColor} />
+                  </svg>
+
+                  {/* Telemetry HUD Box (Top Right under mode toggle) */}
+                  <div className="absolute top-12 right-4 z-10 w-52 bg-[#080d17]/95 border border-slate-700/80 rounded-lg p-2.5 shadow-xl text-[10px] font-mono space-y-1">
+                    <div className="flex justify-between items-center text-slate-300 font-bold border-b border-slate-800 pb-1">
+                      <span className="flex items-center gap-1"><span className="text-amber-400">🛰️</span> GPS 3D FIX</span>
+                      <span className="text-emerald-400 font-bold">9/12 SAT</span>
+                    </div>
+                    <div className="flex justify-between text-slate-400">
+                      <span>Coordinates:</span>
+                      <span className="text-slate-200">41.3275°N 19.8187°E</span>
+                    </div>
+                    <div className="flex justify-between text-slate-400">
+                      <span>Elevation:</span>
+                      <span className="text-slate-200">114 m AMSL</span>
+                    </div>
+                    <div className="flex justify-between text-slate-400">
+                      <span>Heading / Azimuth:</span>
+                      <span className="text-amber-400 font-bold">284° WNW</span>
+                    </div>
+                    <div className="flex justify-between text-slate-400">
+                      <span>Cartography DB:</span>
+                      <span className="text-emerald-400">FLDB 2026 (544B)</span>
+                    </div>
+                  </div>
+
+                  {/* Scale Bar */}
+                  <div className="absolute bottom-4 left-6 z-10 flex items-center gap-2 text-[10px] font-mono text-slate-400 bg-black/60 px-2 py-1 rounded border border-slate-800">
+                    <div className="w-16 h-1 border-b-2 border-l-2 border-r-2 border-slate-400" />
+                    <span>200 m</span>
+                  </div>
+                </div>
+              )}
+
               {/* Maneuver Banner */}
-              <div className="relative z-10 mx-6 mt-4 p-3 bg-black/75 border border-slate-800 rounded-lg flex items-center justify-between backdrop-blur-md">
+              <div className="relative z-10 mx-6 mt-4 p-3 bg-[#080c14] border border-slate-800 rounded-lg flex items-center justify-between shadow-2xl backdrop-blur-md max-w-[500px]">
                 <div className="flex items-center gap-3">
                   <div
                     onClick={(e) => handleElementClick(e, 'nav_turn_arrow')}
-                    className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl cursor-pointer"
+                    className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl cursor-pointer shadow"
                     style={{ backgroundColor: bracketColor, color: '#ffffff' }}
                   >
                     ⮡
@@ -663,17 +901,17 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
 
                 <div
                   onClick={(e) => handleElementClick(e, 'speed_roundel')}
-                  className="w-10 h-10 rounded-full border-4 border-red-600 bg-white flex items-center justify-center text-black font-black text-xs font-mono shadow-lg cursor-pointer"
+                  className="w-10 h-10 rounded-full border-4 border-red-600 bg-white flex items-center justify-center text-black font-black text-xs font-mono shadow-lg cursor-pointer ml-3 shrink-0"
                 >
                   130
                 </div>
               </div>
 
-              {/* 3D Compass */}
-              {themeConfig.showCompass && (
+              {/* 3D Compass (Only shown in perspective or if enabled) */}
+              {themeConfig.showCompass && navViewMode === 'perspective' && (
                 <div
                   onClick={(e) => handleElementClick(e, 'compass_rose')}
-                  className="absolute right-8 top-20 z-10 w-16 h-16 rounded-full bg-black/60 border border-slate-700 flex flex-col items-center justify-center backdrop-blur-sm cursor-pointer"
+                  className="absolute right-8 top-16 z-10 w-16 h-16 rounded-full bg-black/80 border border-slate-700 flex flex-col items-center justify-center backdrop-blur-sm cursor-pointer shadow-lg"
                 >
                   <div className="text-[9px] font-bold text-red-500">N</div>
                   <div className="w-1 h-7 rounded-full bg-red-600" style={{ transform: 'rotate(25deg)' }} />

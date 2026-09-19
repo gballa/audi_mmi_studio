@@ -123,7 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
         {isHwInfoOpen && (
           <div
             ref={hwInfoRef}
-            className="absolute top-12 left-0 w-80 bg-slate-950/98 backdrop-blur-xl border border-slate-700 rounded-xl p-4 shadow-2xl z-50 text-xs space-y-2.5 animate-in fade-in zoom-in-95 duration-150"
+            className="absolute top-12 left-0 w-80 bg-[#080c14] border border-slate-700 rounded-xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.95)] z-50 text-xs space-y-2.5 animate-in fade-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-2 border-b border-slate-800">
@@ -248,7 +248,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Dropdown Menu (Guaranteed Not Clipped with High z-index & Fixed Alignment) */}
             {isToolsOpen && (
               <div
-                className="absolute top-full mt-2.5 right-0 w-72 bg-slate-950/98 backdrop-blur-2xl border border-slate-700/80 rounded-xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.95)] z-50 text-xs space-y-1 animate-in fade-in zoom-in-95 duration-150 ring-1 ring-slate-800"
+                className="absolute top-full mt-2.5 right-0 w-72 bg-[#080c14] border border-slate-700/80 rounded-xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.98)] z-50 text-xs space-y-1 animate-in fade-in zoom-in-95 duration-150 ring-1 ring-slate-800"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between border-b border-slate-800/80 mb-1">
@@ -310,7 +310,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Security Popover */}
         {isSecurityInfoOpen && (
           <div
-            className="absolute top-12 right-0 w-80 bg-slate-950/98 backdrop-blur-xl border border-slate-700 rounded-xl p-4 shadow-2xl z-50 text-xs space-y-2.5 animate-in fade-in zoom-in-95 duration-150"
+            className="absolute top-12 right-0 w-80 bg-[#080c14] border border-slate-700 rounded-xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.98)] z-50 text-xs space-y-2.5 animate-in fade-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-2 border-b border-slate-800">
