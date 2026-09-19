@@ -288,7 +288,55 @@ exit 0
         fs::write(&recovery_path, &stock_recovery)?;
         file_records.push(Self::hash_file("stock_recovery.sh", stock_recovery.as_bytes()));
 
-        // 7. Write build_manifest.json
+        // 7. In-Car Green Engineering Menu (GEM) Custom Diagnostic Screens & Hot-Patches
+        let gem_dir = output_dir.join("gem");
+        let gem_screens_dir = gem_dir.join("screens");
+        let gem_scripts_dir = gem_dir.join("scripts");
+        fs::create_dir_all(&gem_screens_dir)?;
+        fs::create_dir_all(&gem_scripts_dir)?;
+
+        let custom_telemetry_esd = build_gem_screen_esd(
+            "Live Telemetry & Engine Gauges",
+            &[
+                GemWidget::BoostGauge,
+                GemWidget::BatteryMeter,
+                GemWidget::CoolantTemp,
+                GemWidget::SpeedDigital,
+            ],
+        );
+        let telemetry_esd_path = gem_screens_dir.join("custom_telemetry.esd");
+        fs::write(&telemetry_esd_path, &custom_telemetry_esd)?;
+        file_records.push(Self::hash_file("gem/screens/custom_telemetry.esd", &custom_telemetry_esd));
+
+        let map_inspector_esd = build_gem_screen_esd(
+            "2026 Navigation Cache & FLDB Health",
+            &[
+                GemWidget::GpsCoordinates,
+                GemWidget::MapSectorIntegrity,
+            ],
+        );
+        let map_esd_path = gem_screens_dir.join("map_inspector.esd");
+        fs::write(&map_esd_path, &map_inspector_esd)?;
+        file_records.push(Self::hash_file("gem/screens/map_inspector.esd", &map_inspector_esd));
+
+        let bench_diag_sh = r#"#!/bin/sh
+# Audi MMI 3G/3G+ Safe User-Space Benchmark & Diagnostic Script
+# Executable from QNX shell: sh /fs/sda0/gem/scripts/bench_diag.sh
+echo "=== Audi MMI 3G+ Green Menu Diagnostics ==="
+echo "CPU Load & Running Processes:"
+pidin -f a
+echo "Storage Allocations:"
+df -h
+echo "Module 5F Health Check:"
+ls -la /fs/sda0/HBNavDB/
+echo "Diagnostics complete."
+exit 0
+"#;
+        let diag_script_path = gem_scripts_dir.join("bench_diag.sh");
+        fs::write(&diag_script_path, bench_diag_sh)?;
+        file_records.push(Self::hash_file("gem/scripts/bench_diag.sh", bench_diag_sh.as_bytes()));
+
+        // 8. Write build_manifest.json
         let report = FirmwareBundleReport {
             target_train: self.config.train.clone(),
             target_release: self.config.release.clone(),
@@ -321,3 +369,54 @@ exit 0
         }
     }
 }
+
+/// Widget types available for Green Engineering Menu (GEM) custom screen authoring.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum GemWidget {
+    BoostGauge,
+    BatteryMeter,
+    CoolantTemp,
+    SpeedDigital,
+    GpsCoordinates,
+    MapSectorIntegrity,
+}
+
+/// Compiles an authentic QNX Green Engineering Menu (ESD) binary screen definition.
+pub fn build_gem_screen_esd(title: &str, widgets: &[GemWidget]) -> Vec<u8> {
+    let mut esd = Vec::new();
+    esd.extend_from_slice(b"ESD\x01"); // ESD Magic & Version
+    esd.extend_from_slice(&(title.len() as u16).to_le_bytes());
+    esd.extend_from_slice(title.as_bytes());
+    esd.push(widgets.len() as u8);
+
+    for w in widgets {
+        match w {
+            GemWidget::BoostGauge => {
+                esd.push(0x01);
+                esd.extend_from_slice(b"BOOST_MAP_BAR\0");
+            }
+            GemWidget::BatteryMeter => {
+                esd.push(0x02);
+                esd.extend_from_slice(b"BATT_VOLT_12V\0");
+            }
+            GemWidget::CoolantTemp => {
+                esd.push(0x03);
+                esd.extend_from_slice(b"COOLANT_TEMP_C\0");
+            }
+            GemWidget::SpeedDigital => {
+                esd.push(0x04);
+                esd.extend_from_slice(b"DIGITAL_SPEED_KMH\0");
+            }
+            GemWidget::GpsCoordinates => {
+                esd.push(0x05);
+                esd.extend_from_slice(b"GPS_WGS84_COORD\0");
+            }
+            GemWidget::MapSectorIntegrity => {
+                esd.push(0x06);
+                esd.extend_from_slice(b"FLDB_SECTOR_CRC\0");
+            }
+        }
+    }
+    esd
+}
+

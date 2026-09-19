@@ -52,11 +52,18 @@ fn test_firmware_bundle_pipeline_end_to_end() {
         "finalScript",
         "stock_recovery.sh",
         "build_manifest.json",
+        "gem/screens/custom_telemetry.esd",
+        "gem/screens/map_inspector.esd",
+        "gem/scripts/bench_diag.sh",
     ];
     for f in &expected_files {
         let p = bundle_dir.join(f);
         assert!(p.exists(), "Expected bundle file missing: {:?}", p);
     }
+
+    // 2b. Verify GEM Custom Screen ESD binary header
+    let custom_telemetry_bytes = std::fs::read(bundle_dir.join("gem/screens/custom_telemetry.esd")).unwrap();
+    assert!(custom_telemetry_bytes.starts_with(b"ESD\x01"));
 
     // 3. Verify QNX IFS Parsing
     let ifs_bytes = std::fs::read(bundle_dir.join("MU9411/ifs-root.ifs")).unwrap();

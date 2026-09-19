@@ -34,8 +34,9 @@ pub use fldb_compiler::{
     GDB_MAGIC, GDB_VERSION, MAX_VOLUME_BYTES, SVM_CHANNEL_15_XOR_CIPHER,
 };
 pub use firmware_bundle::{
-    BundleFileRecord, FirmwareBundleConfig, FirmwareBundlePipeline, FirmwareBundleReport,
-    PartitionUsage, DEFAULT_RELEASE, DEFAULT_TRAIN, DEFAULT_VARIANT, SAFETY_POLICY_BANNER,
+    build_gem_screen_esd, BundleFileRecord, FirmwareBundleConfig, FirmwareBundlePipeline,
+    FirmwareBundleReport, GemWidget, PartitionUsage, DEFAULT_RELEASE, DEFAULT_TRAIN,
+    DEFAULT_VARIANT, SAFETY_POLICY_BANNER,
 };
 
 

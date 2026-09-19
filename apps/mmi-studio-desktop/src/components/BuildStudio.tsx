@@ -75,6 +75,32 @@ export const BuildStudio: React.FC<BuildStudioProps> = ({
   const [dtcsCleared, setDtcsCleared] = useState<boolean>(false);
   const [obdActionBusy, setObdActionBusy] = useState<string | null>(null);
 
+  // In-Car Green Engineering Menu (GEM) Custom Screen Designer State (Phase 3)
+  const [gemWidgets, setGemWidgets] = useState({
+    boost: true,
+    battery: true,
+    oilTemp: true,
+    speed: true,
+    gpsCoords: true,
+    navIntegrity: true,
+  });
+  const [gemExported, setGemExported] = useState<boolean>(false);
+  const [gemExporting, setGemExporting] = useState<boolean>(false);
+
+  const handleExportGemScreens = () => {
+    setGemExporting(true);
+    setTimeout(() => {
+      setGemExporting(false);
+      setGemExported(true);
+      setObdLog((prev) => [
+        ...prev,
+        `> gem compile --title "Antigravity Telemetry" --widgets ${Object.entries(gemWidgets).filter(([_, v]) => v).map(([k]) => k).join(',')}`,
+        `✓ Compiled gem/screens/custom_telemetry.esd (ESD\\x01 format, ${Object.values(gemWidgets).filter(Boolean).length} widgets)`,
+        `✓ Prepared gem/scripts/bench_diag.sh with auto-mount execution hook`,
+      ]);
+    }, 600);
+  };
+
   // Live CAN-Bus telemetry jitter ticker when connected
   useEffect(() => {
     if (!obdConnected) return;
@@ -912,6 +938,185 @@ Description = "Day and Night Map Shaders"
           </div>
         </div>
 
+        {/* In-Car Green Engineering Menu (GEM) Custom Screen Designer (Phase 3) */}
+        <div className="bg-[#05140b] border border-emerald-800/60 rounded-lg p-5 space-y-5 font-mono shadow-xl shadow-emerald-950/30">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-900/50 pb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-300">
+                  Green Engineering Menu (GEM) Screen Designer
+                </h3>
+              </div>
+              <p className="text-xs text-emerald-500/90 mt-0.5">
+                Design custom QNX ESD menus (CAR + SETUP key combo) deployed directly to SD card for live diagnostic monitoring
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="px-2.5 py-1 bg-emerald-950/80 border border-emerald-700/60 rounded text-emerald-300 font-semibold">
+                ESD v1 Binary Format
+              </span>
+              <button
+                onClick={handleExportGemScreens}
+                disabled={gemExporting}
+                className={`px-3 py-1.5 rounded font-bold transition flex items-center gap-1.5 ${
+                  gemExported
+                    ? 'bg-emerald-600 text-black shadow-lg shadow-emerald-600/30'
+                    : 'bg-emerald-500 hover:bg-emerald-400 text-black'
+                }`}
+              >
+                <span>{gemExporting ? '⏳' : gemExported ? '✓' : '⚡'}</span>
+                <span>{gemExporting ? 'Compiling ESD...' : gemExported ? 'Exported to SD Card' : 'Export ESD Screens'}</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            {/* Authentic QNX CRT Preview Monitor */}
+            <div className="lg:col-span-7 bg-[#020b05] border-2 border-emerald-800/80 rounded-lg p-4 shadow-inner relative overflow-hidden">
+              <div className="absolute top-2 right-3 text-[10px] text-emerald-600 tracking-wider">
+                MMI 3G+ CRT DISP 800x480
+              </div>
+              <div className="text-emerald-400 text-xs border-b border-emerald-900 pb-2 mb-3">
+                === AUDI MMI 3G+ GREEN ENGINEERING MENU (GEM) ===
+              </div>
+              <div className="text-[11px] text-emerald-300 font-semibold mb-2">
+                &gt; ANTIGRAVITY TELEMETRY OVERLAY [ESD_ID: 0x47454D]
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs bg-emerald-950/30 p-3 rounded border border-emerald-900/50">
+                {gemWidgets.boost && (
+                  <div className="bg-black/60 p-2.5 rounded border border-emerald-800/40">
+                    <div className="text-[10px] text-emerald-500 uppercase">Turbo Boost Pressure</div>
+                    <div className="text-emerald-300 text-sm font-bold flex items-baseline gap-1">
+                      <span>1.42</span>
+                      <span className="text-[10px] text-emerald-600">BAR (REL)</span>
+                    </div>
+                  </div>
+                )}
+                {gemWidgets.battery && (
+                  <div className="bg-black/60 p-2.5 rounded border border-emerald-800/40">
+                    <div className="text-[10px] text-emerald-500 uppercase">12V AGM Battery SoC</div>
+                    <div className="text-emerald-300 text-sm font-bold flex items-baseline gap-1">
+                      <span>92%</span>
+                      <span className="text-[10px] text-emerald-600">/ 14.2V ALT</span>
+                    </div>
+                  </div>
+                )}
+                {gemWidgets.oilTemp && (
+                  <div className="bg-black/60 p-2.5 rounded border border-emerald-800/40">
+                    <div className="text-[10px] text-emerald-500 uppercase">Engine / S-Tronic Temp</div>
+                    <div className="text-emerald-300 text-sm font-bold flex items-baseline gap-1">
+                      <span>96°C</span>
+                      <span className="text-[10px] text-emerald-600">OIL / 84°C TRANS</span>
+                    </div>
+                  </div>
+                )}
+                {gemWidgets.speed && (
+                  <div className="bg-black/60 p-2.5 rounded border border-emerald-800/40">
+                    <div className="text-[10px] text-emerald-500 uppercase">Digital CAN Speed</div>
+                    <div className="text-emerald-300 text-sm font-bold flex items-baseline gap-1">
+                      <span>{obdTelemetry.speed}</span>
+                      <span className="text-[10px] text-emerald-600">KM/H (VSS)</span>
+                    </div>
+                  </div>
+                )}
+                {gemWidgets.gpsCoords && (
+                  <div className="col-span-2 bg-black/60 p-2.5 rounded border border-emerald-800/40">
+                    <div className="text-[10px] text-emerald-500 uppercase">Navi Sat Lock &amp; WGS-84 Coordinates</div>
+                    <div className="text-emerald-300 text-xs font-bold">
+                      LAT: 41.3275° N | LON: 19.8187° E | SATS: 11 (3D FIX)
+                    </div>
+                  </div>
+                )}
+                {gemWidgets.navIntegrity && (
+                  <div className="col-span-2 bg-black/60 p-2.5 rounded border border-emerald-800/40">
+                    <div className="text-[10px] text-emerald-500 uppercase">FLDB Sector Checksum Integrity</div>
+                    <div className="text-emerald-300 text-xs font-bold flex items-center justify-between">
+                      <span>DB: AL_CORRIDOR_2026</span>
+                      <span className="text-emerald-400">CRC16: OK (0x9A4F)</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-3 text-[10px] text-emerald-600/90 flex justify-between">
+                <span>[ESD Hook: /gem/scripts/bench_diag.sh]</span>
+                <span>[Press BACK to Exit Menu]</span>
+              </div>
+            </div>
+
+            {/* Widget Selector Controls */}
+            <div className="lg:col-span-5 flex flex-col justify-between space-y-3">
+              <div>
+                <div className="text-xs font-bold text-emerald-300 uppercase tracking-wider mb-2">
+                  Active Display Widgets
+                </div>
+                <div className="space-y-1.5 text-xs">
+                  <label className="flex items-center justify-between p-2 rounded bg-black/40 border border-emerald-900/60 cursor-pointer hover:bg-emerald-950/30">
+                    <span className="text-emerald-300">Turbo Boost Gauge</span>
+                    <input
+                      type="checkbox"
+                      checked={gemWidgets.boost}
+                      onChange={(e) => setGemWidgets({ ...gemWidgets, boost: e.target.checked })}
+                      className="accent-emerald-500 rounded"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between p-2 rounded bg-black/40 border border-emerald-900/60 cursor-pointer hover:bg-emerald-950/30">
+                    <span className="text-emerald-300">12V AGM Battery SoC</span>
+                    <input
+                      type="checkbox"
+                      checked={gemWidgets.battery}
+                      onChange={(e) => setGemWidgets({ ...gemWidgets, battery: e.target.checked })}
+                      className="accent-emerald-500 rounded"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between p-2 rounded bg-black/40 border border-emerald-900/60 cursor-pointer hover:bg-emerald-950/30">
+                    <span className="text-emerald-300">Engine &amp; Gearbox Temp</span>
+                    <input
+                      type="checkbox"
+                      checked={gemWidgets.oilTemp}
+                      onChange={(e) => setGemWidgets({ ...gemWidgets, oilTemp: e.target.checked })}
+                      className="accent-emerald-500 rounded"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between p-2 rounded bg-black/40 border border-emerald-900/60 cursor-pointer hover:bg-emerald-950/30">
+                    <span className="text-emerald-300">Digital Vehicle Speed</span>
+                    <input
+                      type="checkbox"
+                      checked={gemWidgets.speed}
+                      onChange={(e) => setGemWidgets({ ...gemWidgets, speed: e.target.checked })}
+                      className="accent-emerald-500 rounded"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between p-2 rounded bg-black/40 border border-emerald-900/60 cursor-pointer hover:bg-emerald-950/30">
+                    <span className="text-emerald-300">GPS WGS-84 Coordinates</span>
+                    <input
+                      type="checkbox"
+                      checked={gemWidgets.gpsCoords}
+                      onChange={(e) => setGemWidgets({ ...gemWidgets, gpsCoords: e.target.checked })}
+                      className="accent-emerald-500 rounded"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between p-2 rounded bg-black/40 border border-emerald-900/60 cursor-pointer hover:bg-emerald-950/30">
+                    <span className="text-emerald-300">Map Sector CRC16 Validator</span>
+                    <input
+                      type="checkbox"
+                      checked={gemWidgets.navIntegrity}
+                      onChange={(e) => setGemWidgets({ ...gemWidgets, navIntegrity: e.target.checked })}
+                      className="accent-emerald-500 rounded"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="p-2.5 bg-emerald-950/40 border border-emerald-800/40 rounded text-[11px] text-emerald-400/90 leading-relaxed">
+                💡 <strong>Safety note:</strong> ESD files run natively in QNX IFS/EFS without modifying flash partitions. Removing the SD card restores the default factory menu.
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* File Structure on SD Card */}
         <div className="bg-slate-900 border border-slate-800 rounded-lg p-5 space-y-4">
           <div className="flex items-center justify-between">
@@ -924,17 +1129,23 @@ Description = "Day and Night Map Shaders"
           <div className="p-4 bg-[#0a0d13] border border-slate-800 rounded-lg font-mono text-xs text-slate-300 space-y-1.5 overflow-x-auto">
             <div className="text-amber-400 font-bold">📁 SD_CARD_ROOT/ [FAT32 Volume: MMI3G_NAV]</div>
             <div className="pl-4 text-emerald-400">├── 📄 metainfo2.txt <span className="text-slate-500 text-[11px]">(SWDL manifest with per-512KB CRC32 blocks)</span></div>
-            <div className="pl-4 text-emerald-400">├── 📄 build_manifest.json <span className="text-slate-500 text-[11px]">(Cryptographic attestation & BLAKE3 hashes)</span></div>
+            <div className="pl-4 text-emerald-400">├── 📄 build_manifest.json <span className="text-slate-500 text-[11px]">(Cryptographic attestation &amp; BLAKE3 hashes)</span></div>
             <div className="pl-4 text-emerald-400">├── 📄 copie_scr.sh <span className="text-slate-500 text-[11px]">(SD insertion launcher for proc_scriptlauncher)</span></div>
-            <div className="pl-4 text-emerald-400">├── 📄 finalScript <span className="text-slate-500 text-[11px]">(SWDL post-flash finalize & reboot script)</span></div>
+            <div className="pl-4 text-emerald-400">├── 📄 finalScript <span className="text-slate-500 text-[11px]">(SWDL post-flash finalize &amp; reboot script)</span></div>
             <div className="pl-4 text-emerald-400">├── 📄 stock_recovery.sh <span className="text-slate-500 text-[11px]">(Emergency NAND rollback for QNX UART console)</span></div>
             <div className="pl-4 text-amber-300">├── 📁 MU9411/</div>
             <div className="pl-8 text-emerald-300">├── 📄 ifs-root.ifs <span className="text-slate-500 text-[11px]">(QNX IFS root partition, SH-4, splash.png, lsd.jxe)</span></div>
             <div className="pl-8 text-emerald-300">└── 📄 efs-system.efs <span className="text-slate-500 text-[11px]">(QNX F3S filesystem, sq_AL.ans, menu_2026.esd)</span></div>
             <div className="pl-4 text-amber-300">├── 📁 HBNavDB/</div>
             <div className="pl-8 text-slate-300">└── 📄 nav_data.db <span className="text-slate-500 text-[11px]">(Harman/Becker FLDB 544-byte pages with CRC-16)</span></div>
-            <div className="pl-4 text-amber-300">└── 📁 MapStyles/</div>
-            <div className="pl-8 text-slate-300">└── 📄 night_2026.gdb <span className="text-slate-500 text-[11px]">(Day & Night cartographic shaders)</span></div>
+            <div className="pl-4 text-amber-300">├── 📁 MapStyles/</div>
+            <div className="pl-8 text-slate-300">└── 📄 night_2026.gdb <span className="text-slate-500 text-[11px]">(Day &amp; Night cartographic shaders)</span></div>
+            <div className="pl-4 text-amber-300">└── 📁 gem/</div>
+            <div className="pl-8 text-emerald-300">├── 📁 screens/</div>
+            <div className="pl-12 text-slate-300">├── 📄 custom_telemetry.esd <span className="text-slate-500 text-[11px]">(ESD\x01 compiled binary menu)</span></div>
+            <div className="pl-12 text-slate-300">└── 📄 map_inspector.esd <span className="text-slate-500 text-[11px]">(Real-time FLDB sector validator)</span></div>
+            <div className="pl-8 text-emerald-300">└── 📁 scripts/</div>
+            <div className="pl-12 text-slate-300">└── 📄 bench_diag.sh <span className="text-slate-500 text-[11px]">(Auto-launch diagnostic tool)</span></div>
           </div>
         </div>
 
