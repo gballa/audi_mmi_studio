@@ -28,6 +28,29 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
   const [navViewMode, setNavViewMode] = useState<'perspective' | 'interactive_vector'>('interactive_vector');
   const [inspectModalElement, setInspectModalElement] = useState<string | null>(null);
 
+  // 3D Interactive Vehicle Chassis State (Phase 2)
+  type VehicleChassisId = 'a4_sedan' | 'a4_avant' | 'a5_coupe' | 'a6_allroad' | 'q5_suv' | 'r8_v10';
+  const [selectedChassis, setSelectedChassis] = useState<VehicleChassisId>(
+    (themeConfig.activeCarSilhouetteStyle as VehicleChassisId) || 'a4_sedan'
+  );
+  const [carOrbitAngle, setCarOrbitAngle] = useState<number>(0);
+
+  const vehicleChassisList: {
+    id: VehicleChassisId;
+    name: string;
+    badge: string;
+    engine: string;
+    power: string;
+    drivetrain: string;
+  }[] = [
+    { id: 'a4_sedan', name: 'A4 Sedan', badge: 'B8.5 3.0 TDI', engine: '3.0 V6 TDI', power: '245 HP · 500 Nm', drivetrain: 'quattro Crown-Gear' },
+    { id: 'a4_avant', name: 'S4 Avant', badge: 'B8.5 3.0 TFSI', engine: '3.0 V6 Supercharged', power: '333 HP · 440 Nm', drivetrain: 'quattro Sport Diff' },
+    { id: 'a5_coupe', name: 'RS5 Coupe', badge: '8T 4.2 FSI', engine: '4.2 V8 High-Rev', power: '450 HP · 430 Nm', drivetrain: 'quattro Torque Vector' },
+    { id: 'a6_allroad', name: 'A6 allroad', badge: 'C7 3.0 BiTDI', engine: '3.0 V6 BiTurbo', power: '313 HP · 650 Nm', drivetrain: 'Adaptive Air Suspension' },
+    { id: 'q5_suv', name: 'SQ5 TDI', badge: '8R 3.0 BiTDI', engine: '3.0 V6 BiTurbo', power: '313 HP · 650 Nm', drivetrain: 'Permanent Torsen quattro' },
+    { id: 'r8_v10', name: 'R8 V10 Plus', badge: 'Type 42 5.2 FSI', engine: '5.2 V10 Plus', power: '550 HP · 540 Nm', drivetrain: 'Mid-Engine AWD' },
+  ];
+
   // Media Jukebox & Bang & Olufsen DSP Engine State
   const tracks = [
     {
@@ -553,79 +576,346 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                   <ellipse cx="270" cy="115" rx="160" ry="38" fill="none" stroke="#1e293b" strokeWidth="1" strokeDasharray="6,4" />
                 </svg>
 
-                {/* 3D Perspective Audi Sedan Vector Model (Isometric Angle) */}
-                <div
-                  className="relative z-10 w-[380px] h-[140px] flex items-center justify-center cursor-pointer transition-transform group-hover:scale-105"
-                  onClick={(e) => handleElementClick(e, 'car_silhouette_sport')}
-                  title="3D Audi Model - Click to restyle with Gemini AI"
-                >
-                  <svg viewBox="0 0 380 140" className="w-full h-full drop-shadow-[0_15px_15px_rgba(0,0,0,0.9)]">
-                    {/* Shadow under car */}
-                    <ellipse cx="190" cy="120" rx="150" ry="16" fill="#000000" opacity="0.85" />
+                {/* Chassis Model Selector Quick Switcher Bar */}
+                <div className="absolute top-2 z-20 flex items-center justify-between w-[92%] px-3 py-1 rounded-lg bg-black/75 border border-slate-800/90 backdrop-blur-sm text-[10px] font-mono">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-amber-400 font-bold">CHASSIS:</span>
+                    <div className="flex items-center gap-1">
+                      {vehicleChassisList.map((chassis) => (
+                        <button
+                          key={chassis.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedChassis(chassis.id);
+                            onUpdateTheme({ activeCarSilhouetteStyle: chassis.id });
+                          }}
+                          className={`px-2 py-0.5 rounded transition cursor-pointer ${
+                            selectedChassis === chassis.id
+                              ? 'bg-red-600 text-white font-bold shadow-[0_0_8px_rgba(239,68,68,0.7)]'
+                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                          }`}
+                          title={`${chassis.name} - ${chassis.badge}`}
+                        >
+                          {chassis.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-                    {/* Car Body Silhouette - High Fidelity Audi Sedan */}
-                    {/* Main lower body silhouette */}
-                    <path
-                      d="M 50 96 C 55 94, 65 78, 85 76 C 105 74, 130 75, 160 62 C 190 48, 240 46, 290 56 C 320 62, 340 76, 350 86 C 355 92, 355 98, 345 102 C 330 106, 290 106, 270 106 C 265 96, 255 90, 240 90 C 225 90, 215 96, 210 106 L 140 106 C 135 96, 125 90, 110 90 C 95 90, 85 96, 80 106 C 65 106, 50 102, 50 96 Z"
-                      fill="#1a202c"
-                      stroke="#4a5568"
-                      strokeWidth="1.5"
-                    />
-
-                    {/* Aerodynamic Greenhouse / Roofline */}
-                    <path
-                      d="M 115 74 C 130 58, 165 48, 205 47 C 245 47, 275 56, 305 72 Z"
-                      fill="#0f172a"
-                      stroke="#64748b"
-                      strokeWidth="1.5"
-                    />
-
-                    {/* Window Glass Accents */}
-                    <path
-                      d="M 130 71 C 145 56, 175 51, 205 51 L 205 71 Z"
-                      fill="#38bdf8"
-                      opacity="0.25"
-                    />
-                    <path
-                      d="M 215 71 L 215 51 C 245 51, 270 58, 290 71 Z"
-                      fill="#38bdf8"
-                      opacity="0.25"
-                    />
-
-                    {/* Audi Characteristic Tornado Shoulder Line */}
-                    <path
-                      d="M 55 90 Q 200 78 348 88"
-                      stroke="#94a3b8"
-                      strokeWidth="1.2"
-                      fill="none"
-                      opacity="0.8"
-                    />
-
-                    {/* Front Headlamp (Matrix LED Accent) */}
-                    <polygon points="52,91 68,88 64,96" fill="#f8fafc" opacity="0.9" style={{ filter: 'drop-shadow(0 0 4px #ffffff)' }} />
-
-                    {/* Rear Tail Light (OLED Red Accent) */}
-                    <path d="M 342 87 Q 352 90 348 97" stroke="#ef4444" strokeWidth="2.5" fill="none" style={{ filter: 'drop-shadow(0 0 5px #ef4444)' }} />
-
-                    {/* Front Wheel & Alloy Rim */}
-                    <circle cx="110" cy="106" r="18" fill="#0f172a" stroke="#475569" strokeWidth="3" />
-                    <circle cx="110" cy="106" r="13" fill="#1e293b" stroke="#cbd5e1" strokeWidth="1" />
-                    <circle cx="110" cy="106" r="4" fill="#64748b" />
-
-                    {/* Rear Wheel & Alloy Rim */}
-                    <circle cx="240" cy="106" r="18" fill="#0f172a" stroke="#475569" strokeWidth="3" />
-                    <circle cx="240" cy="106" r="13" fill="#1e293b" stroke="#cbd5e1" strokeWidth="1" />
-                    <circle cx="240" cy="106" r="4" fill="#64748b" />
-
-                    {/* Audi 4-Rings Emulated on Grille */}
-                    <g opacity="0.6" stroke="#e2e8f0" strokeWidth="0.8" fill="none">
-                      <circle cx="58" cy="94" r="2.2" />
-                      <circle cx="61" cy="94" r="2.2" />
-                      <circle cx="64" cy="94" r="2.2" />
-                      <circle cx="67" cy="94" r="2.2" />
-                    </g>
-                  </svg>
+                  {/* 3D Orbit Angle Controls */}
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <span className="text-[9px] text-slate-500">ORBIT:</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCarOrbitAngle((prev) => Math.max(-20, prev - 10));
+                      }}
+                      className="w-5 h-5 rounded bg-slate-900 border border-slate-700 hover:text-white flex items-center justify-center transition"
+                      title="Orbit Left"
+                    >
+                      ⟲
+                    </button>
+                    <span className="text-slate-300 font-mono w-6 text-center">{carOrbitAngle}°</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCarOrbitAngle((prev) => Math.min(20, prev + 10));
+                      }}
+                      className="w-5 h-5 rounded bg-slate-900 border border-slate-700 hover:text-white flex items-center justify-center transition"
+                      title="Orbit Right"
+                    >
+                      ⟳
+                    </button>
+                  </div>
                 </div>
+
+                {/* 3D Perspective Vehicle Chassis Model (Isometric Angle with Orbit & Suspension) */}
+                {(() => {
+                  const isDynamic =
+                    themeConfig.activeDriveMode === 'dynamic' ||
+                    (themeConfig.activeDriveMode === 'individual' &&
+                      themeConfig.driveSelectSettings.suspension === 'Dynamic');
+                  const isComfort =
+                    themeConfig.activeDriveMode === 'comfort' ||
+                    (themeConfig.activeDriveMode === 'individual' &&
+                      themeConfig.driveSelectSettings.suspension === 'Comfort');
+                  const suspensionDropPx = isDynamic ? 8 : isComfort ? -4 : 0;
+                  const currentSpec =
+                    vehicleChassisList.find((c) => c.id === selectedChassis) || vehicleChassisList[0];
+
+                  return (
+                    <div
+                      className="relative z-10 w-[420px] h-[155px] flex items-center justify-center cursor-pointer transition-transform duration-300 group-hover:scale-105"
+                      style={{
+                        perspective: '600px',
+                        transform: `rotateY(${carOrbitAngle}deg)`,
+                      }}
+                      onClick={(e) => handleElementClick(e, `car_chassis_${selectedChassis}`)}
+                      title={`${currentSpec.name} (${currentSpec.badge}) - Click to inspect`}
+                    >
+                      <svg viewBox="0 0 420 155" className="w-full h-full drop-shadow-[0_20px_20px_rgba(0,0,0,0.95)]">
+                        {/* Shadow under car on the platter */}
+                        <ellipse
+                          cx="210"
+                          cy="134"
+                          rx="175"
+                          ry="18"
+                          fill="#000000"
+                          opacity="0.9"
+                        />
+                        {/* Dynamic Neon Underbody Ground Glow */}
+                        {isDynamic && (
+                          <ellipse
+                            cx="210"
+                            cy="133"
+                            rx="140"
+                            ry="12"
+                            fill="#ef4444"
+                            opacity="0.25"
+                            style={{ filter: 'blur(6px)' }}
+                          />
+                        )}
+
+                        {/* =================================================== */}
+                        {/* MODEL SPECIFIC BODY CONTOURS */}
+                        {/* =================================================== */}
+                        <g style={{ transform: `translateY(${suspensionDropPx}px)`, transition: 'transform 0.4s ease-out' }}>
+                          {/* 1. AUDI A4 SEDAN (B8.5 Notchback) */}
+                          {selectedChassis === 'a4_sedan' && (
+                            <>
+                              {/* Main lower body */}
+                              <path
+                                d="M 60 106 C 65 104, 78 88, 98 86 C 118 84, 145 85, 175 72 C 205 58, 258 56, 310 66 C 342 72, 365 86, 375 96 C 380 102, 380 108, 370 112 C 352 116, 312 116, 290 116 C 285 106, 274 100, 258 100 C 242 100, 231 106, 226 116 L 152 116 C 147 106, 136 100, 120 100 C 104 100, 93 106, 88 116 C 73 116, 60 112, 60 106 Z"
+                                fill="#1e293b"
+                                stroke="#475569"
+                                strokeWidth="1.6"
+                              />
+                              {/* Greenhouse / Roofline */}
+                              <path
+                                d="M 128 84 C 144 67, 180 57, 222 56 C 265 56, 296 66, 328 82 Z"
+                                fill="#0f172a"
+                                stroke="#64748b"
+                                strokeWidth="1.5"
+                              />
+                              {/* Windows */}
+                              <path d="M 143 81 C 158 66, 190 60, 222 60 L 222 81 Z" fill="#38bdf8" opacity="0.25" />
+                              <path d="M 232 81 L 232 60 C 264 60, 290 68, 312 81 Z" fill="#38bdf8" opacity="0.25" />
+                              {/* Tornado line */}
+                              <path d="M 65 100 Q 215 88 372 98" stroke="#94a3b8" strokeWidth="1.2" fill="none" opacity="0.85" />
+                              {/* Tail bootlid lip */}
+                              <path d="M 368 94 Q 376 96 374 101" stroke="#cbd5e1" strokeWidth="1.2" fill="none" />
+                            </>
+                          )}
+
+                          {/* 2. AUDI S4 AVANT (B8.5 Wagon) */}
+                          {selectedChassis === 'a4_avant' && (
+                            <>
+                              {/* Extended Wagon Body & Roofline */}
+                              <path
+                                d="M 60 106 C 65 104, 78 88, 98 86 C 118 84, 145 85, 175 72 C 205 58, 260 56, 335 58 C 362 60, 375 76, 378 96 C 380 104, 378 110, 368 112 C 352 116, 312 116, 290 116 C 285 106, 274 100, 258 100 C 242 100, 231 106, 226 116 L 152 116 C 147 106, 136 100, 120 100 C 104 100, 93 106, 88 116 C 73 116, 60 112, 60 106 Z"
+                                fill="#1e293b"
+                                stroke="#475569"
+                                strokeWidth="1.6"
+                              />
+                              {/* Extended Roofline with Roof Rail */}
+                              <path
+                                d="M 128 84 C 144 67, 180 57, 222 56 C 275 56, 335 58, 364 68 L 368 84 Z"
+                                fill="#0f172a"
+                                stroke="#64748b"
+                                strokeWidth="1.5"
+                              />
+                              {/* Silver Roof Rails */}
+                              <path d="M 160 54 L 348 56" stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round" opacity="0.9" />
+                              {/* 3rd Wagon Rear Quarter Window */}
+                              <path d="M 318 80 L 318 64 L 354 70 L 350 80 Z" fill="#38bdf8" opacity="0.25" />
+                            </>
+                          )}
+
+                          {/* 3. AUDI RS5 COUPE (8T3) */}
+                          {selectedChassis === 'a5_coupe' && (
+                            <>
+                              {/* Sweeping Fastback Coupe Silhouette */}
+                              <path
+                                d="M 55 108 C 60 106, 75 86, 96 84 C 118 82, 142 82, 172 70 C 202 56, 250 52, 308 62 C 346 68, 372 82, 382 94 C 386 100, 384 106, 374 110 C 354 116, 312 116, 290 116 C 285 106, 274 100, 258 100 C 242 100, 231 106, 226 116 L 152 116 C 147 106, 136 100, 120 100 C 104 100, 93 106, 88 116 C 73 116, 55 114, 55 108 Z"
+                                fill="#1a1c23"
+                                stroke="#ef4444"
+                                strokeWidth="1.8"
+                              />
+                              {/* Raked Coupe Roofline */}
+                              <path
+                                d="M 122 82 C 140 64, 180 53, 226 53 C 272 53, 314 62, 355 84 Z"
+                                fill="#090d16"
+                                stroke="#94a3b8"
+                                strokeWidth="1.5"
+                              />
+                              {/* Wide RS Haunches Flare */}
+                              <path d="M 88 96 Q 120 90 152 96" stroke="#ef4444" strokeWidth="2" fill="none" opacity="0.9" />
+                              <path d="M 226 96 Q 258 90 290 96" stroke="#ef4444" strokeWidth="2" fill="none" opacity="0.9" />
+                            </>
+                          )}
+
+                          {/* 4. AUDI A6 ALLROAD (C7) */}
+                          {selectedChassis === 'a6_allroad' && (
+                            <>
+                              {/* High-Stance Rugged Wagon */}
+                              <path
+                                d="M 55 102 C 60 100, 75 84, 96 82 C 118 80, 145 80, 176 68 C 208 54, 265 52, 342 54 C 370 56, 384 72, 388 92 C 390 100, 386 108, 376 110 C 354 114, 312 114, 290 114 C 285 104, 274 96, 258 96 C 242 96, 231 104, 226 114 L 152 114 C 147 104, 136 96, 120 96 C 104 96, 93 104, 88 114 C 73 114, 55 110, 55 102 Z"
+                                fill="#27272a"
+                                stroke="#71717a"
+                                strokeWidth="1.6"
+                              />
+                              {/* Rugged Cladding Wheel Arches */}
+                              <path d="M 82 114 C 84 98, 126 98, 128 114" stroke="#52525b" strokeWidth="4" fill="none" />
+                              <path d="M 220 114 C 222 98, 264 98, 266 114" stroke="#52525b" strokeWidth="4" fill="none" />
+                              {/* Stainless Steel Skid Plate Look */}
+                              <line x1="58" y1="108" x2="84" y2="108" stroke="#d4d4d8" strokeWidth="2.5" />
+                              <line x1="360" y1="108" x2="384" y2="108" stroke="#d4d4d8" strokeWidth="2.5" />
+                            </>
+                          )}
+
+                          {/* 5. AUDI Q5 SUV (8R) */}
+                          {selectedChassis === 'q5_suv' && (
+                            <>
+                              {/* High Riding SUV Profile */}
+                              <path
+                                d="M 52 98 C 56 94, 72 76, 94 74 C 116 72, 142 74, 172 60 C 202 46, 260 44, 330 48 C 362 52, 380 70, 384 92 C 386 102, 382 108, 372 112 C 354 116, 312 116, 290 116 C 285 104, 274 96, 258 96 C 242 96, 231 104, 226 116 L 152 116 C 147 104, 136 96, 120 96 C 104 96, 93 104, 88 116 C 73 116, 52 108, 52 98 Z"
+                                fill="#1e293b"
+                                stroke="#64748b"
+                                strokeWidth="1.8"
+                              />
+                              {/* Tall SUV Greenhouse */}
+                              <path
+                                d="M 124 72 C 140 54, 178 44, 222 43 C 270 43, 330 46, 362 62 L 366 84 Z"
+                                fill="#0f172a"
+                                stroke="#94a3b8"
+                                strokeWidth="1.6"
+                              />
+                              {/* Roof Rails */}
+                              <path d="M 160 41 L 340 44" stroke="#cbd5e1" strokeWidth="2.5" strokeLinecap="round" />
+                            </>
+                          )}
+
+                          {/* 6. AUDI R8 V10 PLUS (Type 42 Supercar) */}
+                          {selectedChassis === 'r8_v10' && (
+                            <>
+                              {/* Low Slung Mid-Engine Supercar Wedge */}
+                              <path
+                                d="M 45 112 C 50 110, 70 94, 94 92 C 118 90, 140 90, 168 80 C 196 68, 235 66, 275 74 C 315 82, 350 94, 385 104 C 390 108, 386 114, 376 116 C 354 118, 312 118, 290 118 C 285 106, 274 100, 258 100 C 242 100, 231 106, 226 118 L 152 118 C 147 106, 136 100, 120 100 C 104 100, 93 106, 88 118 C 73 118, 45 116, 45 112 Z"
+                                fill="#090d16"
+                                stroke="#ef4444"
+                                strokeWidth="2"
+                              />
+                              {/* Low Cab-Forward Supercar Canopy */}
+                              <path
+                                d="M 118 90 C 135 74, 170 66, 210 66 C 245 66, 270 74, 290 88 Z"
+                                fill="#020617"
+                                stroke="#e2e8f0"
+                                strokeWidth="1.5"
+                              />
+                              {/* Iconic Carbon Fiber Sideblade */}
+                              <path
+                                d="M 235 72 L 255 74 L 248 114 L 232 112 Z"
+                                fill="#18181b"
+                                stroke="#ef4444"
+                                strokeWidth="1.2"
+                              />
+                              {/* Mid-Engine Glass Cover with V10 Runners */}
+                              <path d="M 258 76 L 310 85 L 305 92 L 252 83 Z" fill="#38bdf8" opacity="0.35" stroke="#64748b" strokeWidth="0.8" />
+                              {/* Rear Aero Diffuser Strakes */}
+                              <line x1="370" y1="114" x2="384" y2="114" stroke="#ef4444" strokeWidth="2.5" />
+                            </>
+                          )}
+
+                          {/* Front Headlamp (Matrix LED DRL Beam) */}
+                          <polygon
+                            points="52,94 70,91 66,99"
+                            fill="#ffffff"
+                            opacity="0.95"
+                            style={{ filter: isDynamic ? 'drop-shadow(0 0 8px #ffffff)' : 'drop-shadow(0 0 3px #ffffff)' }}
+                          />
+                          {/* Forward Road Projection Beam in Dynamic */}
+                          {isDynamic && (
+                            <polygon
+                              points="52,94 15,125 75,128 66,99"
+                              fill="#ffffff"
+                              opacity="0.12"
+                              style={{ filter: 'blur(3px)' }}
+                            />
+                          )}
+
+                          {/* Rear Tail Light (OLED Red Bar) */}
+                          <path
+                            d="M 368 90 Q 378 93 374 100"
+                            stroke="#ef4444"
+                            strokeWidth="3"
+                            fill="none"
+                            style={{ filter: 'drop-shadow(0 0 6px #ef4444)' }}
+                          />
+
+                          {/* Audi 4-Rings Emulated on Grille */}
+                          <g opacity="0.75" stroke="#f1f5f9" strokeWidth="0.9" fill="none">
+                            <circle cx="62" cy="98" r="2.4" />
+                            <circle cx="65.5" cy="98" r="2.4" />
+                            <circle cx="69" cy="98" r="2.4" />
+                            <circle cx="72.5" cy="98" r="2.4" />
+                          </g>
+                        </g>
+
+                        {/* Wheels (Static Ground Contact Position) */}
+                        {/* Front Wheel & Brembo Red Brake Caliper */}
+                        <g>
+                          <circle cx="120" cy="116" r="19" fill="#090d16" stroke="#475569" strokeWidth="3.5" />
+                          {/* Glowing Red Caliper in Dynamic Mode */}
+                          <path
+                            d="M 112 104 A 14 14 0 0 1 126 104"
+                            stroke={isDynamic ? '#ef4444' : '#64748b'}
+                            strokeWidth="4"
+                            fill="none"
+                            style={{ filter: isDynamic ? 'drop-shadow(0 0 5px #ef4444)' : 'none' }}
+                          />
+                          <circle cx="120" cy="116" r="14" fill="#1e293b" stroke="#94a3b8" strokeWidth="1.2" />
+                          {/* 5-Arm Rotor Alloy Spokes */}
+                          <line x1="120" y1="116" x2="120" y2="104" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <line x1="120" y1="116" x2="131" y2="112" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <line x1="120" y1="116" x2="127" y2="125" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <line x1="120" y1="116" x2="113" y2="125" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <line x1="120" y1="116" x2="109" y2="112" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <circle cx="120" cy="116" r="4" fill="#475569" />
+                        </g>
+
+                        {/* Rear Wheel & Brake Caliper */}
+                        <g>
+                          <circle cx="258" cy="116" r="19" fill="#090d16" stroke="#475569" strokeWidth="3.5" />
+                          <path
+                            d="M 250 104 A 14 14 0 0 1 264 104"
+                            stroke={isDynamic ? '#ef4444' : '#64748b'}
+                            strokeWidth="4"
+                            fill="none"
+                            style={{ filter: isDynamic ? 'drop-shadow(0 0 5px #ef4444)' : 'none' }}
+                          />
+                          <circle cx="258" cy="116" r="14" fill="#1e293b" stroke="#94a3b8" strokeWidth="1.2" />
+                          <line x1="258" y1="116" x2="258" y2="104" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <line x1="258" y1="116" x2="269" y2="112" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <line x1="258" y1="116" x2="265" y2="125" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <line x1="258" y1="116" x2="251" y2="125" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <line x1="258" y1="116" x2="247" y2="112" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <circle cx="258" cy="116" r="4" fill="#475569" />
+                        </g>
+                      </svg>
+
+                      {/* Active Model Specification Pill Badge */}
+                      <div className="absolute bottom-0 right-4 px-2 py-0.5 rounded bg-black/85 border border-slate-700/80 text-[9px] font-mono text-slate-300 flex items-center gap-1.5 shadow-md">
+                        <span className="text-amber-400 font-bold">{currentSpec.badge}</span>
+                        <span className="text-slate-600">|</span>
+                        <span className="text-slate-400">{currentSpec.power}</span>
+                        <span className="text-slate-600">|</span>
+                        <span className={isDynamic ? 'text-red-400 font-bold' : isComfort ? 'text-cyan-400' : 'text-emerald-400'}>
+                          {isDynamic ? '▼ -20mm RIDE' : isComfort ? '▲ +15mm AIR' : 'AUTO RIDE'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Mode Selector Pill Carousel (Comfort, Auto, Dynamic, Individual) */}

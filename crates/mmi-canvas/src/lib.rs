@@ -4,6 +4,6 @@ pub mod composition;
 pub mod palette;
 pub mod renderer;
 
-pub use composition::{LayoutProvenance, ScreenComposition, ScreenLayer};
+pub use composition::{LayoutProvenance, ScreenComposition, ScreenLayer, VehicleChassisProfile};
 pub use palette::{DisplayMode, PaletteSimulator};
 pub use renderer::CanvasRenderer;
