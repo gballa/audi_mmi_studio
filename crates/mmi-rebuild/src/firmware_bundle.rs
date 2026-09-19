@@ -41,6 +41,7 @@ pub struct FirmwareBundleConfig {
     pub gem_screen_esd: Option<Vec<u8>>,
     pub nav_database_fldb: Option<Vec<u8>>,
     pub map_styles_gdb: Option<Vec<u8>>,
+    pub regional_profile: Option<String>,
 }
 
 impl Default for FirmwareBundleConfig {
@@ -54,6 +55,7 @@ impl Default for FirmwareBundleConfig {
             gem_screen_esd: None,
             nav_database_fldb: None,
             map_styles_gdb: None,
+            regional_profile: Some("AL".to_string()),
         }
     }
 }
@@ -197,13 +199,12 @@ impl FirmwareBundlePipeline {
         let nav_db_binary = if let Some(custom_db) = &self.config.nav_database_fldb {
             custom_db.clone()
         } else {
-            let profile = RegionalProfile::micro_albania();
-            let dataset = IrDataset::new(profile.bbox, Some("AL".to_string()));
+            let profile_code = self.config.regional_profile.as_deref().unwrap_or("AL");
+            let profile = RegionalProfile::from_code(profile_code)
+                .unwrap_or_else(|| RegionalProfile::micro_albania());
+            let dataset = IrDataset::new(profile.bbox, Some(profile.code));
             compile_fldb_database(&dataset)
         };
-        let nav_db_path = hbnavdb_dir.join("nav_data.db");
-        fs::write(&nav_db_path, &nav_db_binary)?;
-        file_records.push(Self::hash_file("HBNavDB/nav_data.db", &nav_db_binary));
 
         // 4. Build Map Styles (MapStyles/night_2026.gdb)
         let map_styles_binary = if let Some(custom_styles) = &self.config.map_styles_gdb {
@@ -231,7 +232,22 @@ impl FirmwareBundlePipeline {
             &format!("{}/efs-system.efs", self.config.variant),
             &efs_binary,
         );
-        manifest_builder.add_binary_with_blocks("HBNavDB", "HBNavDB/nav_data.db", &nav_db_binary);
+
+        // Partition and register navigation database volumes (FAT32 multi-volume compliant)
+        let volumes = crate::fldb_compiler::split_into_volumes(&nav_db_binary, "nav_data.db");
+        for (idx, (vol_name, vol_bytes)) in volumes.iter().enumerate() {
+            let rel_path = format!("HBNavDB/{}", vol_name);
+            let nav_db_path = hbnavdb_dir.join(vol_name);
+            fs::write(&nav_db_path, vol_bytes)?;
+            file_records.push(Self::hash_file(&rel_path, vol_bytes));
+            let section_name = if idx == 0 {
+                "HBNavDB".to_string()
+            } else {
+                format!("HBNavDB_vol{}", idx)
+            };
+            manifest_builder.add_binary_with_blocks(&section_name, &rel_path, vol_bytes);
+        }
+
         manifest_builder.add_binary_with_blocks("MapStyles", "MapStyles/night_2026.gdb", &map_styles_binary);
 
         let manifest_content = manifest_builder.build();

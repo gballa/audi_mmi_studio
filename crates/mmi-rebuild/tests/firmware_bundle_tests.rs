@@ -19,6 +19,7 @@ fn test_firmware_bundle_pipeline_end_to_end() {
         gem_screen_esd: Some(b"ESD\x01DIAG_MENU_2026_ALBANIA".to_vec()),
         nav_database_fldb: None, // Test auto-compilation via RegionalProfile::micro_albania()
         map_styles_gdb: None,
+        regional_profile: Some("AL".to_string()),
     };
 
     let pipeline = FirmwareBundlePipeline::new(config);

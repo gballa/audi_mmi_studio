@@ -87,6 +87,52 @@ export const BuildStudio: React.FC<BuildStudioProps> = ({
   const [gemExported, setGemExported] = useState<boolean>(false);
   const [gemExporting, setGemExporting] = useState<boolean>(false);
 
+  // Regional OSM Cartography Profile State (Phase 4)
+  const [regionalProfile, setRegionalProfile] = useState<'AL_CORRIDOR' | 'BALKANS_TRANSIT' | 'DACH_REGIONAL' | 'ECE_FULL'>('AL_CORRIDOR');
+
+  const profileMetadata = {
+    AL_CORRIDOR: {
+      name: 'Albania & Western Balkans Corridor',
+      code: 'AL',
+      size: '52.4 MB',
+      volumes: 1,
+      nodes: '150,000',
+      edges: '200,000',
+      cpuOverhead: '0.0%',
+      desc: 'Optimized for zero SH-4 CPU latency with complete new highway coverage (Thumanë-Kashar, Rruga e Arbrit, Llogara Tunnel).'
+    },
+    BALKANS_TRANSIT: {
+      name: 'Western Balkans Transit Corridor',
+      code: 'BALKANS',
+      size: '419.4 MB',
+      volumes: 1,
+      nodes: '1,200,000',
+      edges: '1,600,000',
+      cpuOverhead: '1.2%',
+      desc: 'Cross-border corridor covering Albania, Kosovo, North Macedonia, Montenegro, and Northern Greece.'
+    },
+    DACH_REGIONAL: {
+      name: 'Central Europe (DACH Region)',
+      code: 'DACH',
+      size: '6.65 GB',
+      volumes: 3,
+      nodes: '8,000,000',
+      edges: '11,000,000',
+      cpuOverhead: '3.8%',
+      desc: 'Germany, Austria, and Switzerland with 3 FAT32 volume partitions.'
+    },
+    ECE_FULL: {
+      name: 'Pan-European Complete (ECE 2026)',
+      code: 'ECE',
+      size: '28.19 GB',
+      volumes: 23,
+      nodes: '50,000,000',
+      edges: '70,000,000',
+      cpuOverhead: '4.5%',
+      desc: 'Full continental coverage formatted within FAT32 32GB partition boundary.'
+    }
+  };
+
   const handleExportGemScreens = () => {
     setGemExporting(true);
     setTimeout(() => {
@@ -278,10 +324,14 @@ export const BuildStudio: React.FC<BuildStudioProps> = ({
 
     setTimeout(() => {
       setBuildProgress(75);
+      const selectedMeta = profileMetadata[regionalProfile];
       setBuildLogs((prev) => [
         ...prev,
-        `[3/5] Compiling Navigation Database & Styles (HBNavDB / MapStyles)...`,
-        `      Generated: HBNavDB/nav_data.db (FLDB 544-byte pages with CRC-16/CCITT)`,
+        `[3/5] Compiling Navigation Database (${selectedMeta.name})...`,
+        `      Allocating FLDB 544-byte pages with CRC-16 & 0x55AA55AA trailer sync...`,
+        `      Target Size: ${selectedMeta.size} across ${selectedMeta.volumes} FAT32 volume(s)`,
+        `      Spatial indexing: Morton Z-order curve (${selectedMeta.nodes} nodes, ${selectedMeta.edges} edges)`,
+        `      Renesas SH-4 RTOS latency overhead: ${selectedMeta.cpuOverhead} — ZERO-LAG SAFE`,
         `      Generated: MapStyles/night_2026.gdb (Accent: ${themeConfig.accentColor})`,
         `[4/5] Generating SWDL metainfo2.txt with per-512KB CRC32 block checksums...`,
       ]);
@@ -473,6 +523,93 @@ Description = "Day and Night Map Shaders"
                 </div>
               </div>
               <span className="text-[10px] font-mono text-amber-400 font-bold">MMI 3G+</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Regional OSM Cartography Profile Selector (Phase 4) */}
+        <div className="p-4 bg-slate-950 border border-slate-800 rounded-lg space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              OSM Map Cartography Profile
+            </span>
+            <span className="text-[10px] font-mono text-cyan-400 font-bold">FLDB 544B PAGES</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <button
+              onClick={() => setRegionalProfile('AL_CORRIDOR')}
+              className={`p-2 rounded text-left border transition ${
+                regionalProfile === 'AL_CORRIDOR'
+                  ? 'bg-amber-500/15 border-amber-500/60 text-amber-200'
+                  : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <div className="font-bold flex items-center justify-between">
+                <span>Albania &amp; WB</span>
+                <span className="text-[10px] font-mono">52 MB</span>
+              </div>
+              <div className="text-[10px] opacity-75 mt-0.5">1 Vol · 0.0% Latency</div>
+            </button>
+
+            <button
+              onClick={() => setRegionalProfile('BALKANS_TRANSIT')}
+              className={`p-2 rounded text-left border transition ${
+                regionalProfile === 'BALKANS_TRANSIT'
+                  ? 'bg-amber-500/15 border-amber-500/60 text-amber-200'
+                  : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <div className="font-bold flex items-center justify-between">
+                <span>Balkans Transit</span>
+                <span className="text-[10px] font-mono">419 MB</span>
+              </div>
+              <div className="text-[10px] opacity-75 mt-0.5">1 Vol · 1.2% Latency</div>
+            </button>
+
+            <button
+              onClick={() => setRegionalProfile('DACH_REGIONAL')}
+              className={`p-2 rounded text-left border transition ${
+                regionalProfile === 'DACH_REGIONAL'
+                  ? 'bg-amber-500/15 border-amber-500/60 text-amber-200'
+                  : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <div className="font-bold flex items-center justify-between">
+                <span>Central DACH</span>
+                <span className="text-[10px] font-mono">6.65 GB</span>
+              </div>
+              <div className="text-[10px] opacity-75 mt-0.5">3 Vols · 3.8% Latency</div>
+            </button>
+
+            <button
+              onClick={() => setRegionalProfile('ECE_FULL')}
+              className={`p-2 rounded text-left border transition ${
+                regionalProfile === 'ECE_FULL'
+                  ? 'bg-amber-500/15 border-amber-500/60 text-amber-200'
+                  : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <div className="font-bold flex items-center justify-between">
+                <span>Pan-Europe ECE</span>
+                <span className="text-[10px] font-mono">28.2 GB</span>
+              </div>
+              <div className="text-[10px] opacity-75 mt-0.5">23 Vols · FAT32 Safe</div>
+            </button>
+          </div>
+
+          <div className="p-2.5 bg-slate-900/90 border border-slate-800 rounded text-[11px] space-y-1">
+            <div className="flex justify-between text-slate-300 font-mono">
+              <span>{profileMetadata[regionalProfile].name}</span>
+              <span className="text-emerald-400 font-semibold">{profileMetadata[regionalProfile].cpuOverhead} SH-4 Load</span>
+            </div>
+            <p className="text-slate-400 leading-relaxed text-[10px]">
+              {profileMetadata[regionalProfile].desc}
+            </p>
+            <div className="flex justify-between text-[10px] font-mono text-slate-500 pt-1 border-t border-slate-800/80">
+              <span>Nodes: {profileMetadata[regionalProfile].nodes}</span>
+              <span>Edges: {profileMetadata[regionalProfile].edges}</span>
+              <span>Vols: {profileMetadata[regionalProfile].volumes}</span>
             </div>
           </div>
         </div>

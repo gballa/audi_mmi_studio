@@ -259,6 +259,19 @@ impl RegionalProfile {
         }
     }
 
+    /// Western Balkans Transit Corridor profile (~400 MB, single volume).
+    pub fn western_balkans() -> Self {
+        Self {
+            code: "BALKANS".to_string(),
+            name: "Western Balkans Transit Corridor".to_string(),
+            bbox: BoundingBox::new(38.5, 18.0, 44.5, 23.5),
+            estimated_nodes: 1_200_000,
+            estimated_edges: 1_600_000,
+            max_volumes: 1,
+            target_size_bytes: 419_430_400, // ~400 MB
+        }
+    }
+
     /// Regional DACH profile (Germany, Austria, Switzerland, ~6.2 GB, 3 volumes).
     pub fn regional_dach() -> Self {
         Self {
@@ -285,12 +298,13 @@ impl RegionalProfile {
         }
     }
 
-    /// Finds a regional profile by code ("AL", "DACH", "ECE").
+    /// Finds a regional profile by code ("AL", "BALKANS", "DACH", "ECE" and aliases).
     pub fn from_code(code: &str) -> Option<Self> {
         match code.to_uppercase().as_str() {
-            "AL" | "WB" | "MICRO" => Some(Self::micro_albania()),
-            "DACH" | "REGIONAL" => Some(Self::regional_dach()),
-            "ECE" | "EU" | "CONTINENTAL" => Some(Self::continental_ece()),
+            "AL" | "WB" | "MICRO" | "AL_CORRIDOR" | "AL_CORRIDOR_2026" => Some(Self::micro_albania()),
+            "BALKANS" | "BALKANS_TRANSIT" | "BALKANS_TRANSIT_2026" => Some(Self::western_balkans()),
+            "DACH" | "REGIONAL" | "DACH_REGIONAL" => Some(Self::regional_dach()),
+            "ECE" | "EU" | "CONTINENTAL" | "ECE_FULL" | "ECE_FULL_2026" => Some(Self::continental_ece()),
             _ => None,
         }
     }
@@ -299,6 +313,7 @@ impl RegionalProfile {
     pub fn all_profiles() -> Vec<Self> {
         vec![
             Self::micro_albania(),
+            Self::western_balkans(),
             Self::regional_dach(),
             Self::continental_ece(),
         ]

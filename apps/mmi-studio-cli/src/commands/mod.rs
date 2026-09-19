@@ -1360,6 +1360,7 @@ pub fn cmd_firmware_bundle(
         gem_screen_esd,
         nav_database_fldb,
         map_styles_gdb: None,
+        regional_profile: Some("AL".to_string()),
     };
 
     let pipeline = mmi_rebuild::FirmwareBundlePipeline::new(config);

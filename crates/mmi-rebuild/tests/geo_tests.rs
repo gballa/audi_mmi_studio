@@ -207,12 +207,21 @@ fn test_regional_profiles() {
     assert_eq!(p_al.max_volumes, 1);
     assert!(p_al.bbox.contains_point(41.3275, 19.8187)); // Tirana is inside AL
 
-    let p_dach = RegionalProfile::from_code("DACH").expect("Found DACH");
+    let p_balkans = RegionalProfile::from_code("BALKANS_TRANSIT_2026").expect("Found BALKANS");
+    assert_eq!(p_balkans.code, "BALKANS");
+    assert_eq!(p_balkans.max_volumes, 1);
+    assert!(p_balkans.bbox.contains_point(41.3275, 19.8187)); // Tirana is inside BALKANS
+    assert!(p_balkans.bbox.contains_point(42.0000, 21.4333)); // Skopje is inside BALKANS
+
+    let p_al_alias = RegionalProfile::from_code("AL_CORRIDOR_2026").expect("Found AL alias");
+    assert_eq!(p_al_alias.code, "AL");
+
+    let p_dach = RegionalProfile::from_code("DACH_REGIONAL").expect("Found DACH");
     assert_eq!(p_dach.code, "DACH");
     assert_eq!(p_dach.max_volumes, 3);
     assert!(p_dach.bbox.contains_point(48.1351, 11.5820)); // Munich is inside DACH
 
-    let p_ece = RegionalProfile::from_code("ECE").expect("Found ECE");
+    let p_ece = RegionalProfile::from_code("ECE_FULL_2026").expect("Found ECE");
     assert_eq!(p_ece.code, "ECE");
     assert_eq!(p_ece.max_volumes, 23);
     assert_eq!(p_ece.target_size_bytes, 28_185_247_890); // ~28.19 GB genuine footprint
