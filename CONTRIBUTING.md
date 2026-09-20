@@ -48,8 +48,8 @@ To ensure safety, determinism, and architectural integrity, all contributions mu
 
 ```bash
 # Clone the repository
-git clone <repo-url>
-cd AudiMMI
+git clone <repo-url> audi_mmi_studio
+cd audi_mmi_studio
 
 # Verify workstation environment and test suite offline
 ./scripts/verify-workstation.sh

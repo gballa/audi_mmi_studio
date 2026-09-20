@@ -7,7 +7,7 @@ This document details the layout of directories and key files across the **Audi 
 ## High-Level Layout
 
 ```text
-AudiMMI/
+audi_mmi_studio/
 ├── apps/                               # Applications
 │   ├── mmi-studio-cli/                 # Headless CLI application
 │   │   ├── src/                        # CLI command implementations & main.rs

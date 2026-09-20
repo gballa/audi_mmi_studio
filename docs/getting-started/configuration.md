@@ -9,7 +9,7 @@ This document explains the runtime directory structure, storage layers, Content-
 Audi MMI Studio uses a deterministic, isolated workspace layout:
 
 ```text
-AudiMMI/
+audi_mmi_studio/
 ├── .mmistudio/                         # Local workstation storage
 │   ├── cas/                            # Content-Addressed Storage (BLAKE3-indexed blobs)
 │   ├── stages/                         # Transactional staging workspaces (StageStore)

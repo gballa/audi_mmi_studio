@@ -180,7 +180,7 @@ Clicking the **"↺ Reset..."** button in the top navigation bar opens the **MMI
 All generated files are written directly to your workspace at:
 
 ```
-/Users/gerald/Antigravity/AudiMMI/output/mmi3g_sd_card_update/
+audi_mmi_studio/output/mmi3g_sd_card_update/
 ```
 
 ### Generated File Structure:

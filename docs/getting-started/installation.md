@@ -9,13 +9,13 @@ This guide walks through building the **Audi MMI Studio** toolchain from source 
 Clone the project repository to your workstation:
 
 ```bash
-git clone <repository-url>
-cd AudiMMI
+git clone <repository-url> audi_mmi_studio
+cd audi_mmi_studio
 ```
 
 Ensure the repository structure is intact:
 ```text
-AudiMMI/
+audi_mmi_studio/
 ├── apps/               # Headless CLI and Desktop GUI applications
 ├── crates/             # 12 modular Rust libraries
 ├── docs/               # Complete documentation system

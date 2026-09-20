@@ -31,8 +31,8 @@ Get up and running with the standalone workstation toolchain in four steps [EV:d
 
 ```bash
 # 1. Clone the repository
-git clone <repo-url>
-cd AudiMMI
+git clone <repo-url> audi_mmi_studio
+cd audi_mmi_studio
 
 # 2. Build the standalone release CLI (100% offline)
 cargo build --release -p mmi-studio-cli --offline
