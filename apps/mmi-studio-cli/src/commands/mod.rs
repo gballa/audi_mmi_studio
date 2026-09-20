@@ -573,11 +573,18 @@ pub fn cmd_ai_generate(
     let sanitized_prompt = airlock.sanitize_prompt(raw_prompt);
     let brand_warning = airlock.check_brand_mark(&sanitized_prompt);
 
-    // Use OfflineMockProvider by default for offline determinism
-    let provider = OfflineMockProvider::default();
-    let generated = provider
-        .generate(&sanitized_prompt, width, height)
-        .map_err(|e| CoreError::ImmutabilityViolation(e.to_string()))?;
+    let api_key = std::env::var("GEMINI_API_KEY").unwrap_or_default();
+    
+    let generated = if api_key.is_empty() {
+        let provider = OfflineMockProvider::default();
+        provider.generate(&sanitized_prompt, width, height)
+            .map_err(|e| CoreError::ImmutabilityViolation(e.to_string()))?
+    } else {
+        use mmi_imagegen::GeminiImageProvider;
+        let provider = GeminiImageProvider::new(api_key, None);
+        provider.generate(&sanitized_prompt, width, height)
+            .map_err(|e| CoreError::ImmutabilityViolation(e.to_string()))?
+    };
 
     // Pin generated blob to CAS
     let (blob_id, sha256_hex) = cas.put_bytes(&generated.png_bytes)?;

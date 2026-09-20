@@ -282,6 +282,7 @@ fn test_cli_ai_generate_airlock() {
     let out_png = temp_out.path().with_extension("png");
 
     let output = Command::new(env!("CARGO_BIN_EXE_mmi-studio-cli"))
+        .env_remove("GEMINI_API_KEY")
         .current_dir(workspace_dir)
         .arg("ai-generate")
         .arg("--prompt")

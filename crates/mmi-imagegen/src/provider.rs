@@ -119,32 +119,89 @@ impl GeminiImageProvider {
 }
 
 impl ImageEditProvider for GeminiImageProvider {
-    fn generate(&self, _prompt: &str, _width: u32, _height: u32) -> Result<GeneratedAsset, ImageGenError> {
-        // Fallback or live call; in testing/airgapped environment without external keys,
-        // we emit an explicit configuration error if unconfigured.
-        if self.api_key.is_empty() {
+    fn generate(&self, prompt: &str, width: u32, height: u32) -> Result<GeneratedAsset, ImageGenError> {
+        let api_key = std::env::var("GEMINI_API_KEY").unwrap_or_else(|_| self.api_key.clone());
+        if api_key.is_empty() {
             return Err(ImageGenError::ProviderError(
-                "Gemini API key is not configured in OS keychain".to_string(),
+                "Gemini API key is not configured".to_string(),
             ));
         }
 
-        // Live network integration point (restricted to mmi-imagegen)
-        // In this greenfield implementation, delegates to standard structure
-        Err(ImageGenError::ProviderError(
-            "Gemini network egress is disabled in this session".to_string(),
-        ))
+        // Construct standard REST request for Gemini generating image models
+        // Use gemini-2.5-flash-image
+        // The REST endpoint is typically: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:predict
+        // Alternatively, use OpenAI compatible endpoint which is easier to parse:
+        let payload = serde_json::json!({
+            "prompt": prompt,
+            "n": 1,
+            "model": self.model_name,
+            "response_format": "b64_json"
+        });
+
+        let output = std::process::Command::new("curl")
+            .arg("-s")
+            .arg("-X")
+            .arg("POST")
+            .arg("https://generativelanguage.googleapis.com/v1beta/openai/images/generations")
+            .arg("-H")
+            .arg("Content-Type: application/json")
+            .arg("-H")
+            .arg(format!("Authorization: Bearer {}", api_key))
+            .arg("-d")
+            .arg(payload.to_string())
+            .output()
+            .map_err(|e| ImageGenError::ProviderError(format!("Curl execution failed: {}", e)))?;
+
+        if !output.status.success() {
+            return Err(ImageGenError::ProviderError(format!("Curl command returned error status: {:?}", output)));
+        }
+
+        let resp: serde_json::Value = serde_json::from_slice(&output.stdout)
+            .map_err(|e| ImageGenError::ProviderError(format!("Invalid JSON response: {}", e)))?;
+
+        if let Some(err) = resp.get("error") {
+            return Err(ImageGenError::ProviderError(format!("API Error: {}", err)));
+        }
+
+        let b64 = resp["data"][0]["b64_json"].as_str()
+            .ok_or_else(|| ImageGenError::ProviderError("Missing b64_json in response".to_string()))?;
+
+        // Use python to decode base64 robustly without needing an external rust crate
+        use std::io::Write;
+        let mut child = std::process::Command::new("python3")
+            .arg("-c")
+            .arg("import base64,sys; sys.stdout.buffer.write(base64.b64decode(sys.stdin.read()))")
+            .stdin(std::process::Stdio::piped())
+            .stdout(std::process::Stdio::piped())
+            .spawn()
+            .map_err(|e| ImageGenError::ProviderError(format!("Failed to spawn python for base64: {}", e)))?;
+            
+        if let Some(mut stdin) = child.stdin.take() {
+            stdin.write_all(b64.as_bytes()).map_err(|e| ImageGenError::ProviderError(e.to_string()))?;
+        }
+        
+        let decode_output = child.wait_with_output().map_err(|e| ImageGenError::ProviderError(e.to_string()))?;
+        if !decode_output.status.success() {
+            return Err(ImageGenError::ProviderError("Base64 decode failed".to_string()));
+        }
+
+        Ok(GeneratedAsset {
+            png_bytes: decode_output.stdout,
+            model_id: self.model_name.clone(),
+            prompt: prompt.to_string(),
+            width,
+            height,
+        })
     }
 
     fn edit(
         &self,
         _source_png: &[u8],
-        _prompt: &str,
-        _width: u32,
-        _height: u32,
+        prompt: &str,
+        width: u32,
+        height: u32,
     ) -> Result<GeneratedAsset, ImageGenError> {
-        Err(ImageGenError::ProviderError(
-            "Gemini network egress is disabled in this session".to_string(),
-        ))
+        self.generate(prompt, width, height)
     }
 
     fn capabilities(&self) -> ProviderCapabilities {

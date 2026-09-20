@@ -56,7 +56,7 @@ flowchart TD
 | `mmi-assets` | Assets | Bitmap decoding, Lanczos3 resampler, constraint checker, font metric calculators. | `mmi-core`, `image` |
 | `mmi-recipe` | Theming | Declarative JSON theme recipes, cryptographic journals, cross-train rebase engine. | `mmi-core`, `mmi-assets`, `sha2` |
 | `mmi-canvas` | Canvas | 800x480 pixel framebuffer compositor, Day/Night/Reduced palette renderer. | `mmi-core`, `mmi-assets` |
-| `mmi-rebuild` | Packaging | Identity-Rebuild Gate, deterministic stage normalizer, signed artefact protection. | `mmi-core`, `mmi-formats` |
+| `mmi-rebuild` | Packaging & Geodata | Identity-Rebuild Gate, signed artefact protection, OSM topological ingestion, WGS84 fixed-point projection, Morton curve spatial indexing, and FLDB compilation. | `mmi-core`, `mmi-formats`, `flate2` |
 | `mmi-media` | Packaging | FAT32 SD media builder with 32 KiB cluster geometry, volume splitter, QNX simulator. | `mmi-core`, `walkdir` |
 | `mmi-imagegen` | Extensibility | Isolated Egress Airlock, brand/PII prompt sanitization, offline mock provider. | `mmi-core`, `tempfile` |
 | `mmi-plugin` | Extensibility | Plugin SDK (`ABI_VERSION = 1`), memory-isolated execution sandbox, dynamic discovery. | `mmi-core`, `mmi-formats` |

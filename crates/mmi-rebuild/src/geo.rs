@@ -188,11 +188,13 @@ fn compact_bits_64(mut x: u64) -> u32 {
 
 /// Interleaves two 32-bit unsigned integers into a 64-bit Morton code.
 /// Even bits come from `x`, odd bits come from `y`.
+#[inline]
 pub fn interleave_bits_32(x: u32, y: u32) -> u64 {
     spread_bits_32(x) | (spread_bits_32(y) << 1)
 }
 
 /// De-interleaves a 64-bit Morton code back into `(x, y)` 32-bit integers.
+#[inline]
 pub fn deinterleave_bits_64(morton: u64) -> (u32, u32) {
     let x = compact_bits_64(morton);
     let y = compact_bits_64(morton >> 1);
@@ -210,7 +212,8 @@ pub struct BoundingBox {
 
 impl BoundingBox {
     /// Creates a new bounding box.
-    pub fn new(min_lat: f64, min_lon: f64, max_lat: f64, max_lon: f64) -> Self {
+    #[inline]
+    pub const fn new(min_lat: f64, min_lon: f64, max_lat: f64, max_lon: f64) -> Self {
         Self {
             min_lat,
             min_lon,
@@ -219,12 +222,37 @@ impl BoundingBox {
         }
     }
 
+    /// Computes the geographic center (lat, lon) of the bounding box.
+    #[inline]
+    pub fn center(&self) -> (f64, f64) {
+        ((self.min_lat + self.max_lat) * 0.5, (self.min_lon + self.max_lon) * 0.5)
+    }
+
+    /// Expands the bounding box to enclose the given point.
+    #[inline]
+    pub fn expand_point(&mut self, lat: f64, lon: f64) {
+        if lat < self.min_lat {
+            self.min_lat = lat;
+        }
+        if lat > self.max_lat {
+            self.max_lat = lat;
+        }
+        if lon < self.min_lon {
+            self.min_lon = lon;
+        }
+        if lon > self.max_lon {
+            self.max_lon = lon;
+        }
+    }
+
     /// Checks if point (lat, lon) is contained in this bounding box.
+    #[inline]
     pub fn contains_point(&self, lat: f64, lon: f64) -> bool {
         lat >= self.min_lat && lat <= self.max_lat && lon >= self.min_lon && lon <= self.max_lon
     }
 
     /// Checks if another bounding box intersects with this one.
+    #[inline]
     pub fn intersects(&self, other: &BoundingBox) -> bool {
         self.min_lat <= other.max_lat
             && self.max_lat >= other.min_lat

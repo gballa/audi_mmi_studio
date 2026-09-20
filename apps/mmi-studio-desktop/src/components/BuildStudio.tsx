@@ -18,8 +18,8 @@ export const BuildStudio: React.FC<BuildStudioProps> = ({
   const [buildProgress, setBuildProgress] = useState<number>(100);
   const [buildLogs, setBuildLogs] = useState<string[]>([
     'Target directory: /Users/gerald/Antigravity/AudiMMI/output/mmi3g_sd_card_update',
-    'Compiled QNX IFS Root (ifs-root.ifs, SH-4, splash.png, lsd.jxe) — Size: 1.84 MB / 43.74 MB (4.2% used)',
-    'Compiled QNX EFS System (efs-system.efs, F3S, sq_AL.ans, menu_2026.esd) — Size: 2.12 MB / 38.8 MB (5.4% used)',
+    'Staging Runtime Payload Injection (SD Card) — Size: 0.1 MB / 32 GB (0.0% used)',
+    'Prepared Deployment Script (run.sh) & Payload Extractor',
     'Compiled Navigation Database (HBNavDB/nav_data.db, FLDB 544-byte pages with CRC-16)',
     'Compiled Cartography Styles (MapStyles/night_2026.gdb, Day/Night Shaders)',
     'Generated SWDL metainfo2.txt manifest with per-512KB CRC32 block tables',
@@ -243,7 +243,7 @@ export const BuildStudio: React.FC<BuildStudioProps> = ({
 
     setTimeout(() => {
       setFlashProgress(60);
-      setFlashPhase('Writing QNX partitions (ifs-root.ifs, efs-system.efs)...');
+      setFlashPhase('Staging Runtime Payload (splash, language, screens)...');
     }, 1300);
 
     setTimeout(() => {
@@ -329,10 +329,10 @@ export const BuildStudio: React.FC<BuildStudioProps> = ({
       setBuildProgress(25);
       setBuildLogs((prev) => [
         ...prev,
-        `[1/5] Building QNX IFS Root partition (ifs-root.ifs, Renesas SH-4)...`,
-        `      Injected 2026 Splash Screen: /usr/config/ci/splash.png`,
-        `      Injected HMI Bytecode: /usr/bin/lsd.jxe (${strings.length} Albanian strings integrated)`,
-        `      Partition Check: 1.84 MB / 43.74 MB max (4.2% used) — PASS`,
+        `[1/5] Staging Runtime Payload Injection (SD Card)...`,
+        `      Staged 2026 Splash Screen: payload/splash.png`,
+        `      Staged Albanian Catalog: payload/sq_AL.ans (${strings.length} strings)`,
+        `      SD Size Check: 0.1 MB / 32 GB max (0.0% used) — PASS`,
       ]);
     }, 600);
 
@@ -340,10 +340,10 @@ export const BuildStudio: React.FC<BuildStudioProps> = ({
       setBuildProgress(50);
       setBuildLogs((prev) => [
         ...prev,
-        `[2/5] Building QNX EFS System partition (efs-system.efs, F3S filesystem)...`,
-        `      Injected Albanian Catalog: strings/sq_AL.ans (ANS0 Harman format)`,
-        `      Injected Green Engineering Menu: engdefs/menu_2026.esd (Custom Diagnostics)`,
-        `      Partition Check: 2.12 MB / 38.8 MB max (5.4% used) — PASS`,
+        `[2/5] Preparing Deployment Script (run.sh)...`,
+        `      Injected Green Engineering Menu: payload/menu_2026.esd`,
+        `      Injected copying routines to /mnt/efs-system/strings`,
+        `      Script Integrity Check: Syntax Valid — PASS`,
       ]);
     }, 1300);
 
@@ -391,25 +391,6 @@ variant = "MU9411"
 sourceVersion = "K0942_4"
 compatibleTrains = "HN+R_EU_AU_K0942_4,HN+R_EU_AU_P0922,HN+_EU_AU3G_K0900"
 
-[MU9411_ifs_root]
-path = "MU9411/ifs-root.ifs"
-type = "ifs"
-size = 1932400
-CheckSum.1 = "0x4a8f912c"
-CheckSum.2 = "0xb21409ed"
-CheckSum.3 = "0x89e2401f"
-CheckSum.4 = "0x12c8e90a"
-
-[MU9411_efs_system]
-path = "MU9411/efs-system.efs"
-type = "efs"
-size = 2223104
-mount = "/mnt/efs-system"
-CheckSum.1 = "0x33e891ca"
-CheckSum.2 = "0x7a8109bf"
-CheckSum.3 = "0xd4e21010"
-CheckSum.4 = "0x51c8901a"
-
 [HBNavDB]
 path = "HBNavDB/nav_data.db"
 version = "2026_ECE_ALBANIA"
@@ -454,37 +435,25 @@ Description = "Day and Night Map Shaders"
           </p>
         </div>
 
-        {/* NOR Flash Partition Capacity Gauges */}
+        {/* SD Card Payload Capacity Gauges */}
         <div className="p-4 bg-slate-950 border border-slate-800 rounded-lg space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              NOR Flash Partition Capacities
+              SD Card Payload Staging
             </span>
-            <span className="text-[10px] font-mono text-emerald-400 font-bold">135 MB NOR SAFE</span>
+            <span className="text-[10px] font-mono text-emerald-400 font-bold">FAT32 SAFE</span>
           </div>
 
-          {/* ifs-root gauge */}
+          {/* payload gauge */}
           <div className="space-y-1 bg-slate-900/80 p-2.5 rounded border border-slate-800">
             <div className="flex justify-between text-xs font-mono">
-              <span className="text-white font-semibold">ifs-root.ifs</span>
-              <span className="text-emerald-400">1.84 MB / 43.74 MB (4.2%)</span>
+              <span className="text-white font-semibold">/payload</span>
+              <span className="text-emerald-400">120 KB / 32.00 GB (0.01%)</span>
             </div>
             <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500 rounded-full" style={{ width: '4.2%' }} />
+              <div className="h-full bg-emerald-500 rounded-full" style={{ width: '0.01%' }} />
             </div>
-            <div className="text-[10px] text-slate-400">Renesas SH-4 · Startup Header · Splash · HMI J9</div>
-          </div>
-
-          {/* efs-system gauge */}
-          <div className="space-y-1 bg-slate-900/80 p-2.5 rounded border border-slate-800">
-            <div className="flex justify-between text-xs font-mono">
-              <span className="text-white font-semibold">efs-system.efs</span>
-              <span className="text-emerald-400">2.12 MB / 38.80 MB (5.4%)</span>
-            </div>
-            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500 rounded-full" style={{ width: '5.4%' }} />
-            </div>
-            <div className="text-[10px] text-slate-400">QNX F3S Filesystem · sq_AL.ans · menu_2026.esd</div>
+            <div className="text-[10px] text-slate-400">splash.png · sq_AL.ans · menu_2026.esd</div>
           </div>
         </div>
 

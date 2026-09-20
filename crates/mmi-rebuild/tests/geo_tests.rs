@@ -229,3 +229,17 @@ fn test_regional_profiles() {
     assert!(p_ece.bbox.contains_point(48.1351, 11.5820)); // Munich inside ECE
     assert!(p_ece.bbox.contains_point(52.5200, 13.4050)); // Berlin inside ECE
 }
+
+#[test]
+fn test_bounding_box_center_and_expansion() {
+    let mut bbox = BoundingBox::new(40.0, 10.0, 42.0, 12.0);
+    let (c_lat, c_lon) = bbox.center();
+    assert!((c_lat - 41.0).abs() < 1e-6);
+    assert!((c_lon - 11.0).abs() < 1e-6);
+
+    // Expand to encompass an exterior point
+    bbox.expand_point(43.5, 9.5);
+    assert_eq!(bbox.max_lat, 43.5);
+    assert_eq!(bbox.min_lon, 9.5);
+    assert!(bbox.contains_point(43.5, 9.5));
+}

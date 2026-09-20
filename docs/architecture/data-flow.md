@@ -76,3 +76,18 @@ Staged Update Directory
                                                     ▼
                                            Verdict: BUILD READY
 ```
+
+---
+
+## 4. Geodata Ingestion & Spatial Indexing Pipeline
+
+```mermaid
+flowchart TD
+    OSM["OpenStreetMap Data (PBF / XML / GeoJSON)"] --> Ingest["osm_ingest: Functional Road Classification (FRC 0-7) & Lane Guidance"]
+    Ingest --> Norm["WGS84 Normalization & Haversine Decimeter Metrics"]
+    Norm --> Fixed["FixedPoint32 Space (Scaled by 2^31 - 1, <1cm error)"]
+    Fixed --> Morton["Morton Z-Order Indexing (64-bit Bit Interleaving)"]
+    Morton --> IR["IrDataset Intermediate Representation (Nodes, Edges, Restrictions)"]
+    IR --> Spatial["Spatial Partitioning & R-Tree Bounding Box Hierarchy"]
+```
+

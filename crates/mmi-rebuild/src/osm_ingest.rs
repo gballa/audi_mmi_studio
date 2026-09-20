@@ -129,6 +129,7 @@ pub struct RawOsmRelation {
 // -----------------------------------------------------------------------------
 
 /// Classifies OSM `highway` tag into Harman/Becker Functional Road Class (0 to 7).
+#[inline]
 pub fn classify_frc(highway: &str) -> Option<u8> {
     match highway {
         "motorway" | "motorway_link" => Some(0),
@@ -144,6 +145,7 @@ pub fn classify_frc(highway: &str) -> Option<u8> {
 }
 
 /// Checks if an OSM way represents a navigable roadway for vehicular routing.
+#[inline]
 pub fn is_navigable_way(tags: &HashMap<String, String>) -> bool {
     let highway = match tags.get("highway") {
         Some(h) => h.as_str(),

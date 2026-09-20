@@ -30,10 +30,10 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
 
   // 3D Interactive Vehicle Chassis State (Phase 2)
   type VehicleChassisId = 'a4_sedan' | 'a4_avant' | 'a5_coupe' | 'a6_allroad' | 'q5_suv' | 'r8_v10';
-  const [selectedChassis, setSelectedChassis] = useState<VehicleChassisId>(
+  const [carOrbitAngle] = useState<number>(0);
+  const [selectedChassis] = useState<VehicleChassisId>(
     (themeConfig.activeCarSilhouetteStyle as VehicleChassisId) || 'a4_sedan'
   );
-  const [carOrbitAngle, setCarOrbitAngle] = useState<number>(0);
 
   const vehicleChassisList: {
     id: VehicleChassisId;
@@ -358,19 +358,20 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
         {/* ============================================================== */}
         {/* 1. TOP HEADER STRIP */}
         {/* ============================================================== */}
-        <div className="relative z-10 flex items-center justify-between px-6 pt-3 pb-1 border-b border-slate-800/60 bg-gradient-to-b from-black/80 to-transparent">
-          <div className="flex items-center gap-2">
+        <div className="relative z-10 flex items-center justify-between px-6 pt-3 pb-1">
+          <div className="w-1/3"></div>
+          <div className="w-1/3 flex justify-center">
             <span
-              className="text-base font-bold tracking-tight text-white"
+              className="text-xl font-bold tracking-tight"
               style={{
-                fontSize: `${16 * themeConfig.fontSizeScale}px`,
+                color: bracketColor,
+                fontSize: `${18 * themeConfig.fontSizeScale}px`,
                 letterSpacing: `${themeConfig.letterSpacingPx}px`,
+                textShadow: themeConfig.ambientGlow ? `0 0 10px ${bracketColor}80` : 'none',
               }}
             >
               {activeScreenTab === 'car_setup'
-                ? themeConfig.driveSelectView === 'settings'
-                  ? 'Audi drive select: Individual'
-                  : getStr('CAR_DRIVE_SELECT', 'Audi drive select')
+                ? getStr('CAR_DRIVE_SELECT', 'Audi drive select')
                 : activeScreenTab === 'navigation'
                 ? getStr('NAV_ROUTE_GUIDANCE', 'AUDI NAVIGATION PLUS')
                 : activeScreenTab === 'media'
@@ -380,21 +381,14 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                 : 'Audi Multimedia Interface'}
             </span>
           </div>
-
-          {/* Screen Quick Mode Badges */}
-          <div className="flex items-center gap-2 text-[11px] font-mono">
+          <div className="w-1/3 flex justify-end">
             {activeScreenTab === 'car_setup' && (
-              <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-slate-300 font-bold">
-                {themeConfig.activeDriveMode.toUpperCase()}
+              <span className="text-[17px] tracking-wide" style={{ color: '#c4bfbc' }}>
+                Handbook
               </span>
             )}
-            <span className="text-slate-500">TMC PRO</span>
           </div>
         </div>
-
-        {/* ============================================================== */}
-        {/* 2. THE 4 CORNER INTERACTIVE SOFTKEYS (Authentic Red Brackets) */}
-        {/* ============================================================== */}
 
         {/* Top-Left Corner Bracket */}
         <div
@@ -403,26 +397,19 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
             handleCornerClick('topLeft');
             handleElementClick(e, 'corner_bracket_tl');
           }}
-          className={`absolute top-2 left-3 z-30 flex items-center gap-2 cursor-pointer group p-1 rounded transition-all ${
+          className={`absolute top-0 left-2 z-30 flex items-center gap-2 cursor-pointer group p-1 rounded transition-all ${
             selectedElementId === 'corner_bracket_tl' ? 'ring-2 ring-amber-400 bg-amber-400/10' : ''
           }`}
-          title="Top-Left Softkey (Options / Back)"
         >
-          {/* Authentic Curved Red Bracket 「 */}
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="transition-transform group-hover:scale-110">
+          <svg width="150" height="24" viewBox="0 0 150 24" fill="none">
             <path
-              d="M 2 20 L 2 6 Q 2 2 6 2 L 20 2"
+              d="M 2 24 L 2 12 Q 2 2 16 2 L 150 2"
               stroke={bracketColor}
-              strokeWidth="3.5"
+              strokeWidth="2.5"
               strokeLinecap="round"
-              style={{ filter: themeConfig.ambientGlow ? `drop-shadow(0 0 5px ${bracketColor})` : 'none' }}
+              style={{ filter: themeConfig.ambientGlow ? `drop-shadow(0 0 4px ${bracketColor})` : 'none' }}
             />
           </svg>
-          {themeConfig.driveSelectView === 'settings' && (
-            <span className="text-xs font-bold text-slate-300 group-hover:text-white transition">
-              {themeConfig.language === 'sq' ? 'Kthehu' : 'Back'}
-            </span>
-          )}
         </div>
 
         {/* Top-Right Corner Bracket */}
@@ -432,92 +419,82 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
             handleCornerClick('topRight');
             handleElementClick(e, 'corner_bracket_tr');
           }}
-          className={`absolute top-2 right-3 z-30 flex items-center gap-2 cursor-pointer group p-1 rounded transition-all ${
+          className={`absolute top-0 right-2 z-30 flex items-center justify-end gap-2 cursor-pointer group p-1 rounded transition-all ${
             selectedElementId === 'corner_bracket_tr' ? 'ring-2 ring-amber-400 bg-amber-400/10' : ''
           }`}
-          title="Top-Right Softkey (Contextual Option)"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="transition-transform group-hover:scale-110">
+          <svg width="150" height="24" viewBox="0 0 150 24" fill="none">
             <path
-              d="M 22 20 L 22 6 Q 22 2 18 2 L 4 2"
+              d="M 148 24 L 148 12 Q 148 2 134 2 L 0 2"
               stroke={bracketColor}
-              strokeWidth="3.5"
+              strokeWidth="2.5"
               strokeLinecap="round"
-              style={{ filter: themeConfig.ambientGlow ? `drop-shadow(0 0 5px ${bracketColor})` : 'none' }}
+              style={{ filter: themeConfig.ambientGlow ? `drop-shadow(0 0 4px ${bracketColor})` : 'none' }}
             />
           </svg>
         </div>
 
-        {/* Bottom-Left Corner Bracket + Text: "Car systems" (media_1789830294659.png) */}
+        {/* Bottom-Left Corner Bracket + Text: "Car systems" */}
         <div
           onClick={(e) => {
             e.stopPropagation();
             handleCornerClick('bottomLeft');
             handleElementClick(e, 'corner_bracket_bl');
           }}
-          className={`absolute bottom-11 left-3 z-30 flex items-center gap-2 cursor-pointer group p-1.5 rounded transition-all ${
+          className={`absolute bottom-9 left-2 z-30 flex flex-col items-start gap-1 cursor-pointer group p-1 rounded transition-all ${
             selectedElementId === 'corner_bracket_bl' ? 'ring-2 ring-amber-400 bg-amber-400/10' : 'hover:bg-slate-900/60'
           }`}
-          title="Bottom-Left Softkey (Car systems)"
         >
-          {/* Authentic Curved Red Bracket ⌞ */}
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="transition-transform group-hover:scale-110">
-            <path
-              d="M 2 4 L 2 18 Q 2 22 6 22 L 20 22"
-              stroke={bracketColor}
-              strokeWidth="3.5"
-              strokeLinecap="round"
-              style={{ filter: themeConfig.ambientGlow ? `drop-shadow(0 0 5px ${bracketColor})` : 'none' }}
-            />
-          </svg>
           <span
-            className="text-xs font-bold text-white tracking-wide group-hover:text-amber-300 transition"
+            className="text-[17px] font-sans tracking-wide transition ml-3"
             style={{
-              fontSize: `${13 * themeConfig.fontSizeScale}px`,
-              textShadow: '0 1px 3px rgba(0,0,0,0.9)',
+              color: '#c4bfbc',
             }}
           >
             {themeConfig.language === 'sq'
               ? 'Sistemet e veturës'
               : themeConfig.cornerSoftkeys.bottomLeft.text || 'Car systems'}
           </span>
+          <svg width="150" height="24" viewBox="0 0 150 24" fill="none">
+            <path
+              d="M 2 0 L 2 12 Q 2 22 16 22 L 150 22"
+              stroke={bracketColor}
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              style={{ filter: themeConfig.ambientGlow ? `drop-shadow(0 0 4px ${bracketColor})` : 'none' }}
+            />
+          </svg>
         </div>
 
-        {/* Bottom-Right Corner Bracket + Text: "Set individual" (media_1789830294659.png) */}
+        {/* Bottom-Right Corner Bracket + Text: "Set individual" (only in settings) */}
         <div
           onClick={(e) => {
             e.stopPropagation();
             handleCornerClick('bottomRight');
             handleElementClick(e, 'corner_bracket_br');
           }}
-          className={`absolute bottom-11 right-3 z-30 flex items-center gap-2 cursor-pointer group p-1.5 rounded transition-all ${
+          className={`absolute bottom-9 right-2 z-30 flex flex-col items-end gap-1 cursor-pointer group p-1 rounded transition-all ${
             selectedElementId === 'corner_bracket_br' ? 'ring-2 ring-amber-400 bg-amber-400/10' : 'hover:bg-slate-900/60'
           }`}
-          title="Bottom-Right Softkey (Set individual - Click to toggle Platter vs Settings)"
         >
           <span
-            className="text-xs font-bold text-white tracking-wide group-hover:text-amber-300 transition"
+            className="text-[17px] font-sans tracking-wide transition mr-3"
             style={{
-              fontSize: `${13 * themeConfig.fontSizeScale}px`,
-              textShadow: '0 1px 3px rgba(0,0,0,0.9)',
+              color: themeConfig.driveSelectView === 'settings' ? '#ffffff' : 'transparent',
+              textShadow: themeConfig.driveSelectView === 'settings' ? '0 0 8px rgba(255,255,255,0.4)' : 'none',
             }}
           >
             {themeConfig.driveSelectView === 'settings'
-              ? themeConfig.language === 'sq'
-                ? 'Pamja 3D'
-                : '3D Platter'
-              : themeConfig.language === 'sq'
-              ? 'Konfiguro Individual'
-              : themeConfig.cornerSoftkeys.bottomRight.text || 'Set individual'}
+              ? (themeConfig.language === 'sq' ? 'Konfiguro Individual' : 'Set individual')
+              : 'Set individual'}
           </span>
-          {/* Authentic Curved Red Bracket ⌟ */}
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="transition-transform group-hover:scale-110">
+          <svg width="150" height="24" viewBox="0 0 150 24" fill="none">
             <path
-              d="M 22 4 L 22 18 Q 22 22 18 22 L 4 22"
+              d="M 148 0 L 148 12 Q 148 22 134 22 L 0 22"
               stroke={bracketColor}
-              strokeWidth="3.5"
+              strokeWidth="2.5"
               strokeLinecap="round"
-              style={{ filter: themeConfig.ambientGlow ? `drop-shadow(0 0 5px ${bracketColor})` : 'none' }}
+              style={{ filter: themeConfig.ambientGlow ? `drop-shadow(0 0 4px ${bracketColor})` : 'none' }}
             />
           </svg>
         </div>
@@ -539,95 +516,31 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                 onClick={(e) => handleElementClick(e, 'car_drive_select_platter')}
               >
                 {/* 3D Perspective Elliptical Platter Podium */}
-                <svg className="absolute w-[540px] h-[190px]" viewBox="0 0 540 190">
-                  <defs>
-                    <radialGradient id="platterGlow" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#1e293b" stopOpacity="0.8" />
-                      <stop offset="70%" stopColor="#0f172a" stopOpacity="0.6" />
-                      <stop offset="100%" stopColor="#020617" stopOpacity="0.2" />
-                    </radialGradient>
-                    <filter id="neonRedShadow" x="-20%" y="-20%" width="140%" height="140%">
-                      <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor={bracketColor} floodOpacity="0.8" />
-                    </filter>
-                  </defs>
-
+                <svg className="absolute w-[640px] h-[220px]" viewBox="0 0 640 220" style={{ top: '80px' }}>
                   {/* Outer glowing platter ring */}
                   <ellipse
-                    cx="270"
-                    cy="115"
-                    rx="250"
-                    ry="62"
-                    fill="url(#platterGlow)"
-                    stroke={bracketColor}
-                    strokeWidth="2.5"
-                    filter="url(#neonRedShadow)"
-                  />
-                  {/* Inner platter plateau */}
-                  <ellipse
-                    cx="270"
-                    cy="115"
-                    rx="210"
-                    ry="50"
-                    fill="#0b0f19"
-                    stroke="#334155"
+                    cx="320"
+                    cy="110"
+                    rx="310"
+                    ry="60"
+                    fill="none"
+                    stroke="#8c8b8b"
                     strokeWidth="1.5"
                   />
-                  {/* Subtle platter radial grid rings */}
-                  <ellipse cx="270" cy="115" rx="160" ry="38" fill="none" stroke="#1e293b" strokeWidth="1" strokeDasharray="6,4" />
+                  <ellipse
+                    cx="320"
+                    cy="110"
+                    rx="312"
+                    ry="62"
+                    fill="none"
+                    stroke="#ffffff"
+                    strokeWidth="0.5"
+                    opacity="0.2"
+                  />
                 </svg>
 
-                {/* Chassis Model Selector Quick Switcher Bar */}
-                <div className="absolute top-2 z-20 flex items-center justify-between w-[92%] px-3 py-1 rounded-lg bg-black/75 border border-slate-800/90 backdrop-blur-sm text-[10px] font-mono">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-amber-400 font-bold">CHASSIS:</span>
-                    <div className="flex items-center gap-1">
-                      {vehicleChassisList.map((chassis) => (
-                        <button
-                          key={chassis.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedChassis(chassis.id);
-                            onUpdateTheme({ activeCarSilhouetteStyle: chassis.id });
-                          }}
-                          className={`px-2 py-0.5 rounded transition cursor-pointer ${
-                            selectedChassis === chassis.id
-                              ? 'bg-red-600 text-white font-bold shadow-[0_0_8px_rgba(239,68,68,0.7)]'
-                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                          }`}
-                          title={`${chassis.name} - ${chassis.badge}`}
-                        >
-                          {chassis.name}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 3D Orbit Angle Controls */}
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <span className="text-[9px] text-slate-500">ORBIT:</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCarOrbitAngle((prev) => Math.max(-20, prev - 10));
-                      }}
-                      className="w-5 h-5 rounded bg-slate-900 border border-slate-700 hover:text-white flex items-center justify-center transition"
-                      title="Orbit Left"
-                    >
-                      ⟲
-                    </button>
-                    <span className="text-slate-300 font-mono w-6 text-center">{carOrbitAngle}°</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCarOrbitAngle((prev) => Math.min(20, prev + 10));
-                      }}
-                      className="w-5 h-5 rounded bg-slate-900 border border-slate-700 hover:text-white flex items-center justify-center transition"
-                      title="Orbit Right"
-                    >
-                      ⟳
-                    </button>
-                  </div>
-                </div>
+                {/* Hide Chassis selector to match original */}
+                <div className="hidden" />
 
                 {/* 3D Perspective Vehicle Chassis Model (Isometric Angle with Orbit & Suspension) */}
                 {(() => {
@@ -918,48 +831,42 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                 })()}
               </div>
 
-              {/* Mode Selector Pill Carousel (Comfort, Auto, Dynamic, Individual) */}
-              {/* Exactly matching media_1789830294659.png */}
-              <div className="relative z-20 flex items-center justify-center gap-4 mt-2">
+              {/* Mode Selector Platter Items (Comfort, Auto, Dynamic, Individual) */}
+              <div className="absolute top-[210px] w-full flex items-center justify-center z-20">
                 {[
-                  { id: 'comfort', label: getStr('CAR_MODE_COMFORT', 'Comfort') },
-                  { id: 'auto', label: 'Auto' },
-                  { id: 'dynamic', label: getStr('CAR_MODE_DYNAMIC', 'Dynamic') },
-                  { id: 'individual', label: getStr('CAR_MODE_INDIVIDUAL', 'Individual') },
+                  { id: 'efficiency', label: getStr('CAR_MODE_EFFICIENCY', 'efficiency'), mb: '30px' },
+                  { id: 'comfort', label: getStr('CAR_MODE_COMFORT', 'comfort'), mb: '0px' },
+                  { id: 'auto', label: 'auto', mb: '-10px' },
+                  { id: 'dynamic', label: getStr('CAR_MODE_DYNAMIC', 'dynamic'), mb: '0px' },
+                  { id: 'individual', label: getStr('CAR_MODE_INDIVIDUAL', 'individual'), mb: '30px' },
                 ].map((mode) => {
                   const isActive = themeConfig.activeDriveMode === mode.id;
                   return (
-                    <div key={mode.id} className="relative flex flex-col items-center">
-                      {/* Active Downward Arrow Indicator ▼ (matching media_1789830294659.png) */}
-                      {isActive && (
-                        <div
-                          className="text-[10px] font-bold -mb-1 animate-bounce"
-                          style={{ color: bracketColor }}
-                        >
-                          ▼
-                        </div>
-                      )}
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onUpdateTheme({ activeDriveMode: mode.id as any });
-                          handleElementClick(e, `mode_pill_${mode.id}`);
-                        }}
+                    <div
+                      key={mode.id}
+                      className="relative flex flex-col items-center mx-3 cursor-pointer"
+                      style={{ marginBottom: mode.mb }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onUpdateTheme({ activeDriveMode: mode.id as any });
+                        handleElementClick(e, `mode_pill_${mode.id}`);
+                      }}
+                    >
+                      <div
+                        className="px-3 py-1 rounded flex items-center justify-center transition-all"
                         style={{
-                          borderColor: isActive ? bracketColor : '#334155',
-                          backgroundColor: isActive ? 'rgba(224, 0, 27, 0.25)' : '#0c1017',
-                          color: isActive ? '#ffffff' : '#94a3b8',
-                          boxShadow: isActive && themeConfig.ambientGlow ? `0 0 14px ${bracketColor}80` : 'none',
+                          border: isActive ? `2px solid ${bracketColor}` : '2px solid transparent',
+                          boxShadow: isActive ? `0 0 10px ${bracketColor}` : 'none',
+                          backgroundColor: isActive ? '#000000' : 'transparent',
                         }}
-                        className={`px-5 py-2 rounded-lg border-2 font-bold text-xs tracking-wider transition-all cursor-pointer flex items-center justify-center min-w-[96px] ${
-                          isActive
-                            ? 'scale-105 font-black text-white shadow-lg'
-                            : 'hover:border-slate-500 hover:text-slate-200'
-                        }`}
                       >
-                        <span>{mode.label}</span>
-                      </button>
+                        <span className="text-[20px] text-white tracking-wide font-sans">{mode.label}</span>
+                      </div>
+                      
+                      {/* Downward Arrow Indicator ▼ ALWAYS shown */}
+                      <div className="text-[14px] font-sans mt-0.5" style={{ color: '#ffffff' }}>
+                        ▾
+                      </div>
                     </div>
                   );
                 })}
@@ -972,46 +879,52 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
           {/* ------------------------------------------------------------ */}
           {activeScreenTab === 'car_setup' && themeConfig.driveSelectView === 'settings' && (
             <div
-              className="relative w-full h-full flex items-center justify-center cursor-pointer"
+              className="relative w-[760px] h-[360px] mt-2 flex items-start justify-center cursor-pointer"
               onClick={(e) => handleElementClick(e, 'settings_frame_border')}
             >
-              {/* The Iconic Red Rounded Container Box with Left Crescent Arc */}
+              {/* The Iconic Red Rounded Container Box */}
               <div
-                className="relative w-[660px] h-[280px] rounded-2xl border-2 p-6 flex flex-col justify-between backdrop-blur-md"
+                className="relative w-[730px] h-[300px] border-t-2 border-r-2 border-b-2 rounded-tr-lg rounded-br-lg"
                 style={{
                   borderColor: bracketColor,
-                  backgroundColor: 'rgba(10, 14, 22, 0.85)',
-                  boxShadow: themeConfig.ambientGlow ? `0 0 25px ${bracketColor}40` : 'none',
+                  background: 'linear-gradient(to bottom, rgba(20, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 15%)',
+                  boxShadow: `inset 0 15px 25px -10px ${bracketColor}80`,
                 }}
               >
-                {/* Left Crescent Arc Graphic */}
-                <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-36 border-l-4 rounded-full pointer-events-none" style={{ borderColor: bracketColor }} />
+                {/* Left Crescent Arc Graphic (White gradient fading to black) */}
+                <div
+                  className="absolute -left-[30px] top-0 w-[60px] h-[300px] pointer-events-none"
+                  style={{
+                    borderRight: '3px solid #ffffff',
+                    borderRadius: '50%',
+                    filter: 'drop-shadow(0 0 4px #ffffff)',
+                    opacity: 0.8,
+                    transform: 'scaleX(0.4)',
+                  }}
+                />
+                
+                {/* Red Top Border Line filling the left side connection */}
+                <div className="absolute top-[-2px] left-[-30px] w-[30px] h-[2px]" style={{ backgroundColor: bracketColor, boxShadow: `0 0 10px ${bracketColor}` }} />
+                <div className="absolute bottom-[-2px] left-[-30px] w-[30px] h-[2px]" style={{ backgroundColor: bracketColor, boxShadow: `0 0 10px ${bracketColor}` }} />
 
-                {/* Submenu Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                  <span className="text-sm font-bold uppercase tracking-wider text-slate-300">
-                    {themeConfig.language === 'sq' ? 'Cilësimet e konfigurimit individual' : 'Individual mode setup'}
-                  </span>
-                  <span className="text-xs font-mono text-slate-400">MMI Dynamic Chassis</span>
-                </div>
-
-                {/* Setting Rows (Engine / gearbox, Steering, Suspension) */}
-                <div className="space-y-3 my-auto">
-                  {/* Row 1: Engine / gearbox */}
+                {/* Setting Rows (Engine, Steering) */}
+                <div className="absolute top-10 left-16 right-6 space-y-3">
+                  {/* Row 1: Engine */}
                   <div
                     onClick={(e) => {
                       e.stopPropagation();
                       setActiveSubmenuRow('engine');
                       handleElementClick(e, 'settings_row_highlight');
                     }}
-                    className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer relative ${
-                      activeSubmenuRow === 'engine'
-                        ? 'bg-[#150a0d] border-red-500/70 shadow-md'
-                        : 'bg-[#0b0e17] border-slate-800/80 hover:border-slate-700'
-                    }`}
+                    className="flex items-center justify-between py-1 px-2 relative"
+                    style={{
+                      borderTop: activeSubmenuRow === 'engine' ? `1px solid ${bracketColor}` : 'none',
+                      borderBottom: activeSubmenuRow === 'engine' ? `1px solid ${bracketColor}` : 'none',
+                      background: activeSubmenuRow === 'engine' ? `linear-gradient(to right, transparent, rgba(220, 0, 0, 0.3) 90%, transparent)` : 'transparent',
+                    }}
                   >
-                    <span className="text-sm font-semibold text-white">
-                      {themeConfig.language === 'sq' ? 'Motori / kutia e marsheve' : 'Engine / gearbox'}
+                    <span className="text-[22px] font-sans text-white">
+                      {themeConfig.language === 'sq' ? 'Motori' : 'Engine'}
                     </span>
                     <div className="relative">
                       <button
@@ -1022,21 +935,19 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                           setOpenDropdownRow(openDropdownRow === 'engine' ? null : 'engine');
                           handleElementClick(e, 'settings_dropdown_pill');
                         }}
+                        className="w-[180px] h-[36px] border border-[#555] rounded-md bg-gradient-to-b from-[#333] to-[#111] text-[20px] font-bold text-white flex items-center justify-between px-3 cursor-pointer select-none"
                         style={{
-                          borderColor: bracketColor,
-                          backgroundColor: '#1b0609',
-                          boxShadow: themeConfig.ambientGlow ? `0 0 12px ${bracketColor}70` : 'none',
+                          boxShadow: activeSubmenuRow === 'engine' ? `0 0 15px ${bracketColor}90` : 'none',
                         }}
-                        className="px-4 py-1.5 rounded-md border text-xs font-bold text-white flex items-center gap-2 hover:scale-105 transition cursor-pointer select-none"
                       >
-                        <span className={`text-[10px] transition-transform ${openDropdownRow === 'engine' ? 'rotate-180 text-amber-400 font-bold' : 'text-slate-300'}`}>▼</span>
+                        <span className="text-[14px] text-white">▾</span>
                         <span>{themeConfig.driveSelectSettings.engineGearbox}</span>
                       </button>
 
-                      {/* Dropdown Popup Menu with 100% Solid Matching Background */}
+                      {/* Dropdown Popup Menu */}
                       {openDropdownRow === 'engine' && (
                         <div
-                          className="absolute top-full mt-1.5 right-0 w-36 bg-[#090d16] border-2 border-red-600 rounded-lg shadow-[0_20px_45px_rgba(0,0,0,0.98)] z-50 overflow-hidden py-1 text-xs"
+                          className="absolute top-full mt-1 right-0 w-[180px] bg-black border-2 border-red-600 rounded-md z-50 text-[18px]"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {(['Comfort', 'Auto', 'Dynamic'] as const).map((opt) => {
@@ -1055,14 +966,11 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                                   });
                                   setOpenDropdownRow(null);
                                 }}
-                                className={`w-full px-3 py-2 text-left flex items-center justify-between font-bold transition cursor-pointer ${
-                                  isSelected
-                                    ? 'bg-red-950 text-red-200 font-extrabold border-l-2 border-red-500'
-                                    : 'text-slate-200 hover:bg-slate-800 hover:text-white'
+                                className={`w-full px-3 py-1 text-right font-bold transition cursor-pointer ${
+                                  isSelected ? 'text-red-500' : 'text-white hover:bg-slate-800'
                                 }`}
                               >
-                                <span>{themeConfig.language === 'sq' ? (opt === 'Comfort' ? 'Komfort' : opt === 'Auto' ? 'Automatik' : 'Dinamik') : opt}</span>
-                                {isSelected && <span className="text-red-400 font-mono">✓</span>}
+                                {opt}
                               </button>
                             );
                           })}
@@ -1078,13 +986,14 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                       setActiveSubmenuRow('steering');
                       handleElementClick(e, 'settings_row_highlight');
                     }}
-                    className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer relative ${
-                      activeSubmenuRow === 'steering'
-                        ? 'bg-[#150a0d] border-red-500/70 shadow-md'
-                        : 'bg-[#0b0e17] border-slate-800/80 hover:border-slate-700'
-                    }`}
+                    className="flex items-center justify-between py-1 px-2 relative"
+                    style={{
+                      borderTop: activeSubmenuRow === 'steering' ? `1px solid ${bracketColor}` : 'none',
+                      borderBottom: activeSubmenuRow === 'steering' ? `1px solid ${bracketColor}` : 'none',
+                      background: activeSubmenuRow === 'steering' ? `linear-gradient(to right, transparent, rgba(220, 0, 0, 0.3) 90%, transparent)` : 'transparent',
+                    }}
                   >
-                    <span className="text-sm font-semibold text-white">
+                    <span className="text-[22px] font-sans text-white">
                       {themeConfig.language === 'sq' ? 'Timoni' : 'Steering'}
                     </span>
                     <div className="relative">
@@ -1096,21 +1005,19 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                           setOpenDropdownRow(openDropdownRow === 'steering' ? null : 'steering');
                           handleElementClick(e, 'settings_dropdown_pill');
                         }}
+                        className="w-[180px] h-[36px] border border-[#555] rounded-md bg-gradient-to-b from-[#333] to-[#111] text-[20px] font-bold text-white flex items-center justify-between px-3 cursor-pointer select-none"
                         style={{
-                          borderColor: bracketColor,
-                          backgroundColor: '#1b0609',
-                          boxShadow: themeConfig.ambientGlow ? `0 0 12px ${bracketColor}70` : 'none',
+                          boxShadow: activeSubmenuRow === 'steering' ? `0 0 15px ${bracketColor}90` : 'none',
                         }}
-                        className="px-4 py-1.5 rounded-md border text-xs font-bold text-white flex items-center gap-2 hover:scale-105 transition cursor-pointer select-none"
                       >
-                        <span className={`text-[10px] transition-transform ${openDropdownRow === 'steering' ? 'rotate-180 text-amber-400 font-bold' : 'text-slate-300'}`}>▼</span>
+                        <span className="text-[14px] text-white">▾</span>
                         <span>{themeConfig.driveSelectSettings.steering}</span>
                       </button>
 
-                      {/* Dropdown Popup Menu with 100% Solid Matching Background */}
+                      {/* Dropdown Popup Menu */}
                       {openDropdownRow === 'steering' && (
                         <div
-                          className="absolute top-full mt-1.5 right-0 w-36 bg-[#090d16] border-2 border-red-600 rounded-lg shadow-[0_20px_45px_rgba(0,0,0,0.98)] z-50 overflow-hidden py-1 text-xs"
+                          className="absolute top-full mt-1 right-0 w-[180px] bg-black border-2 border-red-600 rounded-md z-50 text-[18px]"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {(['Comfort', 'Auto', 'Dynamic'] as const).map((opt) => {
@@ -1129,14 +1036,11 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                                   });
                                   setOpenDropdownRow(null);
                                 }}
-                                className={`w-full px-3 py-2 text-left flex items-center justify-between font-bold transition cursor-pointer ${
-                                  isSelected
-                                    ? 'bg-red-950 text-red-200 font-extrabold border-l-2 border-red-500'
-                                    : 'text-slate-200 hover:bg-slate-800 hover:text-white'
+                                className={`w-full px-3 py-1 text-right font-bold transition cursor-pointer ${
+                                  isSelected ? 'text-red-500' : 'text-white hover:bg-slate-800'
                                 }`}
                               >
-                                <span>{themeConfig.language === 'sq' ? (opt === 'Comfort' ? 'Komfort' : opt === 'Auto' ? 'Automatik' : 'Dinamik') : opt}</span>
-                                {isSelected && <span className="text-red-400 font-mono">✓</span>}
+                                {opt}
                               </button>
                             );
                           })}
@@ -1144,86 +1048,6 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                       )}
                     </div>
                   </div>
-
-                  {/* Row 3: Suspension */}
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveSubmenuRow('suspension');
-                      handleElementClick(e, 'settings_row_highlight');
-                    }}
-                    className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer relative ${
-                      activeSubmenuRow === 'suspension'
-                        ? 'bg-[#150a0d] border-red-500/70 shadow-md'
-                        : 'bg-[#0b0e17] border-slate-800/80 hover:border-slate-700'
-                    }`}
-                  >
-                    <span className="text-sm font-semibold text-white">
-                      {themeConfig.language === 'sq' ? 'Amortizimi / Pezullimi' : 'Suspension'}
-                    </span>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveSubmenuRow('suspension');
-                          setOpenDropdownRow(openDropdownRow === 'suspension' ? null : 'suspension');
-                          handleElementClick(e, 'settings_dropdown_pill');
-                        }}
-                        style={{
-                          borderColor: bracketColor,
-                          backgroundColor: '#1b0609',
-                          boxShadow: themeConfig.ambientGlow ? `0 0 12px ${bracketColor}70` : 'none',
-                        }}
-                        className="px-4 py-1.5 rounded-md border text-xs font-bold text-white flex items-center gap-2 hover:scale-105 transition cursor-pointer select-none"
-                      >
-                        <span className={`text-[10px] transition-transform ${openDropdownRow === 'suspension' ? 'rotate-180 text-amber-400 font-bold' : 'text-slate-300'}`}>▼</span>
-                        <span>{themeConfig.driveSelectSettings.suspension}</span>
-                      </button>
-
-                      {/* Dropdown Popup Menu with 100% Solid Matching Background */}
-                      {openDropdownRow === 'suspension' && (
-                        <div
-                          className="absolute top-full mt-1.5 right-0 w-36 bg-[#090d16] border-2 border-red-600 rounded-lg shadow-[0_20px_45px_rgba(0,0,0,0.98)] z-50 overflow-hidden py-1 text-xs"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {(['Comfort', 'Auto', 'Dynamic'] as const).map((opt) => {
-                            const isSelected = themeConfig.driveSelectSettings.suspension === opt;
-                            return (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onUpdateTheme({
-                                    driveSelectSettings: {
-                                      ...themeConfig.driveSelectSettings,
-                                      suspension: opt,
-                                    },
-                                  });
-                                  setOpenDropdownRow(null);
-                                }}
-                                className={`w-full px-3 py-2 text-left flex items-center justify-between font-bold transition cursor-pointer ${
-                                  isSelected
-                                    ? 'bg-red-950 text-red-200 font-extrabold border-l-2 border-red-500'
-                                    : 'text-slate-200 hover:bg-slate-800 hover:text-white'
-                                }`}
-                              >
-                                <span>{themeConfig.language === 'sq' ? (opt === 'Comfort' ? 'Komfort' : opt === 'Auto' ? 'Automatik' : 'Dinamik') : opt}</span>
-                                {isSelected && <span className="text-red-400 font-mono">✓</span>}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Submenu Bottom Prompt */}
-                <div className="flex justify-between items-center text-xs text-slate-400 font-mono pt-2 border-t border-slate-800">
-                  <span>Click setting dropdown pill to select Comfort, Auto, or Dynamic</span>
-                  <span className="text-amber-400 font-semibold">Active: Individual</span>
                 </div>
               </div>
             </div>
@@ -1800,42 +1624,32 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
         {/* 4. AUTHENTIC 32px BOTTOM STATUS BAR */}
         {/* Exactly matching media_1789830294656.png and media_1789830294659.png */}
         {/* ============================================================== */}
-        <div className="relative z-20 h-8 px-6 bg-black/95 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono select-none backdrop-blur-sm">
-          {/* Left: Speaker Mute Icon */}
+        <div className="relative z-20 h-10 px-6 bg-black flex items-center justify-between text-base font-sans select-none border-t border-slate-900">
+          {/* Left: TMC Box */}
           <div
-            onClick={(e) => handleElementClick(e, 'status_bar_mute')}
-            className={`flex items-center gap-2 cursor-pointer p-0.5 rounded transition ${
-              selectedElementId === 'status_bar_mute' ? 'ring-1 ring-amber-400' : ''
+            onClick={(e) => handleElementClick(e, 'status_bar_tmc')}
+            className={`flex items-center gap-2 cursor-pointer transition ${
+              selectedElementId === 'status_bar_tmc' ? 'ring-1 ring-amber-400' : ''
             }`}
-            title="Audio Mute Indicator"
           >
-            {themeConfig.statusBar.isMuted ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                <line x1="23" y1="9" x2="17" y2="15" />
-                <line x1="17" y1="9" x2="23" y2="15" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
-              </svg>
-            )}
+            <div className="border border-white text-white px-1.5 py-0.5 text-[14px] leading-none rounded-[3px]">
+              TMC
+            </div>
           </div>
 
           {/* Center: Digital 24h Clock (16:06 / 12:53) */}
           <div
             onClick={(e) => handleElementClick(e, 'status_bar_clock')}
-            className={`flex items-center justify-center cursor-pointer px-2 py-0.5 rounded transition font-bold tracking-widest text-slate-100 ${
+            className={`flex items-center justify-center cursor-pointer px-2 py-0.5 rounded transition font-sans text-white text-[19px] tracking-widest ${
               selectedElementId === 'status_bar_clock' ? 'ring-1 ring-amber-400' : ''
             }`}
             title="Digital Clock"
           >
-            {themeConfig.statusBar.clockTime || '16:06'}
+            {themeConfig.statusBar.clockTime || '17:15'}
           </div>
 
-          {/* Right: Bluetooth, 4-bar Signal, Google, 3G data traffic */}
-          <div className="flex items-center gap-3">
+          {/* Right: Bluetooth, 4-bar Signal, swap arrows, Google, 3G data traffic */}
+          <div className="flex items-center gap-1.5">
             {/* Bluetooth */}
             {themeConfig.statusBar.bluetoothConnected && (
               <div
@@ -1843,9 +1657,8 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                 className={`cursor-pointer p-0.5 rounded transition ${
                   selectedElementId === 'status_bar_bluetooth' ? 'ring-1 ring-amber-400' : ''
                 }`}
-                title="Bluetooth Connected"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5" />
                 </svg>
               </div>
@@ -1854,46 +1667,48 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
             {/* 4-Bar Signal Indicator */}
             <div
               onClick={(e) => handleElementClick(e, 'status_bar_signal')}
-              className={`flex items-end gap-0.5 h-3.5 cursor-pointer p-0.5 rounded transition ${
+              className={`flex items-end gap-[2px] h-[14px] cursor-pointer p-0.5 rounded transition mr-1 ${
                 selectedElementId === 'status_bar_signal' ? 'ring-1 ring-amber-400' : ''
               }`}
-              title="Cellular Signal Strength"
             >
               {[1, 2, 3, 4].map((bar) => (
                 <div
                   key={bar}
-                  className={`w-1 rounded-sm ${
-                    bar <= themeConfig.statusBar.signalBars ? 'bg-emerald-400' : 'bg-slate-700'
-                  }`}
+                  className={`w-[3px] rounded-sm bg-white`}
                   style={{ height: `${bar * 3 + 2}px` }}
                 />
               ))}
             </div>
 
-            {/* Google Logo (Genuine Audi Connect) */}
+            {/* Swap Arrows */}
+            <div className="text-white text-[18px] mr-1">
+              ⇄
+            </div>
+
+            {/* Google Logo */}
             {themeConfig.statusBar.googleServicesOnline && (
               <div
                 onClick={(e) => handleElementClick(e, 'status_bar_google')}
-                className={`cursor-pointer px-1 rounded transition text-[11px] font-sans font-bold text-slate-200 tracking-tight flex items-center ${
+                className={`cursor-pointer px-1 rounded transition text-[17px] font-sans text-white tracking-tight flex items-center mr-1 ${
                   selectedElementId === 'status_bar_google' ? 'ring-1 ring-amber-400' : ''
                 }`}
-                title="Google Connected Services"
               >
-                Google
+                Google<span className="text-[10px] align-top ml-0.5 mt-1">TM</span>
               </div>
             )}
 
-            {/* 3G / LTE with bidirectional data traffic arrows ⇄ */}
-            <div
-              onClick={(e) => handleElementClick(e, 'status_bar_traffic')}
-              className={`flex items-center gap-1 cursor-pointer px-1 rounded transition text-[10px] font-bold text-sky-400 ${
-                selectedElementId === 'status_bar_traffic' ? 'ring-1 ring-amber-400' : ''
-              }`}
-              title="Data Network & Traffic"
-            >
-              <span>{themeConfig.statusBar.dataNetwork || '3G'}</span>
-              <span className="text-[11px] tracking-tighter">⇄</span>
-            </div>
+            {/* 3G Data Traffic (Only shown in settings view photo) */}
+            {themeConfig.driveSelectView === 'settings' && (
+              <div
+                onClick={(e) => handleElementClick(e, 'status_bar_traffic')}
+                className={`flex items-center gap-1 cursor-pointer px-1 rounded transition text-[16px] font-sans font-bold text-white ${
+                  selectedElementId === 'status_bar_traffic' ? 'ring-1 ring-amber-400' : ''
+                }`}
+              >
+                <span>3G</span>
+                <span className="text-[12px] tracking-tighter">⇄</span>
+              </div>
+            )}
           </div>
         </div>
 
