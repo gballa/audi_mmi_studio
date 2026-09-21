@@ -243,3 +243,75 @@ fn test_bounding_box_center_and_expansion() {
     assert_eq!(bbox.min_lon, 9.5);
     assert!(bbox.contains_point(43.5, 9.5));
 }
+
+#[test]
+fn test_shortest_path_dijkstra() {
+    let bbox = BoundingBox::new(41.0, 19.0, 42.0, 20.0);
+    let mut dataset = IrDataset::new(bbox, Some("TEST".to_string()));
+
+    // 3 nodes forming a triangle: 0 -> 1 -> 2 and 0 -> 2
+    let n0 = IrNode::from_wgs84(10, 41.1, 19.1, 0, junction_flags::NONE);
+    let n1 = IrNode::from_wgs84(11, 41.2, 19.2, 0, junction_flags::NONE);
+    let n2 = IrNode::from_wgs84(12, 41.3, 19.3, 0, junction_flags::NONE);
+    dataset.nodes = vec![n0, n1, n2];
+
+    // Edge 0 -> 1 (weight 100 dm), Edge 1 -> 2 (weight 150 dm)
+    // Edge 0 -> 2 direct (weight 500 dm)
+    let e0 = IrEdge {
+        edge_id: 1,
+        from_node: 0,
+        to_node: 1,
+        length_dm: 100,
+        frc: 2,
+        speed_forward: 80,
+        speed_reverse: 0,
+        lane_count: 2,
+        turn_lane_mask: 0,
+        geometry: Vec::new(),
+        access_flags: access_flags::MOTOR_VEHICLE,
+    };
+    let e1 = IrEdge {
+        edge_id: 2,
+        from_node: 1,
+        to_node: 2,
+        length_dm: 150,
+        frc: 2,
+        speed_forward: 80,
+        speed_reverse: 0,
+        lane_count: 2,
+        turn_lane_mask: 0,
+        geometry: Vec::new(),
+        access_flags: access_flags::MOTOR_VEHICLE,
+    };
+    let e2 = IrEdge {
+        edge_id: 3,
+        from_node: 0,
+        to_node: 2,
+        length_dm: 500,
+        frc: 3,
+        speed_forward: 60,
+        speed_reverse: 0,
+        lane_count: 1,
+        turn_lane_mask: 0,
+        geometry: Vec::new(),
+        access_flags: access_flags::MOTOR_VEHICLE,
+    };
+    dataset.edges = vec![e0, e1, e2];
+
+    assert!(dataset.validate().is_ok());
+
+    // Routing from node 0 to node 2 should choose 0 -> 1 -> 2 (total weight 250 dm)
+    let res = dataset.shortest_path_dijkstra(0, 2);
+    assert!(res.is_some());
+    let (cost, path) = res.unwrap();
+    assert_eq!(cost, 250);
+    assert_eq!(path, vec![0, 1, 2]);
+
+    // Same node path
+    let same = dataset.shortest_path_dijkstra(1, 1);
+    assert_eq!(same, Some((0, vec![1])));
+
+    // Unreachable backward path (2 -> 0 has no reverse edges)
+    let unreach = dataset.shortest_path_dijkstra(2, 0);
+    assert_eq!(unreach, None);
+}

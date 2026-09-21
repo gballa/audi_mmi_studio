@@ -170,6 +170,7 @@ fn tier4_scenario_07_stock_recovery_execution_dry_run() {
 #[test]
 fn tier4_scenario_08_multi_country_transit_corridor_connectivity() {
     // Transit corridor from Tirana (AL) to Munich (DE) via border gateways
+    #[allow(dead_code)]
     struct GatewayNode {
         name: &'static str,
         country: &'static str,
@@ -230,6 +231,7 @@ fn tier4_scenario_10_ev_fast_charging_route_heuristic() {
 
 #[test]
 fn tier4_scenario_11_llogara_tunnel_subsurface_attributes() {
+    #[allow(dead_code)]
     struct TunnelSegment {
         name: &'static str,
         length_m: u32,

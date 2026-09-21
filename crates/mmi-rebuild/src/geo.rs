@@ -583,4 +583,81 @@ impl IrDataset {
             self.region_profile
         )
     }
+
+    /// Computes shortest path distance in decimeters between two node indices using Dijkstra's algorithm.
+    /// Returns `Some((total_distance_dm, path_node_indices))` if reachable, or `None` if unreachable.
+    pub fn shortest_path_dijkstra(&self, start_idx: usize, goal_idx: usize) -> Option<(u64, Vec<usize>)> {
+        use std::cmp::Ordering;
+        use std::collections::BinaryHeap;
+
+        if start_idx >= self.nodes.len() || goal_idx >= self.nodes.len() {
+            return None;
+        }
+        if start_idx == goal_idx {
+            return Some((0, vec![start_idx]));
+        }
+
+        #[derive(Copy, Clone, Eq, PartialEq)]
+        struct State {
+            cost: u64,
+            node: usize,
+        }
+
+        impl Ord for State {
+            fn cmp(&self, other: &Self) -> Ordering {
+                other.cost.cmp(&self.cost)
+            }
+        }
+
+        impl PartialOrd for State {
+            fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+                Some(self.cmp(other))
+            }
+        }
+
+        // Build adjacency list: node_idx -> Vec<(neighbor_idx, edge_weight_dm)>
+        let mut adj: Vec<Vec<(usize, u32)>> = vec![Vec::new(); self.nodes.len()];
+        for edge in &self.edges {
+            let u = edge.from_node as usize;
+            let v = edge.to_node as usize;
+            if u < self.nodes.len() && v < self.nodes.len() {
+                adj[u].push((v, edge.length_dm));
+            }
+        }
+
+        let mut dist: Vec<u64> = vec![u64::MAX; self.nodes.len()];
+        let mut prev: Vec<Option<usize>> = vec![None; self.nodes.len()];
+        let mut heap = BinaryHeap::new();
+
+        dist[start_idx] = 0;
+        heap.push(State { cost: 0, node: start_idx });
+
+        while let Some(State { cost, node }) = heap.pop() {
+            if node == goal_idx {
+                let mut path = Vec::new();
+                let mut curr = Some(node);
+                while let Some(c) = curr {
+                    path.push(c);
+                    curr = prev[c];
+                }
+                path.reverse();
+                return Some((cost, path));
+            }
+
+            if cost > dist[node] {
+                continue;
+            }
+
+            for &(next_node, weight) in &adj[node] {
+                let next_cost = cost + weight as u64;
+                if next_cost < dist[next_node] {
+                    dist[next_node] = next_cost;
+                    prev[next_node] = Some(node);
+                    heap.push(State { cost: next_cost, node: next_node });
+                }
+            }
+        }
+
+        None
+    }
 }

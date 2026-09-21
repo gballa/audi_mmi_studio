@@ -402,6 +402,7 @@ fn tier1_gmp_04_commercial_fuel_brand_identification() {
 
 #[test]
 fn tier1_gmp_05_speed_radar_calibration() {
+    #[allow(dead_code)]
     struct SpeedRadar {
         lat: f64,
         lon: f64,

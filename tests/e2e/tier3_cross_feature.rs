@@ -230,6 +230,7 @@ fn tier3_combo_09_multilane_guidance_and_cluster_preview_canvas() {
 
 #[test]
 fn tier3_combo_10_speed_limits_and_adas_psd_correlation() {
+    #[allow(dead_code)]
     struct AdasCurvatureLink {
         link_id: u32,
         statutory_speed: u8,
@@ -281,6 +282,7 @@ fn tier3_combo_13_volume_splitting_with_fldb_and_sqlite() {
 
 #[test]
 fn tier3_combo_14_layer_toggles_and_spatial_filtering() {
+    #[allow(dead_code)]
     struct MapLayerSettings {
         show_motorways: bool,
         show_secondary: bool,
