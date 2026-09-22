@@ -1,0 +1,89 @@
+{
+  "blocked": [
+    {
+      "file": "pkgdb/MMI3GP_ECE_Hi_R_6_36_0.pkg.sig",
+      "reason": "REQUIRED OEM RSA-1024 PRIVATE SIGNING KEY"
+    },
+    {
+      "file": "pkgdb/TMCConfig_16/TMCConfig.dat.sig",
+      "reason": "REQUIRED OEM RSA-1024 PRIVATE SIGNING KEY"
+    }
+  ],
+  "generated": [
+    {
+      "bytes": 2176,
+      "file": "HBNavDB/nav_data.db",
+      "format": "FLDB_544B_PAGES",
+      "generator": "fldb_compiler::compile_fldb_database",
+      "type": "MAP_DATA"
+    },
+    {
+      "file": "HBNavDB/EJ211_v37a.gdb",
+      "format": "GDB_V37",
+      "generator": "fldb_compiler",
+      "type": "MAP_DATA"
+    },
+    {
+      "file": "HBNavDB/Geographic.gdb",
+      "format": "SQLITE_RTREE",
+      "generator": "rusqlite",
+      "type": "MAP_DATA"
+    },
+    {
+      "file": "MU9411/strings/sq_AL.ans",
+      "format": "HB_ANS",
+      "generator": "fldb_compiler",
+      "type": "LOCALIZATION"
+    },
+    {
+      "file": "MapStyles/styles_day.xar",
+      "format": "MAPSTYLE_XAR",
+      "generator": "fldb_compiler",
+      "type": "OEM_RESOURCE"
+    },
+    {
+      "file": "MapStyles/styles_night.xar",
+      "format": "MAPSTYLE_XAR",
+      "generator": "fldb_compiler",
+      "type": "OEM_RESOURCE"
+    },
+    {
+      "file": "metainfo2.txt",
+      "generator": "fldb_compiler",
+      "type": "PACKAGE_METADATA"
+    }
+  ],
+  "manifest_version": "2.0.0",
+  "map_source": {
+    "coverage_hash": "ccce881b0f8f3a6208eff8cb1abf0f9d2356113afe4ccf43f97698592ac22898",
+    "coverage_manifest": "data/manifests/albania_manifest.json",
+    "dataset_date": "2026-09-21",
+    "ingested_files": [
+      "albania_western_balkans.geojson"
+    ],
+    "provider": "OpenStreetMap",
+    "source_directory": "data/sources",
+    "total_source_bytes": 2976
+  },
+  "pipeline": "Audi MMI Studio OpenStreetMap Map Compiler",
+  "reference": {
+    "part_number": "8R0060884KL",
+    "path": "originals/8R0051884KL_6.36.0_2023",
+    "type": "OEM_REFERENCE_2023"
+  },
+  "reused": [],
+  "target": {
+    "platform": "Audi MMI 3G/3G+ (HN+ / HN+R)",
+    "profile": "AL",
+    "profile_name": "Albania & Western Balkans",
+    "release": "2026_ECE"
+  },
+  "timestamp_epoch": "1790019372",
+  "validation": {
+    "dataset_complete": true,
+    "installation_note": "Package is structurally complete from new open geodata. Vehicle head unit requires official manufacturer signature to execute unattended SWDL update.",
+    "installation_ready": false,
+    "official_signature_required": true,
+    "package_complete": true
+  }
+}

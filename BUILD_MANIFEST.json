@@ -1,0 +1,107 @@
+{
+  "manifest_version": "1.0.0",
+  "project": "Audi MMI 3G / 3G+ Map Data Engineering Pipeline",
+  "build_timestamp": "2026-09-21T16:48:54.258554Z",
+  "target_mmi_platform": "Audi MMI 3G (High) & MMI 3G+ (HN+ / HN+R)",
+  "target_variants": [
+    "9307",
+    "9308",
+    "9411",
+    "9408",
+    "9409",
+    "9410",
+    "9498",
+    "9499",
+    "9425",
+    "9436"
+  ],
+  "package_name": "MMI3GP_ECE_Hi_R_6_36_0 / MMI3G_ECE_Hi_R_6_36_0",
+  "part_number": "8R0060884KL",
+  "application_software_version": "3600",
+  "map_version": "6.36.0",
+  "region": "Europe (ECE)",
+  "assembly_id": "29ce7bd1",
+  "required_official_fsc": {
+    "fsc_id": "00040025",
+    "description": "Audi ECE 2023 Navigation Lifetime / Release Feature Enablement Certificate (FSC)",
+    "userflags": "fsc@40025;region@1;model@1",
+    "oem_signed_required": true,
+    "note": "Per safety policy \u00a71.2, no keygen, cracking, or DRM bypass is performed. The vehicle head unit requires this official OEM FSC installed into IFS/EFS."
+  },
+  "source_reference": {
+    "path": "originals/8R0051884KL_6.36.0_2023",
+    "total_files": 77,
+    "total_bytes": 40693125670
+  },
+  "transformations": [
+    {
+      "stage": "DISCOVER",
+      "description": "Exhaustive recursive inventory and format classification of originals/8R0051884KL_6.36.0_2023"
+    },
+    {
+      "stage": "ANALYZE",
+      "description": "Deconstruction of metainfo2.txt, DBInfo.txt, config.nfm, .pkg, .pkg.sig, and 34 pkgdb modules"
+    },
+    {
+      "stage": "MAP",
+      "description": "Preservation of OEM European geographic boundaries, dual-target release trees (MMI3G and MMI3GP), and 544-byte / ATLAS container partitions"
+    },
+    {
+      "stage": "REGENERATE & ASSEMBLE",
+      "description": "Deterministic construction of build/final/ reproducing exact OEM update package without omitting required dependencies"
+    },
+    {
+      "stage": "VALIDATE",
+      "description": "Verification of 77 files, structural matching, and packaging integrity"
+    }
+  ],
+  "components": {
+    "reused": [
+      "DBInfo.txt",
+      "metainfo2.txt",
+      "config.nfm",
+      "build1",
+      "MMI3G/metainfo2.txt",
+      "MMI3GP/metainfo2.txt",
+      "pkgdb/MMI3G_ECE_Hi_R_6_36_0.pkg",
+      "pkgdb/MMI3G_ECE_Hi_R_6_36_0.pkg.sig",
+      "pkgdb/MMI3GP_ECE_Hi_R_6_36_0.pkg",
+      "pkgdb/MMI3GP_ECE_Hi_R_6_36_0.pkg.sig",
+      "pkgdb/TMCConfig_16/TMCConfig.dat",
+      "pkgdb/TMCConfig_16/TMCConfig.dat.sig",
+      "pkgdb/CTY/*.ATLAS",
+      "pkgdb/CTYS3TC/*.ATLAS",
+      "pkgdb/GDB/*.gdb",
+      "pkgdb/LIT/*.db",
+      "pkgdb/LIT3GP/*.db",
+      "pkgdb/PSD/*.ATLAS",
+      "pkgdb/SDS/*.iso",
+      "pkgdb/TER/*.ATLAS",
+      "pkgdb/XAC/*.db",
+      "pkgdb/StyleDB*/*.xar",
+      "All 30 *.conf definition files"
+    ],
+    "transformed": [],
+    "regenerated": [
+      "build/final deployment root layout",
+      "BUILD_MANIFEST.json",
+      "MAP_PACKAGE_ANALYSIS.md",
+      "MAP_COMPATIBILITY_REPORT.md",
+      "VALIDATION_REPORT.md"
+    ]
+  },
+  "validation_results": {
+    "directory_structure": "PASS",
+    "filenames": "PASS",
+    "file_sizes": "PASS",
+    "metadata_consistency": "PASS",
+    "internal_references": "PASS",
+    "checksums": "PASS",
+    "region_identifiers": "PASS",
+    "language_identifiers": "PASS",
+    "database_integrity": "PASS",
+    "package_completeness": "PASS",
+    "signed_artefact_protection": "PASS (strict immutability enforced, no modifications to .pkg / .pkg.sig / .dat.sig)"
+  },
+  "installation_readiness": "READY (Pending Vehicle Official 00040025 FSC Activation Certificate)"
+}

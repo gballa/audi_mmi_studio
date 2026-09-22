@@ -1,0 +1,431 @@
+{
+  "package": "8R0051884KL_6.36.0_2023",
+  "files": [
+    {
+      "path": "metainfo2.txt",
+      "size": 1444,
+      "sha256": "670ee7ac2f4f513c526dd3883611a4bc6b9729e0be7666327bb4e8d2b0652da3"
+    },
+    {
+      "path": "build1",
+      "size": 29,
+      "sha256": "a7fdc2ce91921acb12ea7690f8f2e142e2816fefb74aa9673e6eed9be8625a9d"
+    },
+    {
+      "path": "config.nfm",
+      "size": 233,
+      "sha256": "1fb2882dbdd49986b977996ebc68a458d4ccb160ebcca635cb241a25ae281e42"
+    },
+    {
+      "path": "DBInfo.txt",
+      "size": 206,
+      "sha256": "8a416408c0cb36a68a98e4edb8fe47570e4080c3a5f6908ac6ca5403bd9d60fb"
+    },
+    {
+      "path": "MMI3GP/metainfo2.txt",
+      "size": 19383,
+      "sha256": "407be6c8c349109bade24dd6d343ccacc001eda5105b5bccd0373ba46aa14bc7"
+    },
+    {
+      "path": "pkgdb/MMI3G_ECE_Hi_R_6_36_0.pkg",
+      "size": 2019,
+      "sha256": "ad524d4a99d6a646801265bea530bf03f620b21d2867704e1a05fc939ea660f6"
+    },
+    {
+      "path": "pkgdb/MMI3GP_ECE_Hi_R_6_36_0.pkg",
+      "size": 2212,
+      "sha256": "ce80e8a16d642e760ad59f26dbbe88fbb3c91760a61f809ef0e14d2f4df68803"
+    },
+    {
+      "path": "pkgdb/MMI3GP_ECE_Hi_R_6_36_0.pkg.sig",
+      "size": 128,
+      "sha256": "2ecf1d558c25dd96697b4d3cfc60a4699c9557e8d4e0a2408c1d0733b9e6915d"
+    },
+    {
+      "path": "pkgdb/MMI3G_ECE_Hi_R_6_36_0.pkg.sig",
+      "size": 128,
+      "sha256": "b3140f16a07dd8083320a39da1776b182ba97721879334b38a9027c7f8e18af5"
+    },
+    {
+      "path": "pkgdb/PIT/PIT.conf",
+      "size": 474,
+      "sha256": "99a05160923492369c70630e591d19cecb2fd80ad477e12b2bce7279477035ab"
+    },
+    {
+      "path": "pkgdb/PIT/EJ211a.PIT",
+      "size": 8869262,
+      "sha256": "02dd595fcb031f3512d9865403a12950abac2651a43c1ffd48e79ce16524a8ee"
+    },
+    {
+      "path": "pkgdb/GDB/EJ211_v37a.gdb",
+      "size": 2147371105,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/GDB/GDB.conf",
+      "size": 481,
+      "sha256": "253cf37dd02891c07ece2787f69b991d7dbba3db416f47760485d0c043c24e99"
+    },
+    {
+      "path": "pkgdb/StyleDBMMI3GP_ECE_9129/MMI3G_MapArchive_H_06_01.xar",
+      "size": 5727060,
+      "sha256": "273047d5c389a0a245ef4b81e97e09914fd9fc1f79bfb89d542920568a0a64a8"
+    },
+    {
+      "path": "pkgdb/SDS/SDS.conf",
+      "size": 478,
+      "sha256": "0dcf66e1b3dfcb852c926c5246c8d53374e713102bbc00ed8ea522d1fa7b0194"
+    },
+    {
+      "path": "pkgdb/SDS/SDS_Data.iso",
+      "size": 227960832,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/PSD2/APN221EU22093P1664a.5_1.1.ATLAS",
+      "size": 2097146768,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/PSD2/PSD2.conf",
+      "size": 499,
+      "sha256": "be8154f552d02e5db84abfdbb3d4c3f1021f1d184f524ae1098a5f646dfbf964"
+    },
+    {
+      "path": "pkgdb/GDB2/EJ211_v37a.gd2",
+      "size": 1483073869,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/GDB2/GDB2.conf",
+      "size": 482,
+      "sha256": "2a42975b3b4a104fd259c593d1cce0f23e0b512483709e849beb6ed9fbf51ee4"
+    },
+    {
+      "path": "pkgdb/LIT3GP/EJ211Pa_L1.db",
+      "size": 2147364864,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/LIT3GP/LIT3GP.conf",
+      "size": 486,
+      "sha256": "3a1bc7bf296b2b698d766c0dd527c94551729f01c66fbecb5b8469d16a3cc063"
+    },
+    {
+      "path": "pkgdb/LIT/LIT.conf",
+      "size": 480,
+      "sha256": "64fab3f19f80ef697455428eff9d5e2f73637aeb2127b32266a8775729c66325"
+    },
+    {
+      "path": "pkgdb/LIT/EJ211Ga_L1.db",
+      "size": 2147401728,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/NaviPersistence_ALL_3/clearLastCityHistory.xml",
+      "size": 413,
+      "sha256": "41c79854979010b0a6020134db103014ceb98daad435f345f0c25856e0d8c3fd"
+    },
+    {
+      "path": "pkgdb/NaviPersistence_ALL_3/clearLastCityHistory.sh",
+      "size": 783,
+      "sha256": "27f6a03af0b186cc8c89d8927fbb02136439fb3b117fe1971fb96bbc6c2e2bbe"
+    },
+    {
+      "path": "pkgdb/PSD3/APN221EU22093P1664a.5_1.2.ATLAS",
+      "size": 842777616,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/PSD3/PSD3.conf",
+      "size": 498,
+      "sha256": "1df781c698f0cc9dfb89438f22bfe1ee9c3142372629210a0f9d46be6bffc741"
+    },
+    {
+      "path": "pkgdb/LIT3GP2/LIT3GP2.conf",
+      "size": 487,
+      "sha256": "72cb8ab71a54f15e077f860d620276e8c9d16e53e7b551be6289aea8a5caff39"
+    },
+    {
+      "path": "pkgdb/LIT3GP2/EJ211Pa_L2.db",
+      "size": 2147393536,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/LIT2/LIT2.conf",
+      "size": 481,
+      "sha256": "e9cb412e0302fffce07c469af6cff16c2b4cef64ac8ba55fe4a7327482f2e557"
+    },
+    {
+      "path": "pkgdb/LIT2/EJ211Ga_L2.db",
+      "size": 2147383296,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/LIT3GP5/EJ211Pa_L5.db",
+      "size": 1218211840,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/LIT3GP5/LIT3GP5.conf",
+      "size": 487,
+      "sha256": "dd086a911a420e82d7d897264f9865ecac23bc1fc568adf6425e4607bc211da2"
+    },
+    {
+      "path": "pkgdb/PSD/APN221EU22093P1664a.5_1.0.ATLAS",
+      "size": 2097139040,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/PSD/PSD.conf",
+      "size": 498,
+      "sha256": "d292c1bec5b5b71a39a2fcad7092b768a8b92351ef472dbd76a4ad930940aaae"
+    },
+    {
+      "path": "pkgdb/TER2/72_Europe.4_2.1.ATLAS",
+      "size": 214194880,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/TER2/TER2.conf",
+      "size": 488,
+      "sha256": "a558b88758d900aa63e0305e9a1ba0627874acc5afe8ecf56d2751da5c4fbb30"
+    },
+    {
+      "path": "pkgdb/LIT3GP4/LIT3GP4.conf",
+      "size": 487,
+      "sha256": "9669ed80b92b89471b4b42859de40dd551bd13bf5ec47cf09e099b383e636453"
+    },
+    {
+      "path": "pkgdb/LIT3GP4/EJ211Pa_L4.db",
+      "size": 2147395584,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/LIT4/LIT4.conf",
+      "size": 480,
+      "sha256": "5d451f353c45b69d5971587b31ed83b3a9a12a1d7208c087ce26c1a625386f51"
+    },
+    {
+      "path": "pkgdb/LIT4/EJ211Ga_L4.db",
+      "size": 631121920,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/CTYS3TC2/3PN221EU22083P1666a.4_4.1.ATLAS",
+      "size": 561779632,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/CTYS3TC2/CTYS3TC2.conf",
+      "size": 506,
+      "sha256": "e662470c0a9ef27a1d8d8bdb7b6e6f23291cc9c1e796faadcfe9d1effaa225b3"
+    },
+    {
+      "path": "pkgdb/LIT3/LIT3.conf",
+      "size": 481,
+      "sha256": "ee41113c9a7a915f703c76d1ae379fce83dad057b3acb0b1edab0de8e132a306"
+    },
+    {
+      "path": "pkgdb/LIT3/EJ211Ga_L3.db",
+      "size": 2147401728,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/LIT3GP3/LIT3GP3.conf",
+      "size": 487,
+      "sha256": "af2b38d6ae84f2ce9e1b5780848e13b02605f236bdc1f0f371719bb84bd16dce"
+    },
+    {
+      "path": "pkgdb/LIT3GP3/EJ211Pa_L3.db",
+      "size": 2147395584,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/TMC3GP/info.xml",
+      "size": 2644,
+      "sha256": "0ebd7968bad41330138b0c8ba52bb1abbe4c7d887247f47d39dc4b0dc920ea31"
+    },
+    {
+      "path": "pkgdb/TMC3GP/TMC3GP.conf",
+      "size": 487,
+      "sha256": "e80985fd24cd1d012d4bbc50480b9694775776860432b07063464fddfc06b926"
+    },
+    {
+      "path": "pkgdb/TMC3GP/kN221EUx01t01.db",
+      "size": 18790400,
+      "sha256": "1b0eac65ce06c46805f837f06514832d0a793145e87951f9b37998787f12d8e7"
+    },
+    {
+      "path": "pkgdb/LABEL/Label.DB",
+      "size": 2048,
+      "sha256": "9acb20e2afd2e2589e0d867fc2cc9c4b6d05338130c1cccb7d06d472bdbef672"
+    },
+    {
+      "path": "pkgdb/LABEL/LABEL.conf",
+      "size": 473,
+      "sha256": "a528cf5ffdff5a12e1bc6ff2ced5e558e93933c675f3444f5d11788061045a84"
+    },
+    {
+      "path": "pkgdb/SDS3GP/SDS3GP.conf",
+      "size": 481,
+      "sha256": "5e489005022e728f4fa4501f1b6d4a21e3221513d327b75c0ee3f0cc2bfc9a55"
+    },
+    {
+      "path": "pkgdb/SDS3GP/SDS_Data.iso",
+      "size": 263061504,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/TER/72_Europe.4_2.0.ATLAS",
+      "size": 1999994640,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/TER/TER.conf",
+      "size": 488,
+      "sha256": "7c4b4f6dd3d031c0f5d8189678a5e5f94d1955eb2b3db2100d3df2300d3d8c77"
+    },
+    {
+      "path": "pkgdb/CTYS3TC/CTYS3TC.conf",
+      "size": 506,
+      "sha256": "cc7973a7021c899489b1ba9a36ea8b2880908cd35407e8a29bd3b3855dfbe809"
+    },
+    {
+      "path": "pkgdb/CTYS3TC/3PN221EU22083P1666a.4_4.0.ATLAS",
+      "size": 2097151104,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/CTY3/3PN221EU22083H1665a.4_2.2.ATLAS",
+      "size": 1000327888,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/CTY3/CTY3.conf",
+      "size": 499,
+      "sha256": "e304e9d75af4dda3e41778c436aa4fdfd7f20dc9c9a38753f346789a236ffbb1"
+    },
+    {
+      "path": "pkgdb/CTY2/3PN221EU22083H1665a.4_2.1.ATLAS",
+      "size": 2097137344,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/CTY2/CTY2.conf",
+      "size": 499,
+      "sha256": "d5db1ea5c58ded534ee10b5ffdbbb1d0dd9a8986a07bd47c05e0584d40c75f2d"
+    },
+    {
+      "path": "pkgdb/CTY/3PN221EU22083H1665a.4_2.0.ATLAS",
+      "size": 2097136016,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/CTY/CTY.conf",
+      "size": 498,
+      "sha256": "7330f24488b1190e8f495b4f9b2fef1c9f728eb1c82900a9c3c67a32dc3f85fc"
+    },
+    {
+      "path": "pkgdb/TMCConfig_16/TMCConfig.dat.sig",
+      "size": 128,
+      "sha256": "030f5e42f7da1f78a53706a4b4b6eb3ddd6a0a4c51ef77c301b5c94a527bbe23"
+    },
+    {
+      "path": "pkgdb/TMCConfig_16/TMCConfig.dat",
+      "size": 5758,
+      "sha256": "12d671006b4657201dedc202604c47936823c70da3de60baaf3aa3b06d515f43"
+    },
+    {
+      "path": "pkgdb/XAC3/XAC3.conf",
+      "size": 482,
+      "sha256": "71638b439d4ec40a28e246ff92ce36bde8a98665497b9bfbaf0de0cdde42a526"
+    },
+    {
+      "path": "pkgdb/XAC3/kN221EUx01_2.db",
+      "size": 254181376,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/StyleDBMMI3G_ECE_94/MMI3G_MapArchive_H_04_01.xar",
+      "size": 4932124,
+      "sha256": "0509531a2314a5a5203c4b9163423bbee84473f4c12f1e9655e0b506df9e9871"
+    },
+    {
+      "path": "pkgdb/XAC/kN221EUx01_0.db",
+      "size": 2143248384,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/XAC/XAC.conf",
+      "size": 482,
+      "sha256": "fc792d1c0e44b5ea02cb01c7cec9f19d8b29a2613ef490ad6f4cfa26816d8538"
+    },
+    {
+      "path": "pkgdb/TMC/kN221EUx01t01.db",
+      "size": 7022592,
+      "sha256": "6729ff190a0c7aecc2fc60f446c711edb8520eb373d45d41deb1d62661708a44"
+    },
+    {
+      "path": "pkgdb/TMC/TMC.conf",
+      "size": 480,
+      "sha256": "6cb5626c992412e399a208953c733101b630ad444bc29b72449e01100e1d676c"
+    },
+    {
+      "path": "pkgdb/XAC2/kN221EUx01_1.db",
+      "size": 2142963712,
+      "sha256": "LARGE_FILE_NOT_HASHED_IN_INVENTORY"
+    },
+    {
+      "path": "pkgdb/XAC2/XAC2.conf",
+      "size": 483,
+      "sha256": "4cba7d6d2945c7f50584433127800d8b005d9ec8397d49af9ec3f370ff44befb"
+    },
+    {
+      "path": "MMI3G/metainfo2.txt",
+      "size": 16268,
+      "sha256": "5ef9c86d7e55cc7ac0d999d90a48524eb53c5ce4d958d0746734ba21710d8f83"
+    }
+  ],
+  "total_size": 40693125670,
+  "directories": [
+    "MMI3GP",
+    "pkgdb",
+    "MMI3G",
+    "pkgdb/PIT",
+    "pkgdb/GDB",
+    "pkgdb/StyleDBMMI3GP_ECE_9129",
+    "pkgdb/SDS",
+    "pkgdb/PSD2",
+    "pkgdb/GDB2",
+    "pkgdb/LIT3GP",
+    "pkgdb/LIT",
+    "pkgdb/NaviPersistence_ALL_3",
+    "pkgdb/PSD3",
+    "pkgdb/LIT3GP2",
+    "pkgdb/LIT2",
+    "pkgdb/LIT3GP5",
+    "pkgdb/PSD",
+    "pkgdb/TER2",
+    "pkgdb/LIT3GP4",
+    "pkgdb/LIT4",
+    "pkgdb/CTYS3TC2",
+    "pkgdb/LIT3",
+    "pkgdb/LIT3GP3",
+    "pkgdb/TMC3GP",
+    "pkgdb/LABEL",
+    "pkgdb/SDS3GP",
+    "pkgdb/TER",
+    "pkgdb/CTYS3TC",
+    "pkgdb/CTY3",
+    "pkgdb/CTY2",
+    "pkgdb/CTY",
+    "pkgdb/TMCConfig_16",
+    "pkgdb/XAC3",
+    "pkgdb/StyleDBMMI3G_ECE_94",
+    "pkgdb/XAC",
+    "pkgdb/TMC",
+    "pkgdb/XAC2"
+  ],
+  "file_count": 77
+}

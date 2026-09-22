@@ -10,7 +10,7 @@ use commands::{
     cmd_hexdump, cmd_inspect, cmd_plugins_inspect, cmd_plugins_list, cmd_plugins_verify,
     cmd_rebuild, cmd_recipe_apply, cmd_recipe_rebase, cmd_simulate_update, cmd_stock_recovery,
     cmd_strings_inspect, cmd_strings_overflow, cmd_validate, cmd_verify_rebuild,
-    cmd_maps_compile, cmd_firmware_bundle, cmd_flash, cmd_obd, cmd_sanitize_media,
+    cmd_maps_compile, cmd_maps_build, cmd_firmware_bundle, cmd_flash, cmd_obd, cmd_sanitize_media,
     cmd_script_encode, cmd_script_decode,
 };
 
@@ -383,6 +383,30 @@ enum MapsCommands {
         #[arg(long)]
         json: bool,
     },
+    /// End-to-end open geodata build pipeline adhering to OEM reference architecture
+    Build {
+        /// Source directory containing open geodata (.pbf, .xml, .geojson)
+        #[arg(long, default_value = "data/sources")]
+        source: PathBuf,
+        /// Coverage manifest file (.json)
+        #[arg(long, default_value = "data/manifests/albania_manifest.json")]
+        coverage: PathBuf,
+        /// OEM reference package directory
+        #[arg(long, default_value = "originals/8R0051884KL_6.36.0_2023")]
+        reference: PathBuf,
+        /// Target output directory
+        #[arg(long, default_value = "build/final")]
+        output: PathBuf,
+        /// Clean build directory prior to generation
+        #[arg(long, default_value_t = true)]
+        clean: bool,
+        /// Execute full multi-tier validation upon build completion
+        #[arg(long, default_value_t = true)]
+        validate: bool,
+        /// Output formatted as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -662,6 +686,23 @@ fn main() {
                 release,
                 *enable_gmp,
                 gmp_api_key.as_deref(),
+                *json,
+            ),
+            MapsCommands::Build {
+                source,
+                coverage,
+                reference,
+                output,
+                clean,
+                validate,
+                json,
+            } => cmd_maps_build(
+                source,
+                coverage,
+                reference,
+                output,
+                *clean,
+                *validate,
                 *json,
             ),
         },

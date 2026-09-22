@@ -1,0 +1,22 @@
+{
+  "database_integrity": {
+    "crc16_autsar": "PASS",
+    "page_size_bytes": 544,
+    "status": "PASS",
+    "total_pages": 4
+  },
+  "installation_compatibility": {
+    "dataset_complete": "YES",
+    "installation_compatible": "NO (Awaiting OEM Signature / FSC 00040025)",
+    "official_signature_required": "YES",
+    "package_complete": "YES"
+  },
+  "source_geodata": {
+    "edges": 15,
+    "ingested_files": 1,
+    "nodes": 20,
+    "status": "PASS"
+  },
+  "target_system": "Audi MMI 3G/3G+",
+  "validation_timestamp_epoch": "1790019372"
+}

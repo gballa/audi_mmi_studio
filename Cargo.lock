@@ -587,6 +587,7 @@ dependencies = [
  "mmi-assets",
  "mmi-core",
  "mmi-formats",
+ "rusqlite",
  "serde",
  "serde_json",
  "sha2",

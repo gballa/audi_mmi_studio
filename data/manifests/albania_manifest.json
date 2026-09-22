@@ -1,0 +1,25 @@
+{
+  "dataset_id": "osm_albania_western_balkans_2026",
+  "name": "Albania & Western Balkans OpenStreetMap Dataset",
+  "source_provider": "OpenStreetMap / Geofabrik GmbH",
+  "license": "Open Data Commons Open Database License (ODbL) 1.0",
+  "attribution": "© OpenStreetMap contributors (https://www.openstreetmap.org/copyright)",
+  "download_url": "https://download.geofabrik.de/europe/albania-latest.osm.pbf",
+  "local_file": "data/sources/albania_western_balkans.geojson",
+  "format": "GeoJSON",
+  "target_profile": "AL",
+  "bounding_box": {
+    "min_lat": 39.5,
+    "min_lon": 19.0,
+    "max_lat": 42.8,
+    "max_lon": 21.2
+  },
+  "extracted_at": "2026-09-21T00:00:00Z",
+  "primary_road_corridors": [
+    "A1: Thumanë - Kashar Expressway",
+    "Rruga e Arbrit: Tirana - Klos via Murriz Tunnel",
+    "SH8: Llogara Tunnel Bypass",
+    "SH1: Shkodër - Hani i Hotit Cross-Border Link",
+    "SH3: Tirana - Elbasan Motorway"
+  ]
+}

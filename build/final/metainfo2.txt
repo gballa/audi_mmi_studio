@@ -1,0 +1,27 @@
+[common]
+release = "2026_ECE"
+vendor = "Harman/Becker"
+sourceVersion = "K0942_4"
+compatibleTrains = "HN+R_EU_AU_K0942_4,HN+R_EU_AU_P0922,HN+_EU_AU3G_K0900"
+variant = "9411"
+
+[HBNavDB]
+path = "HBNavDB"
+version = "2026_ECE"
+PackageType = "NavigationDatabase"
+Checksum = "e28d6643b4a9becb631c02a22b90e24b8d580e99"
+Description = "2026 European Road Network & FLDB Physical Page Container"
+
+[MU9411]
+path = "MU9411"
+version = "0942"
+PackageType = "Application"
+Checksum = "721ffeceb4a1c3b17fe8f11353ca527a9d0c4c08"
+Description = "MainUnit Application with Albanian Localization"
+
+[MapStyles]
+path = "MapStyles"
+version = "2026.1"
+PackageType = "CartographyStyles"
+Checksum = "eeb267a4350d542adc23d6e9cdc6ccfaaba6e9f6"
+Description = "Day and Night Map Shaders"

@@ -1,0 +1,126 @@
+{
+  "type": "FeatureCollection",
+  "name": "Albania_Western_Balkans_2026_OpenGeodata",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": 10001,
+      "properties": {
+        "highway": "motorway",
+        "ref": "A1",
+        "name": "Autostrada Thumanë - Kashar",
+        "name:sq": "Autostrada Thumanë - Kashar",
+        "maxspeed": "130",
+        "lanes": "4",
+        "turn:lanes": "through;through|through;right",
+        "motor_vehicle": "yes",
+        "toll": "yes"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [19.6800, 41.5600],
+          [19.6950, 41.5200],
+          [19.7100, 41.4800],
+          [19.7250, 41.4200],
+          [19.7400, 41.3800]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 10002,
+      "properties": {
+        "highway": "trunk",
+        "ref": "SH8",
+        "name": "Tuneli i Llogarasë",
+        "name:sq": "Tuneli i Llogarasë",
+        "maxspeed": "80",
+        "lanes": "2",
+        "tunnel": "yes",
+        "motor_vehicle": "yes"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [19.5800, 40.2100],
+          [19.5850, 40.1900],
+          [19.5900, 40.1700],
+          [19.5950, 40.1500]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 10003,
+      "properties": {
+        "highway": "primary",
+        "ref": "SH1",
+        "name": "Rruga Shkodër - Hani i Hotit (Kufiri ME)",
+        "name:sq": "Rruga Shkodër - Hani i Hotit",
+        "maxspeed": "90",
+        "lanes": "2",
+        "motor_vehicle": "yes"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [19.5100, 42.0600],
+          [19.4800, 42.1500],
+          [19.4500, 42.2500],
+          [19.4167, 42.3333]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 10004,
+      "properties": {
+        "highway": "motorway",
+        "ref": "A3",
+        "name": "Autostrada Tiranë - Elbasan",
+        "name:sq": "Autostrada Tiranë - Elbasan",
+        "maxspeed": "110",
+        "lanes": "4",
+        "tunnel": "yes",
+        "motor_vehicle": "yes"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [19.8200, 41.3100],
+          [19.8900, 41.2500],
+          [19.9800, 41.1800],
+          [20.0800, 41.1100]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 10005,
+      "properties": {
+        "highway": "primary",
+        "ref": "SH4",
+        "name": "Rruga Kakavijë (Kufiri GR)",
+        "name:sq": "Rruga Kakavijë",
+        "maxspeed": "80",
+        "lanes": "2",
+        "motor_vehicle": "yes"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [20.1500, 40.0800],
+          [20.2500, 40.0000],
+          [20.3592, 39.9133]
+        ]
+      }
+    }
+  ]
+}

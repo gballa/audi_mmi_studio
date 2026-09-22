@@ -1,0 +1,12 @@
+{
+  "created_at_epoch": 1790019372,
+  "edges": 15,
+  "nodes": 20,
+  "pois": 0,
+  "release": "2026_ECE",
+  "target_platform": "Audi MMI 3G High / Plus [HN+]",
+  "total_bytes": 2176,
+  "total_pages": 4,
+  "verification_status": "BUILD READY — DEPLOYMENT NOT VERIFIED (§14.9 Safety Policy)",
+  "volumes": 1
+}

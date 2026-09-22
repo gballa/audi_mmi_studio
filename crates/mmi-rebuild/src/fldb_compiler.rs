@@ -135,6 +135,38 @@ pub fn compile_fldb_database(dataset: &IrDataset) -> Vec<u8> {
         pages.push(create_fldb_page(page_idx, &edge_buffer, FLDB_MAGIC));
     }
 
+    // POI & Spatial Index Pages
+    let mut poi_buffer = Vec::new();
+    for poi in &dataset.pois {
+        poi_buffer.extend_from_slice(&poi.id.to_le_bytes());
+        poi_buffer.extend_from_slice(&poi.x_mercator.to_le_bytes());
+        poi_buffer.extend_from_slice(&poi.y_mercator.to_le_bytes());
+        let cat_bytes = poi.category.as_bytes();
+        let cat_len = (cat_bytes.len().min(16)) as u8;
+        poi_buffer.push(cat_len);
+        poi_buffer.extend_from_slice(&cat_bytes[..cat_len as usize]);
+        // Pad category to 16 bytes
+        for _ in cat_len..16 {
+            poi_buffer.push(0);
+        }
+        let name_bytes = poi.name.as_bytes();
+        let name_len = (name_bytes.len().min(32)) as u8;
+        poi_buffer.push(name_len);
+        poi_buffer.extend_from_slice(&name_bytes[..name_len as usize]);
+        for _ in name_len..32 {
+            poi_buffer.push(0);
+        }
+        if poi_buffer.len() >= FLDB_PAYLOAD_SIZE {
+            let page_idx = pages.len() as u32;
+            pages.push(create_fldb_page(page_idx, &poi_buffer[..FLDB_PAYLOAD_SIZE], FLDB_MAGIC));
+            poi_buffer.drain(..FLDB_PAYLOAD_SIZE);
+        }
+    }
+    if !poi_buffer.is_empty() {
+        let page_idx = pages.len() as u32;
+        pages.push(create_fldb_page(page_idx, &poi_buffer, FLDB_MAGIC));
+    }
+
     // Flatten pages into continuous buffer
     let mut database_bytes = Vec::with_capacity(pages.len() * FLDB_PAGE_SIZE);
     for page in pages {
@@ -237,6 +269,44 @@ impl FldbCompilerPipeline {
         // 3. Write auxiliary packages
         let patch_pkg = format!("MMI3G_NAV_PATCH_{}_NODES_{}", release, dataset.nodes.len());
         fs::write(hbnavdb_dir.join(format!("{}_patch.pkg", release.to_lowercase())), patch_pkg.as_bytes())?;
+
+        // 3b. Generate Harman/Becker GDB (0xDEADBEEF v37) routing database
+        let mut gdb_bytes = Vec::new();
+        gdb_bytes.extend_from_slice(&GDB_MAGIC.to_be_bytes());
+        gdb_bytes.extend_from_slice(&(GDB_VERSION as u32).to_be_bytes());
+        gdb_bytes.extend_from_slice(&(dataset.nodes.len() as u32).to_be_bytes());
+        for node in &dataset.nodes {
+            gdb_bytes.extend_from_slice(&node.node_id.to_be_bytes());
+            gdb_bytes.extend_from_slice(&node.x_coord.to_be_bytes());
+            gdb_bytes.extend_from_slice(&node.y_coord.to_be_bytes());
+        }
+        for edge in &dataset.edges {
+            gdb_bytes.extend_from_slice(&edge.edge_id.to_be_bytes());
+            gdb_bytes.extend_from_slice(&edge.from_node.to_be_bytes());
+            gdb_bytes.extend_from_slice(&edge.to_node.to_be_bytes());
+            gdb_bytes.extend_from_slice(&edge.length_dm.to_be_bytes());
+        }
+        fs::write(hbnavdb_dir.join("EJ211_v37a.gdb"), &gdb_bytes)?;
+
+        // 3c. Generate SQLite Geographic.gdb with R*Tree indexing
+        let gdb_sqlite_path = hbnavdb_dir.join("Geographic.gdb");
+        if let Ok(conn) = rusqlite::Connection::open(&gdb_sqlite_path) {
+            let _ = conn.execute_batch(
+                "CREATE TABLE metadata (key TEXT PRIMARY KEY, value TEXT);
+                 CREATE TABLE poi_nodes (id INTEGER PRIMARY KEY, name TEXT, category TEXT, lat REAL, lon REAL);
+                 CREATE VIRTUAL TABLE poi_index USING rtree(id, min_lat, max_lat, min_lon, max_lon);"
+            );
+            for poi in &dataset.pois {
+                let _ = conn.execute(
+                    "INSERT OR REPLACE INTO poi_nodes (id, name, category, lat, lon) VALUES (?1, ?2, ?3, ?4, ?5)",
+                    rusqlite::params![poi.id, poi.name, poi.category, poi.lat, poi.lon],
+                );
+                let _ = conn.execute(
+                    "INSERT OR REPLACE INTO poi_index (id, min_lat, max_lat, min_lon, max_lon) VALUES (?1, ?2, ?3, ?4, ?5)",
+                    rusqlite::params![poi.id, poi.lat, poi.lat, poi.lon, poi.lon],
+                );
+            }
+        }
 
         // 4. Write Albanian strings catalog
         let sq_al_catalog = serde_json::json!({
