@@ -90,49 +90,72 @@ The system converts OpenStreetMap (OSM) vector networks and Google Maps Platform
 | 30 | Compilation Telemetry | Real-time progress bars and stage logs | M4 | survey |
 | 31 | 100% E2E Test Pass | Opaque-box Tier 1-4 tests passing cleanly | Final | survey |
 | 32 | Adversarial Hardening | Tier 5 white-box challenger coverage hardening | Final | survey |
+| 33 | ISO-TP Multi-Frame Transport | Segmentation & reassembly (SF, FF, CF, FC) up to 4095B | M5 | survey |
+| 34 | UDS Diagnostic Services | Services 0x10, 0x22, 0x2E, 0x27, 0x14, 0x3E | M5 | survey |
+| 35 | CAN & Serial Diagnostics Adapters | SocketCAN, Serial ELM327/STN1170, and LoopbackSimulator | M5 | survey |
+| 36 | SVM 03276 & 03175 Fault Clearance | Channel 15 XOR 51666 cipher & green menu rehash workflows | M5 | survey |
+| 37 | CLI obd Diagnostics Interrogation | Device selection, scan, fault clear, structured JSON | M5 | survey |
+| 38 | GDB v37 Master Header & Topology | Magic 0xDEADBEEF, version 37, node & link tables | M6 | survey |
+| 39 | FRC 0-7 Layers & Statutory Speeds | Road class partitioning, turn restrictions, speed fallback | M6 | survey |
+| 40 | Morton Z-Curve Spatial Index | 32-bit fixed-point spatial tile indexing | M6 | survey |
+| 41 | 544-byte Paging & CRC-16 Checksum | 16B header, 512B payload, CRC-16 0x1021, trailer 0x55AA55AA | M6 | survey |
+| 42 | GDB Multi-Volume Partitioning | 2 GiB FAT32 bounds (EJ211_v37a.gdb, .gd2, .conf) | M6 | survey |
+| 43 | CLI maps build GDB Integration | Integrates GDB v37 compiler into maps build pipeline | M6 | survey |
+| 44 | QNX Boot Header & SH-4 Target | Machine 0x0006, startup_header, image_header | M7 | survey |
+| 45 | QNX IFS Inodes & Compression | image_dirent, image_attr, 4KB page align, RAW/ZLIB/LZO | M7 | survey |
+| 46 | Bit-Accurate QSSL_F3S Filesystem | unit_info_s, unit_logi_s, boot_info_s, /mnt/efs-system | M7 | survey |
+| 47 | NOR Flash Hard Partition Limits | Fail fast if ifs-root > 45,875,200B or efs-system > 40,697,856B | M7 | survey |
+| 48 | CLI firmware package Integration | Real IFS/F3S builders in firmware bundle & metainfo2 | M7 | survey |
+| 49 | Unified CLI & Desktop Surface | Unified commands (obd, maps build, firmware package) & UI | M8 | survey |
+| 50 | 100% Offline Workspace Verification| All existing 132+ and new tests pass, verify-workstation.sh | Final | survey |
 
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| M1 | Geodata Ingestion & Enrichment | OSM ingestion, FRC classification, lane guidance, turn restrictions, speed limits, Google Maps Places/Geocoding enrichment, WGS84 fixed-point projection, IR data models, regional profiles | none | IN_PROGRESS |
-| M2 | Native FLDB Compiler & Spatial Indexer | 544-byte FLDB pages, CRC-16 headers, multi-volume 2 GiB partitioner, R-Tree spatial index, GDB routing graph, SQLite Geographic.gdb, MapStyles .xar | M1 | PLANNED |
-| M3 | SD Media Packaging & SVM Error Prevention | SD root layout, metainfo2.txt generator with SHA-1, SVM 03175/03276 adaptation handling, stock_recovery.sh, simulate-update 6/6 steps pass | M2 | PLANNED |
-| M4 | Workstation GUI & CLI Integration | mmi-studio-cli maps compile, 🗺️ 2026 Map Studio desktop integration, 800x480 preview canvas, layer toggles, compilation telemetry | M3 | PLANNED |
-| Final | Final E2E Test Pass & Adversarial Hardening | 100% pass across E2E test suite (Tiers 1-4), in-car simulation verification, and Tier 5 adversarial hardening | M1, M2, M3, M4 | PLANNED |
+| M1 | Geodata Ingestion & Enrichment | OSM ingestion, FRC classification, lane guidance, turn restrictions, speed limits, Google Maps Places/Geocoding enrichment, WGS84 fixed-point projection, IR data models, regional profiles | none | DONE |
+| M2 | Native FLDB Compiler & Spatial Indexer | 544-byte FLDB pages, CRC-16 headers, multi-volume 2 GiB partitioner, R-Tree spatial index, GDB routing graph, SQLite Geographic.gdb, MapStyles .xar | M1 | DONE |
+| M3 | SD Media Packaging & SVM Error Prevention | SD root layout, metainfo2.txt generator with SHA-1, SVM 03175/03276 adaptation handling, stock_recovery.sh, simulate-update 6/6 steps pass | M2 | DONE |
+| M4 | Workstation GUI & CLI Integration | mmi-studio-cli maps compile, 🗺️ 2026 Map Studio desktop integration, 800x480 preview canvas, layer toggles, compilation telemetry | M3 | DONE |
+| M5 | Automotive UDS & CAN Diagnostics Engine | ISO-TP framing (SF, FF, CF, FC <=4095B), UDS services (0x10, 0x22, 0x2E, 0x27, 0x14, 0x3E), SocketCAN & Serial ELM327/STN1170 + LoopbackSimulator, SVM 03276 & 03175 fault clearance, CLI `obd` command | none | IN_PROGRESS |
+| M6 | Harman/Becker GDB v37 Compiler | GDB v37 binary format (0xDEADBEEF, v37), FRC 0-7 layers, turn restrictions, statutory speeds, Morton Z-curve, 544-byte pages (CRC-16 0x1021, trailer 0x55AA55AA), 2 GiB multi-volume partitioner, CLI `maps build` | none | IN_PROGRESS |
+| M7 | Bit-Accurate QNX IFS & F3S Synthesis | QNX Neutrino SH-4 (0x0006) IFS builder, startup header, inodes, compression, QSSL_F3S flash filesystem, hard partition bounds (<=43.75MB, <=38.80MB), CLI `firmware package` | none | IN_PROGRESS |
+| M8 | Unified CLI, Desktop Integration & Final Verification | CLI integration, desktop UI panels, 100% offline verification across workspace, verify-workstation.sh | M5, M6, M7 | PLANNED |
+| Final | Final E2E Test Pass & Adversarial Hardening | 100% pass across E2E test suite (Tiers 1-4), verify-workstation.sh, and Tier 5 adversarial hardening | M5, M6, M7, M8 | PLANNED |
 
 ## Interface Contracts
-### Geodata Ingestion (M1) ↔ FLDB Compiler (M2)
-- Input: `IrDataset` struct containing:
-  - `nodes: Vec<IrNode>`: 32-bit fixed-point coordinates (`x_coord: i32`, `y_coord: i32`, `elevation_m: i16`, `junction_flags: u8`).
-  - `edges: Vec<IrEdge>`: (`edge_id: u32`, `from_node: u32`, `to_node: u32`, `length_dm: u32`, `frc: u8`, `speed_forward: u8`, `speed_reverse: u8`, `lane_count: u8`, `turn_lane_mask: u16`, `geometry: Vec<(i32, i32)>`).
-  - `restrictions: Vec<IrTurnRestriction>`: (`from_edge: u32`, `via_node: u32`, `to_edge: u32`, `restriction_type: u8`, `penalty_s: u16`).
-  - `pois: Vec<IrPoi>`: (`id: u32`, `name: String`, `category: String`, `lat: f64`, `lon: f64`, `brand: Option<String>`, `power_kw: Option<f32>`, `connectors: Vec<String>`).
-- Invariant: All coordinates fixed-point scaled by $2^{31} - 1$ over $[ -180, 180 ]$ and $[ -90, 90 ]$.
+### Diagnostics Engine (M5) ↔ CLI & Desktop (M8)
+- Crate: `crates/mmi-diagnostics`
+- Interfaces:
+  - `CanAdapter` trait: `fn send(&mut self, frame: &CanFrame) -> Result<(), DiagError>`, `fn receive(&mut self, timeout: Duration) -> Result<CanFrame, DiagError>`.
+  - `IsoTpTransport`: `fn send_payload(&mut self, payload: &[u8]) -> Result<(), DiagError>`, `fn receive_payload(&mut self, timeout: Duration) -> Result<Vec<u8>, DiagError>`.
+  - `UdsClient`: `fn session_control(&mut self, session_type: u8) -> Result<Vec<u8>, DiagError>`, `fn read_did(&mut self, did: u16) -> Result<Vec<u8>, DiagError>`, `fn write_did(&mut self, did: u16, data: &[u8]) -> Result<(), DiagError>`, `fn security_access(&mut self, level: u8, key: &[u8]) -> Result<(), DiagError>`, `fn clear_dtc(&mut self, group: u32) -> Result<(), DiagError>`, `fn tester_present(&mut self) -> Result<(), DiagError>`.
+  - SVM Clearance: `fn solve_svm_03276(challenge: u32) -> u32` (XOR 51666 / 0xC9D2), `fn solve_svm_03175() -> (u32, u32, bool)`.
+  - CLI Output: `cmd_obd(port, baud, solve_svm, enable_gem, dry_run, as_json)`.
 
-### FLDB Compiler (M2) ↔ SD Media Packager (M3)
-- Output layout in `output_stage/`:
-  - `HBNavDB/nav_data.db`: FLDB 544-byte pages (`magic: FLDB`, `page_size: 544`, `root_page: 1`, CRC-16 CCITT `0x1021`, trailer `0x55AA55AA`).
-  - `HBNavDB/*.pkg`: Multi-volume database chunks (each <= 2,147,483,647 bytes).
-  - `HBNavDB/Geographic.gdb`: SQLite 3 database with `pois`, `categories`, `cities`, `streets`, and `poi_spatial_idx` R*Tree.
-  - `MapStyles/styles_day.xar` & `styles_night.xar`: Valid `rax\0` archives with day/night mapstyle XML and textures.
+### GDB v37 Compiler (M6) ↔ Maps Pipeline (M8)
+- Crate: `crates/mmi-formats/src/hb_gdb.rs`, `crates/mmi-rebuild/src/gdb_compiler.rs`
+- Interfaces:
+  - `HbGdbMasterHeader`: `magic: 0xDEADBEEF`, `version: 37`, `page_size: 544`, `page_count: u32`, `frc_offsets: [u32; 8]`, `morton_root: u32`.
+  - Physical Page: 16-byte header (`page_id: u32`, `crc16: u16`, `flags: u16`, `payload_len: u16`, `reserved: [u8; 6]`), 512-byte payload, trailer `0x55AA55AA`.
+  - `GdbCompiler`: `fn compile(&self, dataset: &IrDataset, output_dir: &Path) -> Result<GdbCompilationReport, FormatError>`.
+  - Multi-Volume Output: `EJ211_v37a.gdb` (<= 2,147,483,647 B), `EJ211_v37a.gd2`, `.conf`.
 
-### SD Media Packager (M3) ↔ CLI/GUI & Simulation (M4 & Final)
-- SD Media Root:
-  - `metainfo2.txt`: Valid INI format, section `[common]` with `release = "2026_ECE"`, sections `[HBNavDB]`, `[MU9411]`, `[MapStyles]`, valid 40-char SHA-1 checksums.
-  - `stock_recovery.sh`: Executable POSIX shell script remounting `/mnt/efs-system` rw, restoring stock baseline, syncing flash, and rebooting.
-  - `build_manifest.json`: Cryptographic bill of materials.
-- Flashing Simulation:
-  - `mmi-studio-cli simulate-update <media_dir>` returns `overall_success: true`, `steps_successful: 6`, `steps_total: 6`, `final_state: UpdateState::Completed`.
+### QNX Filesystem Engine (M7) ↔ Firmware Packager (M8)
+- Crate: `crates/mmi-formats/src/qnx_ifs.rs`, `crates/mmi-formats/src/qnx_efs.rs`, `crates/mmi-rebuild/src/firmware_bundle.rs`
+- Interfaces:
+  - `QnxIfsBuilder`: `fn new(machine_type: 0x0006) -> Self`, `fn add_file(&mut self, path: &str, data: &[u8], mode: u32, compression: CompressionType) -> &mut Self`, `fn build(&self) -> Result<Vec<u8>, FormatError>`. Enforce max size 45,875,200 bytes.
+  - `QnxEfsBuilder`: `fn new(unit_size: 262144, num_units: 148, mount_point: "/mnt/efs-system") -> Self`, `fn add_file(&mut self, path: &str, data: &[u8], mode: u32) -> &mut Self`, `fn build(&self) -> Result<Vec<u8>, FormatError>`. Enforce max size 40,697,856 bytes.
+  - `FirmwareBundle`: writes `MU9411/ifs-root.ifs` and `MU9411/efs-system.efs`, verifies sizes against NOR flash limits, computes 512KB CRC32 blocks in `metainfo2.txt`.
 
 ## Code Layout
-- `crates/mmi-formats/src/hb_navdb.rs`: FLDB physical page generator and serializer.
-- `crates/mmi-formats/src/hb_gdb.rs`: GDB version 37 routing graph serializer.
-- `crates/mmi-formats/src/geographic_gdb.rs`: SQLite Geographic.gdb schema and builder.
-- `crates/mmi-formats/src/mapstyle_xar.rs`: MapStyles `.xar` day/night packager.
-- `crates/mmi-rebuild/src/osm_ingest.rs`: OSM PBF ingestion, lane topology, and turn restrictions.
-- `crates/mmi-rebuild/src/gmp_enrich.rs`: Google Maps Platform Places API (New) & Geocoding API client.
-- `crates/mmi-rebuild/src/fldb_compiler.rs`: High-level multi-volume compiler and spatial indexer.
-- `crates/mmi-media/src/sd_packager.rs`: SD media packager, metainfo2 generator, SVM adaptation, and recovery scripts.
-- `apps/mmi-studio-cli/src/commands/maps.rs`: CLI subcommand `maps compile`.
-- `apps/mmi-studio-desktop/src/components/MapStudio.tsx`: Desktop Map Studio UI integration.
+- `crates/mmi-diagnostics/`: New crate for ISO-TP transport, UDS client, SocketCAN, Serial ELM, and LoopbackSimulator.
+- `crates/mmi-formats/src/hb_gdb.rs`: GDB version 37 binary database serializer and 544-byte physical page engine.
+- `crates/mmi-formats/src/qnx_ifs.rs`: QNX Neutrino SH-4 bootable IFS generator with 64-byte startup headers and directory inodes.
+- `crates/mmi-formats/src/qnx_efs.rs`: QNX F3S flash filesystem generator (`QSSL_F3S`) with erase units and mount points.
+- `crates/mmi-rebuild/src/gdb_compiler.rs`: High-level GDB v37 multi-volume routing graph compiler.
+- `crates/mmi-rebuild/src/firmware_bundle.rs`: Firmware packager integrating IFS/F3S builders and enforcing NOR flash limits.
+- `apps/mmi-studio-cli/src/commands/obd.rs`: Expanded OBD / UDS diagnostic CLI command.
+- `apps/mmi-studio-cli/src/commands/maps.rs`: Maps build command integrating GDB v37 compiler.
+- `apps/mmi-studio-cli/src/commands/firmware.rs`: Firmware package command integrating IFS/F3S builders.
 - `tests/e2e/`: Opaque-box E2E test suites (Tiers 1-4).
+

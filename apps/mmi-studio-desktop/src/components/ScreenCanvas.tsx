@@ -26,6 +26,7 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
   const [activeSubmenuRow, setActiveSubmenuRow] = useState<'engine' | 'steering' | 'suspension'>('steering');
   const [openDropdownRow, setOpenDropdownRow] = useState<'engine' | 'steering' | 'suspension' | null>(null);
   const [navViewMode, setNavViewMode] = useState<'perspective' | 'interactive_vector'>('interactive_vector');
+  const [navPaletteMode, setNavPaletteMode] = useState<'day' | 'night'>('night');
   const [inspectModalElement, setInspectModalElement] = useState<string | null>(null);
 
   // 3D Interactive Vehicle Chassis State (Phase 2)
@@ -1082,6 +1083,18 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
                 >
                   2026 Vector Map
                 </button>
+                <div className="w-[1px] h-3 bg-slate-700 mx-0.5" />
+                <button
+                  type="button"
+                  onClick={() => setNavPaletteMode(navPaletteMode === 'night' ? 'day' : 'night')}
+                  className={`px-2 py-0.5 rounded transition cursor-pointer ${
+                    navPaletteMode === 'day'
+                      ? 'bg-amber-950/80 text-amber-300 border border-amber-500/50 font-bold'
+                      : 'bg-indigo-950/80 text-indigo-300 border border-indigo-500/50 font-bold'
+                  }`}
+                >
+                  {navPaletteMode === 'day' ? '☀️ Day' : '🌙 Night'}
+                </button>
               </div>
 
               {/* VIEW 1: 3D Horizon Perspective */}
@@ -1107,102 +1120,126 @@ export const ScreenCanvas: React.FC<ScreenCanvasProps> = ({
               )}
 
               {/* VIEW 2: 2026 Interactive Vector Cartography */}
-              {navViewMode === 'interactive_vector' && (
-                <div className="absolute inset-0 overflow-hidden">
-                  {/* Vector Map Canvas */}
-                  <svg className="w-full h-full" viewBox="0 0 800 380">
-                    {/* Topographic Landmass & Subtle Grid */}
-                    <rect width="800" height="380" fill="#070a10" />
-                    <defs>
-                      <pattern id="navGrid" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#111928" strokeWidth="1" />
-                      </pattern>
-                      <radialGradient id="vehiclePulse" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stopColor={bracketColor} stopOpacity="0.8" />
-                        <stop offset="100%" stopColor={bracketColor} stopOpacity="0" />
-                      </radialGradient>
-                    </defs>
-                    <rect width="800" height="380" fill="url(#navGrid)" />
+              {navViewMode === 'interactive_vector' && (() => {
+                const isDay = navPaletteMode === 'day';
+                const mapBg = isDay ? '#e2e8f0' : '#070a10';
+                const gridColor = isDay ? '#94a3b8' : '#111928';
+                const secondaryRoadColor = isDay ? '#64748b' : '#1e293b';
+                const highwayOuterColor = isDay ? '#475569' : '#334155';
+                const highwayInnerColor = isDay ? '#f8fafc' : '#0f172a';
+                const junctionColor = isDay ? '#ffffff' : '#0f172a';
+                const junctionStroke = isDay ? '#334155' : '#475569';
+                const textColor = isDay ? '#0f172a' : '#cbd5e1';
 
-                    {/* Secondary Arterial Roads */}
-                    <path d="M 50 320 Q 250 280 400 220 T 750 150" fill="none" stroke="#1e293b" strokeWidth="6" strokeLinecap="round" />
-                    <path d="M 120 40 Q 280 120 400 220 T 680 340" fill="none" stroke="#1e293b" strokeWidth="6" strokeLinecap="round" />
+                return (
+                  <div className="absolute inset-0 overflow-hidden">
+                    {/* Vector Map Canvas */}
+                    <svg className="w-full h-full" viewBox="0 0 800 380">
+                      {/* Topographic Landmass & Subtle Grid */}
+                      <rect width="800" height="380" fill={mapBg} />
+                      <defs>
+                        <pattern id="navGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                          <path d="M 40 0 L 0 0 0 40" fill="none" stroke={gridColor} strokeWidth="1" />
+                        </pattern>
+                        <radialGradient id="vehiclePulse" cx="50%" cy="50%" r="50%">
+                          <stop offset="0%" stopColor={bracketColor} stopOpacity="0.8" />
+                          <stop offset="100%" stopColor={bracketColor} stopOpacity="0" />
+                        </radialGradient>
+                      </defs>
+                      <rect width="800" height="380" fill="url(#navGrid)" />
 
-                    {/* Autostrada A1 Corridor (Primary Highway Dual Carriageway) */}
-                    <path d="M 80 360 C 220 300, 320 250, 410 190 C 510 130, 620 90, 760 60" fill="none" stroke="#334155" strokeWidth="14" strokeLinecap="round" />
-                    <path d="M 80 360 C 220 300, 320 250, 410 190 C 510 130, 620 90, 760 60" fill="none" stroke="#0f172a" strokeWidth="10" strokeLinecap="round" />
+                      {/* Secondary Arterial Roads */}
+                      <path d="M 50 320 Q 250 280 400 220 T 750 150" fill="none" stroke={secondaryRoadColor} strokeWidth="6" strokeLinecap="round" />
+                      <path d="M 120 40 Q 280 120 400 220 T 680 340" fill="none" stroke={secondaryRoadColor} strokeWidth="6" strokeLinecap="round" />
 
-                    {/* Active Navigation Guidance Ribbon */}
-                    <path
-                      d="M 280 270 C 340 230, 410 190, 520 130 L 680 80"
-                      fill="none"
-                      stroke={bracketColor}
-                      strokeWidth="6"
-                      strokeLinecap="round"
-                      style={{ filter: themeConfig.ambientGlow ? `drop-shadow(0 0 10px ${bracketColor})` : 'none' }}
-                    />
+                      {/* Autostrada A1 Corridor (Primary Highway Dual Carriageway) */}
+                      <path d="M 80 360 C 220 300, 320 250, 410 190 C 510 130, 620 90, 760 60" fill="none" stroke={highwayOuterColor} strokeWidth="14" strokeLinecap="round" />
+                      <path d="M 80 360 C 220 300, 320 250, 410 190 C 510 130, 620 90, 760 60" fill="none" stroke={highwayInnerColor} strokeWidth="10" strokeLinecap="round" />
 
-                    {/* Junction Roundabout Node */}
-                    <circle cx="410" cy="190" r="14" fill="#0f172a" stroke="#475569" strokeWidth="3" />
-                    <circle cx="410" cy="190" r="4" fill="#64748b" />
+                      {/* Active Navigation Guidance Ribbon */}
+                      <path
+                        d="M 280 270 C 340 230, 410 190, 520 130 L 680 80"
+                        fill="none"
+                        stroke={bracketColor}
+                        strokeWidth="6"
+                        strokeLinecap="round"
+                        style={{ filter: themeConfig.ambientGlow ? `drop-shadow(0 0 10px ${bracketColor})` : 'none' }}
+                      />
 
-                    {/* City Labels */}
-                    <text x="140" y="320" fill="#94a3b8" fontSize="12" fontFamily="sans-serif" fontWeight="bold">TIRANA</text>
-                    <text x="680" y="100" fill="#cbd5e1" fontSize="13" fontFamily="sans-serif" fontWeight="bold">DURRËS</text>
-                    <text x="430" y="175" fill="#f59e0b" fontSize="10" fontFamily="sans-serif" fontWeight="600">Jct 4: Rruga e Kombit</text>
+                      {/* Junction Roundabout Node */}
+                      <circle cx="410" cy="190" r="14" fill={junctionColor} stroke={junctionStroke} strokeWidth="3" />
+                      <circle cx="410" cy="190" r="4" fill="#64748b" />
 
-                    {/* POI Markers */}
-                    {/* Fuel Station POI */}
-                    <g transform="translate(480, 140)">
-                      <circle cx="0" cy="0" r="10" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.5" />
-                      <text x="0" y="3" fill="#60a5fa" fontSize="9" textAnchor="middle" fontWeight="bold">⛽</text>
-                      <text x="14" y="3" fill="#94a3b8" fontSize="9" fontFamily="monospace">Shell (350m)</text>
-                    </g>
+                      {/* City Labels */}
+                      <text x="140" y="320" fill={textColor} fontSize="12" fontFamily="sans-serif" fontWeight="bold">TIRANA</text>
+                      <text x="680" y="100" fill={textColor} fontSize="13" fontFamily="sans-serif" fontWeight="bold">DURRËS</text>
+                      <text x="430" y="175" fill="#f59e0b" fontSize="10" fontFamily="sans-serif" fontWeight="600">Jct 4: Rruga e Kombit</text>
 
-                    {/* Rest Area POI */}
-                    <g transform="translate(240, 290)">
-                      <circle cx="0" cy="0" r="10" fill="#1e293b" stroke="#10b981" strokeWidth="1.5" />
-                      <text x="0" y="3" fill="#34d399" fontSize="9" textAnchor="middle" fontWeight="bold">🅿️</text>
-                      <text x="14" y="3" fill="#94a3b8" fontSize="9" fontFamily="monospace">Rest Area (1.2km)</text>
-                    </g>
+                      {/* POI Markers */}
+                      {/* Fuel Station POI */}
+                      <g transform="translate(480, 140)">
+                        <circle cx="0" cy="0" r="10" fill={isDay ? '#cbd5e1' : '#1e293b'} stroke="#3b82f6" strokeWidth="1.5" />
+                        <text x="0" y="3" fill="#60a5fa" fontSize="9" textAnchor="middle" fontWeight="bold">⛽</text>
+                        <text x="14" y="3" fill={textColor} fontSize="9" fontFamily="monospace">Shell (350m)</text>
+                      </g>
 
-                    {/* Vehicle GPS Position Indicator (Pulse + Chevron) */}
-                    <circle cx="280" cy="270" r="22" fill="url(#vehiclePulse)" />
-                    <circle cx="280" cy="270" r="8" fill="#ffffff" stroke={bracketColor} strokeWidth="3" />
-                    <polygon points="280,260 274,276 280,272 286,276" fill={bracketColor} />
-                  </svg>
+                      {/* Rest Area POI */}
+                      <g transform="translate(240, 290)">
+                        <circle cx="0" cy="0" r="10" fill={isDay ? '#cbd5e1' : '#1e293b'} stroke="#10b981" strokeWidth="1.5" />
+                        <text x="0" y="3" fill="#34d399" fontSize="9" textAnchor="middle" fontWeight="bold">🅿️</text>
+                        <text x="14" y="3" fill={textColor} fontSize="9" fontFamily="monospace">Rest Area (1.2km)</text>
+                      </g>
 
-                  {/* Telemetry HUD Box (Top Right under mode toggle) */}
-                  <div className="absolute top-12 right-4 z-10 w-52 bg-[#080d17]/95 border border-slate-700/80 rounded-lg p-2.5 shadow-xl text-[10px] font-mono space-y-1">
-                    <div className="flex justify-between items-center text-slate-300 font-bold border-b border-slate-800 pb-1">
-                      <span className="flex items-center gap-1"><span className="text-amber-400">🛰️</span> GPS 3D FIX</span>
-                      <span className="text-emerald-400 font-bold">9/12 SAT</span>
+                      {/* Vehicle GPS Position Indicator (Pulse + Chevron) */}
+                      <circle cx="280" cy="270" r="22" fill="url(#vehiclePulse)" />
+                      <circle cx="280" cy="270" r="8" fill="#ffffff" stroke={bracketColor} strokeWidth="3" />
+                      <polygon points="280,260 274,276 280,272 286,276" fill={bracketColor} />
+                    </svg>
+
+                    {/* Telemetry HUD Box (Top Right under mode toggle) */}
+                    <div className={`absolute top-12 right-4 z-10 w-52 rounded-lg p-2.5 shadow-xl text-[10px] font-mono space-y-1 ${
+                      isDay
+                        ? 'bg-slate-100/95 border border-slate-300 text-slate-700 shadow-md'
+                        : 'bg-[#080d17]/95 border border-slate-700/80 text-slate-300'
+                    }`}>
+                      <div className={`flex justify-between items-center font-bold border-b pb-1 ${
+                        isDay ? 'border-slate-300 text-slate-900' : 'border-slate-800 text-slate-300'
+                      }`}>
+                        <span className="flex items-center gap-1"><span className="text-amber-500">🛰️</span> GPS 3D FIX</span>
+                        <span className="text-emerald-500 font-bold">9/12 SAT</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className={isDay ? 'text-slate-500' : 'text-slate-400'}>Coordinates:</span>
+                        <span className={isDay ? 'text-slate-800 font-semibold' : 'text-slate-200'}>41.3275°N 19.8187°E</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className={isDay ? 'text-slate-500' : 'text-slate-400'}>Elevation:</span>
+                        <span className={isDay ? 'text-slate-800 font-semibold' : 'text-slate-200'}>114 m AMSL</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className={isDay ? 'text-slate-500' : 'text-slate-400'}>Heading / Azimuth:</span>
+                        <span className="text-amber-500 font-bold">284° WNW</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className={isDay ? 'text-slate-500' : 'text-slate-400'}>Cartography DB:</span>
+                        <span className="text-emerald-500 font-semibold">FLDB 2026 ({isDay ? 'Day' : 'Night'})</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-slate-400">
-                      <span>Coordinates:</span>
-                      <span className="text-slate-200">41.3275°N 19.8187°E</span>
-                    </div>
-                    <div className="flex justify-between text-slate-400">
-                      <span>Elevation:</span>
-                      <span className="text-slate-200">114 m AMSL</span>
-                    </div>
-                    <div className="flex justify-between text-slate-400">
-                      <span>Heading / Azimuth:</span>
-                      <span className="text-amber-400 font-bold">284° WNW</span>
-                    </div>
-                    <div className="flex justify-between text-slate-400">
-                      <span>Cartography DB:</span>
-                      <span className="text-emerald-400">FLDB 2026 (544B)</span>
+
+                    {/* Scale Bar */}
+                    <div className={`absolute bottom-4 left-6 z-10 flex items-center gap-2 text-[10px] font-mono px-2 py-1 rounded border ${
+                      isDay
+                        ? 'bg-white/80 border-slate-300 text-slate-700'
+                        : 'bg-black/60 border-slate-800 text-slate-400'
+                    }`}>
+                      <div className={`w-16 h-1 border-b-2 border-l-2 border-r-2 ${
+                        isDay ? 'border-slate-600' : 'border-slate-400'
+                      }`} />
+                      <span>200 m</span>
                     </div>
                   </div>
-
-                  {/* Scale Bar */}
-                  <div className="absolute bottom-4 left-6 z-10 flex items-center gap-2 text-[10px] font-mono text-slate-400 bg-black/60 px-2 py-1 rounded border border-slate-800">
-                    <div className="w-16 h-1 border-b-2 border-l-2 border-r-2 border-slate-400" />
-                    <span>200 m</span>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Maneuver Banner */}
               <div className="relative z-10 mx-6 mt-4 p-3 bg-[#080c14] border border-slate-800 rounded-lg flex items-center justify-between shadow-2xl backdrop-blur-md max-w-[500px]">

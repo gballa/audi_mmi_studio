@@ -65,6 +65,24 @@ pub struct PreFlightSimulator;
 impl PreFlightSimulator {
     pub const DISCLAIMER: &'static str = "SIMULATED — NOT A GUARANTEE";
 
+    /// Simulates the installation sequence, returning a SimulationReport (or fallback error report).
+    pub fn simulate(media_dir: &Path) -> SimulationReport {
+        Self::simulate_media(media_dir).unwrap_or_else(|e| SimulationReport {
+            disclaimer: Self::DISCLAIMER.to_string(),
+            overall_success: false,
+            steps_total: 6,
+            steps_successful: 0,
+            final_state: UpdateState::Aborted,
+            steps: vec![SimulationStep {
+                step_number: 1,
+                state: UpdateState::Aborted,
+                action: "PreFlightSimulator execution".to_string(),
+                result: format!("Simulation error: {}", e),
+                success: false,
+            }],
+        })
+    }
+
     /// Simulates the installation sequence on a target deployment media directory.
     pub fn simulate_media(media_dir: &Path) -> Result<SimulationReport, CoreError> {
         let mut steps = Vec::new();

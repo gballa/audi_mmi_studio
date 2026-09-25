@@ -13,6 +13,7 @@ members = [
     "crates/mmi-media",
     "crates/mmi-attestation",
     "crates/mmi-plugin",
+    "crates/mmi-diagnostics",
     "apps/mmi-studio-cli",
     "apps/mmi-studio-desktop/src-tauri",
 ]
@@ -51,6 +52,7 @@ mmi-validation = { path = "crates/mmi-validation" }
 mmi-media = { path = "crates/mmi-media" }
 mmi-attestation = { path = "crates/mmi-attestation" }
 mmi-plugin = { path = "crates/mmi-plugin" }
+mmi-diagnostics = { path = "crates/mmi-diagnostics" }
 
 
 

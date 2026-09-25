@@ -498,6 +498,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "mmi-diagnostics"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "libc",
+ "mmi-core",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
 name = "mmi-formats"
 version = "0.1.0"
 dependencies = [
@@ -626,6 +639,7 @@ dependencies = [
  "mmi-attestation",
  "mmi-canvas",
  "mmi-core",
+ "mmi-diagnostics",
  "mmi-formats",
  "mmi-imagegen",
  "mmi-media",

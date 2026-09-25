@@ -34,10 +34,14 @@ fn test_firmware_bundle_pipeline_end_to_end() {
     assert_eq!(report.target_release, "2026_ECE");
     assert_eq!(report.target_variant, "MU9411");
     assert_eq!(report.safety_status, SAFETY_POLICY_BANNER);
-    assert_eq!(report.partitions.len(), 0); // No longer flashing partitions!
+    assert_eq!(report.partitions.len(), 2);
+    assert_eq!(report.partitions[0].partition_name, "ifs-root");
+    assert_eq!(report.partitions[1].partition_name, "efs-system");
 
     // 2. Verify Generated Files Exist on Disk
     let expected_files = [
+        "MU9411/ifs-root.ifs",
+        "MU9411/efs-system.efs",
         "payload/splash.png",
         "payload/sq_AL.ans",
         "payload/menu_2026.esd",
@@ -87,8 +91,8 @@ fn test_firmware_bundle_pipeline_end_to_end() {
     let meta_txt = std::fs::read_to_string(bundle_dir.join("metainfo2.txt")).unwrap();
     let meta_parsed = MetaInfo2::parse(&meta_txt).expect("Failed to parse metainfo2.txt");
     assert_eq!(meta_parsed.release.as_deref(), Some("2026_ECE"));
-    assert!(!meta_parsed.sections.contains_key("MU9411_ifs_root")); // No longer present
-    assert!(!meta_parsed.sections.contains_key("MU9411_efs_system")); // No longer present
+    assert!(meta_parsed.sections.contains_key("MU9411_ifs_root"));
+    assert!(meta_parsed.sections.contains_key("MU9411_efs_system"));
     assert!(meta_parsed.sections.contains_key("HBNavDB"));
     assert!(meta_parsed.sections.contains_key("MapStyles"));
 

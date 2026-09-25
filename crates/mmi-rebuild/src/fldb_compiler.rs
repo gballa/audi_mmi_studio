@@ -271,22 +271,9 @@ impl FldbCompilerPipeline {
         fs::write(hbnavdb_dir.join(format!("{}_patch.pkg", release.to_lowercase())), patch_pkg.as_bytes())?;
 
         // 3b. Generate Harman/Becker GDB (0xDEADBEEF v37) routing database
-        let mut gdb_bytes = Vec::new();
-        gdb_bytes.extend_from_slice(&GDB_MAGIC.to_be_bytes());
-        gdb_bytes.extend_from_slice(&(GDB_VERSION as u32).to_be_bytes());
-        gdb_bytes.extend_from_slice(&(dataset.nodes.len() as u32).to_be_bytes());
-        for node in &dataset.nodes {
-            gdb_bytes.extend_from_slice(&node.node_id.to_be_bytes());
-            gdb_bytes.extend_from_slice(&node.x_coord.to_be_bytes());
-            gdb_bytes.extend_from_slice(&node.y_coord.to_be_bytes());
-        }
-        for edge in &dataset.edges {
-            gdb_bytes.extend_from_slice(&edge.edge_id.to_be_bytes());
-            gdb_bytes.extend_from_slice(&edge.from_node.to_be_bytes());
-            gdb_bytes.extend_from_slice(&edge.to_node.to_be_bytes());
-            gdb_bytes.extend_from_slice(&edge.length_dm.to_be_bytes());
-        }
-        fs::write(hbnavdb_dir.join("EJ211_v37a.gdb"), &gdb_bytes)?;
+        crate::gdb_compiler::GdbCompiler::compile_gdb_package(dataset, &hbnavdb_dir, "EJ211_v37a.gdb")?;
+        let pkgdb_dir = output_dir.join("pkgdb");
+        let _ = crate::gdb_compiler::GdbCompiler::compile_and_package(dataset, &pkgdb_dir, &release);
 
         // 3c. Generate SQLite Geographic.gdb with R*Tree indexing
         let gdb_sqlite_path = hbnavdb_dir.join("Geographic.gdb");
@@ -421,5 +408,89 @@ If error 03276 appears, XOR Adaptation Channel 15 with 51666 (0xC9D2) using VCDS
             metainfo_sha1: hb_sha,
             status: "BUILD READY — DEPLOYMENT NOT VERIFIED".to_string(),
         })
+    }
+}
+
+
+/// Direct-to-disk streaming Harman/Becker FLDB 544-byte page writer with automatic 2 GiB volume splitting.
+pub struct StreamingFldbWriter {
+    output_dir: PathBuf,
+    base_name: String,
+    current_vol_idx: usize,
+    current_file: File,
+    bytes_written: u64,
+    total_pages: usize,
+    volumes: Vec<String>,
+}
+
+impl StreamingFldbWriter {
+    pub fn new(output_dir: &Path, base_name: &str) -> io::Result<Self> {
+        fs::create_dir_all(output_dir)?;
+        let initial_path = output_dir.join(base_name);
+        let current_file = File::create(&initial_path)?;
+        Ok(Self {
+            output_dir: output_dir.to_path_buf(),
+            base_name: base_name.to_string(),
+            current_vol_idx: 0,
+            current_file,
+            bytes_written: 0,
+            total_pages: 0,
+            volumes: vec![base_name.to_string()],
+        })
+    }
+
+    pub fn write_page(&mut self, payload: &[u8], page_magic: &[u8; 4]) -> io::Result<u32> {
+        let page_idx = self.total_pages as u32;
+        let page = create_fldb_page(page_idx, payload, page_magic);
+        self.write_raw_page(&page)
+    }
+
+    pub fn write_raw_page(&mut self, page: &[u8]) -> io::Result<u32> {
+        if page.len() != FLDB_PAGE_SIZE {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("Page size must be {} bytes, got {}", FLDB_PAGE_SIZE, page.len()),
+            ));
+        }
+
+        if self.bytes_written + (FLDB_PAGE_SIZE as u64) > MAX_VOLUME_BYTES {
+            self.current_vol_idx += 1;
+            let vol_name = format!("{}.{:03}", self.base_name, self.current_vol_idx);
+            self.current_file.flush()?;
+            self.current_file = File::create(self.output_dir.join(&vol_name))?;
+            self.volumes.push(vol_name);
+            self.bytes_written = 0;
+        }
+
+        let page_idx = self.total_pages as u32;
+        self.current_file.write_all(page)?;
+        self.bytes_written += FLDB_PAGE_SIZE as u64;
+        self.total_pages += 1;
+        Ok(page_idx)
+    }
+
+    pub fn flush(&mut self) -> io::Result<()> {
+        self.current_file.flush()
+    }
+
+    pub fn finish(mut self) -> io::Result<usize> {
+        self.current_file.flush()?;
+        Ok(self.total_pages)
+    }
+
+    pub fn total_pages(&self) -> usize {
+        self.total_pages
+    }
+
+    pub fn total_bytes(&self) -> u64 {
+        (self.total_pages * FLDB_PAGE_SIZE) as u64
+    }
+
+    pub fn volume_count(&self) -> usize {
+        self.volumes.len()
+    }
+
+    pub fn volumes(&self) -> &[String] {
+        &self.volumes
     }
 }

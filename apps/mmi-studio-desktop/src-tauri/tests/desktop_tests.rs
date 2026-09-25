@@ -61,3 +61,24 @@ fn test_desktop_ipc_render_screen_composition() {
     assert_eq!(res_night.active_mode, "Night");
     assert_eq!(res_night.pixel_count, 800 * 480);
 }
+
+#[test]
+fn test_desktop_ipc_compile_map_pipeline() {
+    let out_dir = TempDir::new().unwrap();
+    let req = MapCompileIpcRequest {
+        profile_code: "AL".to_string(),
+        enable_gmp: true,
+        output_dir: out_dir.path().to_string_lossy().to_string(),
+    };
+
+    let res = handle_compile_map_pipeline(req).expect("Failed to compile map pipeline via IPC");
+    assert!(res.success, "Pre-flight simulation should pass");
+    assert!(res.total_pages > 0, "FLDB + LIT pages should be > 0");
+    assert!(res.total_bytes > 0, "Total bytes in package should be > 0");
+    assert!(!res.root_sha1.is_empty(), "Root SHA-1 attestation must not be empty");
+    assert!(!res.logs.is_empty(), "Compilation logs should be collected");
+
+    // Verify output files exist in output_dir
+    assert!(out_dir.path().join("metainfo2.txt").exists());
+    assert!(out_dir.path().join("pkgdb").exists());
+}

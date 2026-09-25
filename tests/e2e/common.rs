@@ -235,3 +235,51 @@ sleep 1
 shutdown -S
 "#.to_string()
 }
+
+// ==============================================================================
+// M5 Diagnostics: ISO-TP, UDS & SVM Constants
+// ==============================================================================
+pub const MODULE_5F_REQ_CAN_ID: u32 = 0x714;
+pub const MODULE_5F_RESP_CAN_ID: u32 = 0x77E;
+
+pub const ISOTP_SF: u8 = 0x00;
+pub const ISOTP_FF: u8 = 0x10;
+pub const ISOTP_CF: u8 = 0x20;
+pub const ISOTP_FC: u8 = 0x30;
+
+pub const FC_CTS: u8 = 0x00;
+pub const FC_WAIT: u8 = 0x01;
+pub const FC_OVERFLOW: u8 = 0x02;
+
+pub const SID_DIAGNOSTIC_SESSION_CONTROL: u8 = 0x10;
+pub const SID_CLEAR_DIAGNOSTIC_INFORMATION: u8 = 0x14;
+pub const SID_READ_DATA_BY_IDENTIFIER: u8 = 0x22;
+pub const SID_SECURITY_ACCESS: u8 = 0x27;
+pub const SID_WRITE_DATA_BY_IDENTIFIER: u8 = 0x2E;
+pub const SID_TESTER_PRESENT: u8 = 0x3E;
+
+pub const DID_ADAPTATION_CHANNEL_15: u16 = 0x0615;
+pub const DID_GREEN_MENU_ENABLE: u16 = 0x0611;
+pub const DID_ECU_PART_NUMBER: u16 = 0xF187;
+pub const DID_SOFTWARE_VERSION: u16 = 0xF189;
+pub const DID_VIN: u16 = 0xF190;
+
+// ==============================================================================
+// M6 GDB v37 Constants
+// ==============================================================================
+pub const GDB_PAGE_SIZE: usize = 544;
+pub const GDB_PAYLOAD_SIZE: usize = 512;
+pub const GDB_HEADER_SIZE: usize = 16;
+pub const GDB_TRAILER_SYNC: u32 = 0x55AA55AA;
+pub const GDB_VOLUME_MAX_BYTES: u64 = 2_147_483_647;
+
+// ==============================================================================
+// M7 QNX Filesystem Constants
+// ==============================================================================
+pub const QNX_IFS_MAGIC: [u8; 4] = [0xeb, 0x7e, 0xff, 0x00];
+pub const QNX_F3S_MAGIC: &[u8; 8] = b"QSSL_F3S";
+pub const QNX_MACHINE_SH4: u16 = 0x0006;
+pub const MAX_IFS_ROOT_SIZE: usize = 45_875_200;
+pub const MAX_EFS_SYSTEM_SIZE: usize = 40_697_856;
+pub const F3S_ERASE_UNIT_SIZE: usize = 262_144;
+

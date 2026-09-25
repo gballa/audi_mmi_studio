@@ -1,0 +1,16 @@
+[package]
+name = "mmi-diagnostics"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Audi MMI Studio Automotive UDS & CAN Diagnostics Engine"
+
+[dependencies]
+mmi-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+libc = { workspace = true }
+hex = { workspace = true }

@@ -3,6 +3,7 @@
 pub mod ipc;
 
 pub use ipc::{
-    handle_entropy, handle_hexdump, handle_inspect_file, handle_render_screen, EntropyResult,
-    HexDumpResult, InspectResult, ScreenRenderResult,
+    handle_compile_map_pipeline, handle_entropy, handle_hexdump, handle_inspect_file,
+    handle_render_screen, EntropyResult, HexDumpResult, InspectResult, MapCompileIpcRequest,
+    MapCompileIpcResponse, ScreenRenderResult,
 };

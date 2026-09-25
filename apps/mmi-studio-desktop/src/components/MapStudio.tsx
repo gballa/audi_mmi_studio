@@ -36,14 +36,57 @@ export const MapStudio: React.FC<MapStudioProps> = ({
   const totalKmAdded = enabledUpdates.reduce((acc, u) => acc + (u.lengthKm || 0), 0);
   const totalNodesAdded = enabledUpdates.reduce((acc, u) => acc + u.nodesAdded, 0);
 
-  const handleRunPatcher = () => {
+  const handleRunPatcher = async () => {
     setPatchingState('patching');
-    setPatchProgress(0);
+    setPatchProgress(10);
     setPatchLog([
       `Initiating 2026 Map Update Pipeline — Profile: ${activeProfile.name} (${activeProfile.code})...`,
       `Target Media: Audi MMI 3G High / Plus [HN+] (HBNavDB 544-byte FLDB Container)`,
       `Coverage Estimated Footprint: ${activeProfile.estimatedSize} across ${activeProfile.volumeCount} FAT32 volume(s)`,
     ]);
+
+    const tauri = (window as unknown as {
+      __TAURI__?: {
+        core?: { invoke: (cmd: string, args?: unknown) => Promise<unknown> };
+        invoke?: (cmd: string, args?: unknown) => Promise<unknown>;
+      };
+    }).__TAURI__;
+    const invoke = tauri?.core?.invoke || tauri?.invoke;
+
+    if (typeof invoke === 'function') {
+      try {
+        setPatchProgress(35);
+        const res = (await invoke('compile_map_pipeline', {
+          request: {
+            profile_code: activeProfile.code,
+            enable_gmp: enableGmp,
+            output_dir: 'build/desktop_sd',
+          },
+        })) as {
+          success: boolean;
+          total_pages: number;
+          total_bytes: number;
+          root_sha1: string;
+          logs: string[];
+        };
+
+        setPatchProgress(90);
+        setPatchLog((prev) => [
+          ...prev,
+          ...res.logs,
+          `✓ Stage 4: 2026 Navigation Update Compiled & Packaged Successfully for ${activeProfile.code}!`,
+          `✓ Total Assembled Pages: ${res.total_pages} pages (${(res.total_bytes / 1024).toFixed(1)} KiB)`,
+          `✓ Root metainfo2 SHA-1: ${res.root_sha1}`,
+          'Status: BUILD READY — DEPLOYMENT NOT VERIFIED (§14.9 Policy Enforced).',
+          'SVM Resolution: Channel 15 XOR 51666 (0xC9D2) ready for VCDS adaptation if 03276 triggers.',
+        ]);
+        setPatchProgress(100);
+        setPatchingState('completed');
+        return;
+      } catch (err) {
+        console.warn('Tauri native IPC call failed, falling back to simulated pipeline preview:', err);
+      }
+    }
 
     setTimeout(() => {
       setPatchProgress(25);

@@ -14,6 +14,7 @@ pub mod hb_fpga;
 pub mod smsc_ipf;
 pub mod hb_gdb;
 pub mod hb_grammar;
+pub mod hb_lit;
 pub mod adi_ldr;
 pub mod script_cipher;
 pub mod gate;
@@ -25,8 +26,16 @@ pub use metainfo2::{MetaInfo2, MetaInfo2Adapter, MetaInfo2Builder, crc32_ieee, g
 pub use precomp::{PrecompImage, PrecompAdapter, HEADER_SIZE, PRECOMP_MAGIC};
 pub use mapstyle_xar::{MapStyleXar, MapStyleXarAdapter};
 pub use hb_navdb::{HbNavDb, HbNavDbAdapter, HbNavDbHeader, FLDB_MAGIC};
-pub use hb_atlas::{HbAtlas, HbAtlasAdapter, HbAtlasHeader, ATLAS_MAGIC_TAG};
-pub use qnx_ifs::{QnxIfs, QnxIfsAdapter, QnxIfsHeader, QnxIfsBuilder, QNX_IFS_MAGIC, MAX_IFS_ROOT_SIZE};
+pub use hb_lit::{
+    compute_rotary_alpha_mask, LitDatabaseReader, LitSpellerBranch, LitSpellerNode,
+    LitStreetRecord, LIT_ALPHA_MASK_A_Z, LIT_ALPHA_MASK_DIGITS, LIT_ALPHA_MASK_SPACE,
+    LIT_ALPHA_MASK_SPECIAL,
+};
+pub use hb_atlas::{
+    AtlasTile, AtlasTileIndexEntry, AtlasWriter, HbAtlas, HbAtlasAdapter, HbAtlasHeader,
+    ATLAS_DEFAULT_BLOCK_SIZE, ATLAS_HEADER_MIN_SIZE, ATLAS_MAGIC_TAG,
+};
+pub use qnx_ifs::{QnxIfs, QnxIfsAdapter, QnxIfsHeader, QnxIfsBuilder, QNX_IFS_MAGIC, MAX_IFS_ROOT_SIZE, QNX_MACHINE_SH4};
 pub use qnx_efs::{QnxEfs, QnxEfsAdapter, QnxEfsHeader, QnxEfsBuilder, QNX_F3S_MAGIC, MAX_EFS_SYSTEM_SIZE};
 pub use hb_ans::{HbAns, HbAnsAdapter, HbAnsHeader, ANS_MAGIC};
 pub use hb_fpga::{HbFpga, HbFpgaAdapter, HbFpgaHeader, FPGA_HDG_TAG};

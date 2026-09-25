@@ -23,6 +23,7 @@ mmi-validation = { path = "../../crates/mmi-validation" }
 mmi-media = { path = "../../crates/mmi-media" }
 mmi-attestation = { path = "../../crates/mmi-attestation" }
 mmi-plugin = { path = "../../crates/mmi-plugin" }
+mmi-diagnostics = { path = "../../crates/mmi-diagnostics" }
 blake3.workspace = true
 sha2.workspace = true
 hex.workspace = true

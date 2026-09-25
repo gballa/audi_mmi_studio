@@ -722,3 +722,90 @@ fn tier1_svm_06_composite_diagnostic_clearing() {
     assert_eq!(ecu_5f_adaptation_fix, 118);
     assert!(menu_cleared);
 }
+
+// ==============================================================================
+// 9. LIT/LIT3GP In-Dash Destination Search & Rotary Speller Tests
+// ==============================================================================
+
+#[test]
+fn tier1_lit_01_speller_radix_search() {
+    use mmi_formats::hb_lit::LitDatabaseReader;
+    use mmi_rebuild::LitCompiler;
+    use mmi_rebuild::geo::{IrDataset, IrPoi, RegionalProfile};
+
+    let temp_dir = TempDir::new().unwrap();
+    let profile = RegionalProfile::micro_albania();
+    let mut dataset = IrDataset::new(profile.bbox, Some(profile.code));
+
+    // Add distinct POI streets
+    dataset.pois.push(IrPoi::new(1, "RRUGA E DIBRES".into(), "amenity".into(), 41.33, 19.82, None));
+    dataset.pois.push(IrPoi::new(2, "RRUGA TEODOR KEKO".into(), "highway".into(), 41.32, 19.80, None));
+    dataset.pois.push(IrPoi::new(3, "SHESTI SKENDERBEJ".into(), "place".into(), 41.328, 19.818, None));
+
+    let summary = LitCompiler::compile_lit3gp_package(&dataset, temp_dir.path(), "2026.01.0")
+        .expect("compile lit3gp package");
+
+    assert!(summary.total_pages >= 3);
+    assert_eq!(summary.street_count, 3);
+
+    let db_path = temp_dir.path().join("LIT3GP/EJ211Pa_L1.db");
+    assert!(db_path.exists());
+    let file = std::fs::File::open(&db_path).expect("open compiled db");
+    let mut reader = LitDatabaseReader::open(file).expect("open lit database reader");
+
+    assert_eq!(reader.header().page_size, 544);
+    assert_eq!(&reader.header().magic, mmi_formats::FLDB_MAGIC);
+
+    // Verify prefix search
+    let mask = reader.get_valid_next_chars("RRUGA ").expect("valid chars for prefix");
+    // "RRUGA " should allow 'E' and 'T'
+    assert_ne!(mask & (1 << (b'E' - b'A')), 0);
+    assert_ne!(mask & (1 << (b'T' - b'A')), 0);
+    // Should NOT allow 'Z'
+    assert_eq!(mask & (1 << (b'Z' - b'A')), 0);
+
+    // Verify LIT3GP.conf presence and checksums
+    let conf_path = temp_dir.path().join("LIT3GP/LIT3GP.conf");
+    assert!(conf_path.exists());
+    let conf_str = fs::read_to_string(&conf_path).expect("read conf");
+    assert!(conf_str.contains("EJ211Pa_L1.db"));
+    assert!(conf_str.contains(&summary.md5_hex));
+}
+
+#[test]
+fn tier1_lit_02_rotary_mask_filtering() {
+    use mmi_formats::hb_lit::{compute_rotary_alpha_mask, LitDatabaseReader, LIT_ALPHA_MASK_SPACE};
+    use mmi_rebuild::LitCompiler;
+    use mmi_rebuild::geo::{IrDataset, IrPoi, RegionalProfile};
+
+    // 1. Bitmask calculation test
+    let mask_tirana = compute_rotary_alpha_mask(b"TIRANA 2026");
+    assert_ne!(mask_tirana & (1 << (b'T' - b'A')), 0);
+    assert_ne!(mask_tirana & (1 << (b'I' - b'A')), 0);
+    assert_ne!(mask_tirana & (1 << (b'R' - b'A')), 0);
+    assert_ne!(mask_tirana & (1 << (b'A' - b'A')), 0);
+    assert_ne!(mask_tirana & (1 << (b'N' - b'A')), 0);
+    assert_ne!(mask_tirana & (1 << 26), 0); // Digits '0'..'9'
+    assert_ne!(mask_tirana & LIT_ALPHA_MASK_SPACE, 0); // Space
+
+    // 2. Traversal on compiled database
+    let temp_dir = TempDir::new().unwrap();
+    let profile = RegionalProfile::micro_albania();
+    let mut dataset = IrDataset::new(profile.bbox, Some(profile.code));
+    dataset.pois.push(IrPoi::new(1, "AUTOSTRADA".into(), "highway".into(), 41.35, 19.75, None));
+
+    LitCompiler::compile_lit3gp_package(&dataset, temp_dir.path(), "2026.01.0").expect("compile");
+    let db_path = temp_dir.path().join("LIT3GP/EJ211Pa_L1.db");
+    let file = std::fs::File::open(&db_path).unwrap();
+    let mut reader = LitDatabaseReader::open(file).unwrap();
+
+    let root_mask = reader.get_valid_next_chars("").expect("root mask");
+    assert_ne!(root_mask & (1 << (b'A' - b'A')), 0);
+
+    let next_mask = reader.get_valid_next_chars("AUTO").expect("next mask");
+    assert_ne!(next_mask & (1 << (b'S' - b'A')), 0);
+
+    // Non-existent prefix returns 0
+    let invalid_mask = reader.get_valid_next_chars("XYZ").expect("invalid mask");
+    assert_eq!(invalid_mask, 0);
+}

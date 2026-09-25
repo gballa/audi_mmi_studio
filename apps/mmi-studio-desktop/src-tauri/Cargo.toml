@@ -5,6 +5,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 description = "Desktop engineering workstation for Audi MMI Studio"
+default-run = "mmi-studio-desktop"
 
 [dependencies]
 mmi-core = { path = "../../../crates/mmi-core" }

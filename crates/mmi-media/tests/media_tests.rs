@@ -102,3 +102,50 @@ fn test_media_sanitizer_cleans_junk_and_preserves_payload() {
     assert!(metainfo.exists());
     assert!(valid_sub.exists());
 }
+
+#[test]
+fn test_sd_media_packager_assembly_and_defense() {
+    use mmi_media::{SdMediaPackager, SdMediaPackageConfig};
+    let src_dir = TempDir::new().unwrap();
+    let dst_dir = TempDir::new().unwrap();
+
+    // Create compiled asset tree
+    let hbnav = src_dir.path().join("HBNavDB");
+    std::fs::create_dir_all(&hbnav).unwrap();
+    std::fs::write(hbnav.join("nav_data.db"), b"FLDB_DATA").unwrap();
+
+    // Add dirty host OS dotfiles in src
+    std::fs::write(src_dir.path().join(".DS_Store"), b"apple_metadata").unwrap();
+    std::fs::write(hbnav.join("._nav_data.db"), b"apple_double").unwrap();
+
+    let config = SdMediaPackageConfig {
+        release_tag: "2026_ECE".to_string(),
+        volume_label: "MMI3G_NAV".to_string(),
+        target_variant: "9411".to_string(),
+        enable_recovery_script: true,
+        sanitize_dotfiles: true,
+    };
+
+    let report = SdMediaPackager::assemble_release_package(
+        src_dir.path(),
+        dst_dir.path(),
+        &config,
+    )
+    .expect("assemble release package");
+
+    // Dotfiles must be removed
+    assert!(!dst_dir.path().join(".DS_Store").exists());
+    assert!(!dst_dir.path().join("HBNavDB/._nav_data.db").exists());
+
+    // Defense scripts must be injected
+    assert!(dst_dir.path().join("stock_recovery.sh").exists());
+    assert!(dst_dir.path().join("copie_scr.sh").exists());
+
+    // Metainfo2 must exist
+    assert!(dst_dir.path().join("metainfo2.txt").exists());
+
+    // Simulation must pass 6/6
+    assert!(report.simulation_passed);
+    assert!(report.total_files >= 3);
+    assert!(!report.root_metainfo_sha1.is_empty());
+}

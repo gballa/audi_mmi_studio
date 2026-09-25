@@ -4,7 +4,6 @@
 
 use std::collections::HashMap;
 use std::io::Read;
-use flate2::read::ZlibDecoder;
 use serde::{Deserialize, Serialize};
 
 use crate::geo::{
@@ -588,83 +587,77 @@ impl OsmGeoJsonParser {
 // OSM PBF Blob & Wire Format Decoder
 // -----------------------------------------------------------------------------
 
+/// Compact in-memory node coordinate store for memory-bounded OSM ingestion.
+#[derive(Debug, Clone, Default)]
+pub struct CompactNodeStore {
+    coords: HashMap<u64, (f64, f64, Option<i16>)>,
+}
+
+impl CompactNodeStore {
+    pub fn new() -> Self {
+        Self { coords: HashMap::new() }
+    }
+
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self { coords: HashMap::with_capacity(capacity) }
+    }
+
+    pub fn insert(&mut self, id: u64, lat: f64, lon: f64, elevation_m: Option<i16>) {
+        self.coords.insert(id, (lat, lon, elevation_m));
+    }
+
+    pub fn get(&self, id: u64) -> Option<(f64, f64, Option<i16>)> {
+        self.coords.get(&id).copied()
+    }
+
+    pub fn len(&self) -> usize {
+        self.coords.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.coords.is_empty()
+    }
+}
+
 /// Decodes OSM PBF binary format (BlobHeader + Blob with zlib decompression).
 pub struct OsmPbfParser;
 
 impl OsmPbfParser {
     /// Reads and unpacks an OSM PBF file buffer.
     pub fn parse(bytes: &[u8]) -> Result<(Vec<RawOsmNode>, Vec<RawOsmWay>, Vec<RawOsmRelation>), OsmIngestError> {
-        let mut cursor = 0;
+        let mut cursor = std::io::Cursor::new(bytes);
+        Self::parse_stream(&mut cursor)
+    }
+
+    /// Streams and unpacks an OSM PBF reader.
+    pub fn parse_stream<R: Read>(reader: &mut R) -> Result<(Vec<RawOsmNode>, Vec<RawOsmWay>, Vec<RawOsmRelation>), OsmIngestError> {
+        use crate::pbf_proto::{PbfBlobReader, PrimitiveBlockParser};
+
         let mut nodes = Vec::new();
         let mut ways = Vec::new();
         let mut relations = Vec::new();
+        let mut decompressed_buf = Vec::new();
+        let mut blocks_read = 0;
 
-        while cursor < bytes.len() {
-            if cursor + 4 > bytes.len() {
-                break;
+        while let Some(header) = PbfBlobReader::read_block_header(reader)? {
+            blocks_read += 1;
+            if header.block_type == "OSMHeader" {
+                // Header block (contains features, bbox, etc.)
+                let _ = PbfBlobReader::read_decompressed_payload(reader, header.datasize, &mut decompressed_buf);
+            } else if header.block_type == "OSMData" {
+                PbfBlobReader::read_decompressed_payload(reader, header.datasize, &mut decompressed_buf)?;
+                let parser = PrimitiveBlockParser::new(&decompressed_buf);
+                parser.parse_block(&mut nodes, &mut ways, &mut relations)?;
+            } else {
+                let _ = PbfBlobReader::read_decompressed_payload(reader, header.datasize, &mut decompressed_buf);
             }
-            // Length of BlobHeader (big-endian 32-bit integer)
-            let header_len = u32::from_be_bytes([
-                bytes[cursor],
-                bytes[cursor + 1],
-                bytes[cursor + 2],
-                bytes[cursor + 3],
-            ]) as usize;
-            cursor += 4;
+        }
 
-            if cursor + header_len > bytes.len() {
-                break;
-            }
-            let _blob_header_data = &bytes[cursor..cursor + header_len];
-            cursor += header_len;
-
-            // In OSM PBF wire format, BlobHeader defines the blob size in wire field 3
-            // Standard blob follows with size or protobuf fields
-            if cursor >= bytes.len() {
-                break;
-            }
-
-            // Read Blob data: try reading standard blob varints or raw/zlib payloads
-            let remaining = &bytes[cursor..];
-            if remaining.len() > 8 {
-                let blob_decompressed = Self::extract_blob_payload(remaining)?;
-                let (b_nodes, b_ways, b_rels) = Self::parse_primitive_block(&blob_decompressed);
-                nodes.extend(b_nodes);
-                ways.extend(b_ways);
-                relations.extend(b_rels);
-                break;
-            }
-            break;
+        if blocks_read == 0 || (nodes.is_empty() && ways.is_empty()) {
+            return Err(OsmIngestError::NoNavigableRoadways);
         }
 
         Ok((nodes, ways, relations))
-    }
-
-    /// Extracts uncompressed payload from OSM PBF Blob.
-    fn extract_blob_payload(data: &[u8]) -> Result<Vec<u8>, OsmIngestError> {
-        // Search for zlib header (0x78 0x9C, 0x78 0x01, or 0x78 0xDA)
-        for i in 0..data.len().saturating_sub(2) {
-            if data[i] == 0x78 && (data[i + 1] == 0x9C || data[i + 1] == 0x01 || data[i + 1] == 0xDA) {
-                let mut decoder = ZlibDecoder::new(&data[i..]);
-                let mut decompressed = Vec::new();
-                if decoder.read_to_end(&mut decompressed).is_ok() && !decompressed.is_empty() {
-                    return Ok(decompressed);
-                }
-            }
-        }
-
-        // If not compressed or raw
-        Ok(data.to_vec())
-    }
-
-    /// Parses primitive block into nodes, ways, relations.
-    fn parse_primitive_block(data: &[u8]) -> (Vec<RawOsmNode>, Vec<RawOsmWay>, Vec<RawOsmRelation>) {
-        // Fallback or lightweight protobuf dense node extractor
-        let nodes = Vec::new();
-        let ways = Vec::new();
-        let relations = Vec::new();
-        let _ = data;
-        (nodes, ways, relations)
     }
 }
 
@@ -690,7 +683,13 @@ impl OsmIngestPipeline {
 
     /// Ingests OSM PBF bytes.
     pub fn ingest_pbf(pbf_bytes: &[u8], config: &OsmIngestConfig) -> Result<IrDataset, OsmIngestError> {
-        let (raw_nodes, raw_ways, raw_relations) = OsmPbfParser::parse(pbf_bytes)?;
+        let mut cursor = std::io::Cursor::new(pbf_bytes);
+        Self::ingest_pbf_stream(&mut cursor, config)
+    }
+
+    /// Ingests OSM PBF stream from any reader.
+    pub fn ingest_pbf_stream<R: Read>(reader: &mut R, config: &OsmIngestConfig) -> Result<IrDataset, OsmIngestError> {
+        let (raw_nodes, raw_ways, raw_relations) = OsmPbfParser::parse_stream(reader)?;
         Self::build_ir_dataset(raw_nodes, raw_ways, raw_relations, config)
     }
 

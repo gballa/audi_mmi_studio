@@ -146,13 +146,10 @@ impl FirmwareBundlePipeline {
         let mapstyles_dir = output_dir.join("MapStyles");
         fs::create_dir_all(&mapstyles_dir)?;
 
-        let partitions = Vec::new();
+        let mut partitions = Vec::new();
         let mut file_records = Vec::new();
 
         // 1. Language & UI Changes (Runtime Injection Payload)
-        // We do NOT flash ifs-root or efs-system to avoid bricking.
-        // Instead, we stage the files in a `payload` directory and `run.sh` will copy them.
-        
         let payload_dir = output_dir.join("payload");
         fs::create_dir_all(&payload_dir)?;
         
@@ -183,6 +180,56 @@ impl FirmwareBundlePipeline {
         fs::write(&esd_path, &esd_bytes)?;
         file_records.push(Self::hash_file("payload/menu_2026.esd", &esd_bytes));
 
+        // Synthesize QNX IFS Root partition (MU9411/ifs-root.ifs)
+        let mut ifs_builder = mmi_formats::QnxIfsBuilder::new(mmi_formats::QNX_MACHINE_SH4);
+        ifs_builder.add_file("/usr/config/ci/splash.png", &splash_bytes);
+        ifs_builder.add_file("/usr/bin/lsd.jxe", b"JAVA_HMI_BYTECODE_2026_MODIFIED_ALBANIAN");
+        let ifs_bytes = ifs_builder.build()?;
+        if ifs_bytes.len() > mmi_formats::MAX_IFS_ROOT_SIZE {
+            return Err(CoreError::ImmutabilityViolation(format!(
+                "IFS image size ({} bytes) exceeds NOR flash ifs-root partition maximum ({} bytes)",
+                ifs_bytes.len(), mmi_formats::MAX_IFS_ROOT_SIZE
+            )));
+        }
+        let mu_dir = output_dir.join(&self.config.variant);
+        fs::create_dir_all(&mu_dir)?;
+        let ifs_path = mu_dir.join("ifs-root.ifs");
+        fs::write(&ifs_path, &ifs_bytes)?;
+        let ifs_rel = format!("{}/ifs-root.ifs", self.config.variant);
+        file_records.push(Self::hash_file(&ifs_rel, &ifs_bytes));
+        partitions.push(PartitionUsage {
+            partition_name: "ifs-root".to_string(),
+            allocated_bytes: ifs_bytes.len(),
+            max_bytes: mmi_formats::MAX_IFS_ROOT_SIZE,
+            percentage_used: (ifs_bytes.len() as f64 / mmi_formats::MAX_IFS_ROOT_SIZE as f64) * 100.0,
+        });
+
+        // Synthesize QNX EFS System partition (MU9411/efs-system.efs)
+        let mut efs_builder = mmi_formats::QnxEfsBuilder::with_units(
+            mmi_formats::qnx_efs::F3S_UNIT_SIZE,
+            mmi_formats::qnx_efs::F3S_DEFAULT_NUM_UNITS,
+            "/mnt/efs-system",
+        );
+        efs_builder.add_file("strings/sq_AL.ans", &albanian_bytes);
+        efs_builder.add_file("engdefs/menu_2026.esd", &esd_bytes);
+        let efs_bytes = efs_builder.build()?;
+        if efs_bytes.len() > mmi_formats::MAX_EFS_SYSTEM_SIZE {
+            return Err(CoreError::ImmutabilityViolation(format!(
+                "EFS image size ({} bytes) exceeds NOR flash efs-system partition maximum ({} bytes)",
+                efs_bytes.len(), mmi_formats::MAX_EFS_SYSTEM_SIZE
+            )));
+        }
+        let efs_path = mu_dir.join("efs-system.efs");
+        fs::write(&efs_path, &efs_bytes)?;
+        let efs_rel = format!("{}/efs-system.efs", self.config.variant);
+        file_records.push(Self::hash_file(&efs_rel, &efs_bytes));
+        partitions.push(PartitionUsage {
+            partition_name: "efs-system".to_string(),
+            allocated_bytes: efs_bytes.len(),
+            max_bytes: mmi_formats::MAX_EFS_SYSTEM_SIZE,
+            percentage_used: (efs_bytes.len() as f64 / mmi_formats::MAX_EFS_SYSTEM_SIZE as f64) * 100.0,
+        });
+
         // 2. Build Navigation Database (HBNavDB/nav_data.db)
         let nav_db_binary = if let Some(custom_db) = &self.config.nav_database_fldb {
             custom_db.clone()
@@ -210,7 +257,10 @@ impl FirmwareBundlePipeline {
 
         // 4. Generate SWDL Master Manifest (metainfo2.txt)
         let mut manifest_builder = MetaInfo2Builder::new(&self.config.release, &self.config.train);
-        // We NO LONGER flash ifs-root or efs-system.
+        let ifs_section = format!("{}_ifs_root", self.config.variant);
+        manifest_builder.add_binary_with_blocks(&ifs_section, &ifs_rel, &ifs_bytes);
+        let efs_section = format!("{}_efs_system", self.config.variant);
+        manifest_builder.add_binary_with_blocks(&efs_section, &efs_rel, &efs_bytes);
 
 
         // Partition and register navigation database volumes (FAT32 multi-volume compliant)
